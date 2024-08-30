@@ -11,16 +11,27 @@ export const get: RequestHandler = async (
 ) => {
     try {
         let userId = req.params.id;
-        let result = await userService.get(userId);
+        // let result = await userService.get(userId);
+        let result = await userService.getAlt(userId);
 
-        if (result instanceof ZodError) {
-            res.status(404).json({
-                error: {
-                    message: "User not found",
-                },
-            });
+        if (result.isErr()) {
+            const err: Error | null = result.getErr();
+
+            if (err instanceof ZodError) {
+                res.status(404).json({
+                    error: {
+                        message: JSON.parse(err.message),
+                    },
+                });
+            } else {
+                res.status(404).json({
+                    error: {
+                        message: err.message,
+                    },
+                });
+            }
         } else {
-            res.status(200).json(result);
+            res.status(200).json(result.unwrap());
         }
     } catch (err) {
         console.error(`Error while getting user`, err.message);

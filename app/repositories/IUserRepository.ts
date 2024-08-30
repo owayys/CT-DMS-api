@@ -1,5 +1,7 @@
+import { Result } from "../lib/util/result";
+
 export interface IUserRepository {
-    findById(userId: string): Promise<any>;
+    findById(userId: string): Promise<Result<any, Error>>;
 
     findByName(userName: string): Promise<any>;
 

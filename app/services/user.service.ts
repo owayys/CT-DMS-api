@@ -2,6 +2,10 @@ import bcrypt from "bcrypt";
 import { IUserRepository } from "../repositories/IUserRepository";
 import { AllUsersResponse, UserResponse } from "../lib/validators/userSchemas";
 import { UpdateResponse } from "../lib/validators/common";
+import { Result } from "../lib/util/result";
+import { z } from "zod";
+
+type UserResponse = z.infer<typeof UserResponse>;
 
 export class UserService {
     constructor(private repository: IUserRepository) {}
@@ -20,6 +24,22 @@ export class UserService {
         const { data, success, error } = UserResponse.safeParse(response);
 
         return success ? data : error;
+    }
+
+    async getAlt(userId: string): Promise<Result<UserResponse, Error>> {
+        const response = await this.repository.findById(userId);
+
+        if (response.isErr()) {
+            console.error(response.getErr());
+            return new Result<UserResponse, Error>(null, response.getErr());
+        } else {
+            const { data, success, error } = UserResponse.safeParse(
+                response.unwrap()
+            );
+            return success
+                ? new Result<UserResponse, Error>(data, null)
+                : new Result<UserResponse, Error>(null, error);
+        }
     }
 
     async getAll(pageNumber: number, pageSize: number): Promise<any> {

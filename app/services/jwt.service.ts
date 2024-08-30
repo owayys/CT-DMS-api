@@ -1,19 +1,24 @@
 import { IUserRepository } from "../repositories/IUserRepository";
-import jwt, { GetPublicKeyOrSecret, Secret } from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 import { compare } from "bcrypt";
 import { JwtRefreshResponse, JwtResponse } from "../lib/validators/JWTSchemas";
+import { Result } from "../lib/util/result";
 
-const accessSecret: Secret | GetPublicKeyOrSecret =
-    process.env.ACCESS_TOKEN_SECRET || "ACCESS";
-const refreshSecret: Secret | GetPublicKeyOrSecret =
-    process.env.REFRESH_TOKEN_SECRET || "REFRESH";
+const accessSecret: Secret = process.env.ACCESS_TOKEN_SECRET || "ACCESS";
+const refreshSecret: Secret = process.env.REFRESH_TOKEN_SECRET || "REFRESH";
 
 export class JWTService {
     constructor(private repository: IUserRepository) {}
 
     async generate(userName: string, password: string) {
         try {
-            let user = await this.repository.findByName(userName);
+            let response = await this.repository.findByName(userName);
+
+            if (response.isErr()) {
+                return new Result<any, Error>(null, response.getErr());
+            }
+
+            const user = response.unwrap();
 
             if (!user) {
                 return {
@@ -50,12 +55,12 @@ export class JWTService {
                 }
             );
 
-            let response = {
+            let result = {
                 accessToken: accessToken,
                 refreshToken: refreshToken,
             };
 
-            const { data, success, error } = JwtResponse.safeParse(response);
+            const { data, success, error } = JwtResponse.safeParse(result);
 
             return success ? data : error;
         } catch (err) {
@@ -72,11 +77,17 @@ export class JWTService {
             let decoded = jwt.verify(refreshToken, refreshSecret);
             console.log(decoded);
 
-            let response;
+            let result;
 
             if (typeof decoded === "string" || typeof decoded === "undefined") {
             } else {
-                let user = await this.repository.findById(decoded.Id);
+                let response = await this.repository.findById(decoded.Id);
+
+                if (response.isErr()) {
+                    return new Result<any, Error>(null, response.getErr());
+                }
+
+                const user = response.unwrap();
 
                 if (!user) {
                     return {
@@ -96,13 +107,13 @@ export class JWTService {
                     { expiresIn: "1h" }
                 );
 
-                response = {
+                result = {
                     accessToken: accessToken,
                 };
             }
 
             const { data, success, error } =
-                JwtRefreshResponse.safeParse(response);
+                JwtRefreshResponse.safeParse(result);
 
             return success ? data : error;
         } catch (err) {

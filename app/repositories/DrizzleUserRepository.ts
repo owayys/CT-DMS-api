@@ -2,26 +2,53 @@ import { eq } from "drizzle-orm";
 import { IDrizzleConnection } from "../types";
 import { IUserRepository } from "./IUserRepository";
 import { UserTable } from "../database/schema";
+import { Result } from "../lib/util/result";
+import { z } from "zod";
+import { User } from "../lib/validators/userSchemas";
+
+type User = z.infer<typeof User>;
 
 export class DrizzleUserRepository implements IUserRepository {
     constructor(private _db: IDrizzleConnection) {}
 
-    async findById(userId: string): Promise<any> {
-        const [user] = await this._db
-            .select()
-            .from(UserTable)
-            .where(eq(UserTable.Id, userId));
+    async findById(userId: string): Promise<Result<User, Error>> {
+        try {
+            const [user] = await this._db
+                .select()
+                .from(UserTable)
+                .where(eq(UserTable.Id, userId));
 
-        return user;
+            if (user === undefined) {
+                return new Result<User, Error>(
+                    null,
+                    new Error("User not found")
+                );
+            }
+
+            return new Result<User, Error>(user, null);
+        } catch (err) {
+            return new Result<User, Error>(null, err);
+        }
     }
 
-    async findByName(userName: string): Promise<any> {
-        const [user] = await this._db
-            .select()
-            .from(UserTable)
-            .where(eq(UserTable.userName, userName));
+    async findByName(userName: string): Promise<Result<User, Error>> {
+        try {
+            const [user] = await this._db
+                .select()
+                .from(UserTable)
+                .where(eq(UserTable.userName, userName));
 
-        return user;
+            if (user === undefined) {
+                return new Result<User, Error>(
+                    null,
+                    new Error("User not found")
+                );
+            }
+
+            return new Result<User, Error>(user, null);
+        } catch (err) {
+            return new Result<User, Error>(null, err);
+        }
     }
 
     async all(pageNumber: number, pageSize: number): Promise<any> {
