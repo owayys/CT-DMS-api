@@ -22,7 +22,7 @@ export const generate: RequestHandler = async (
         } else if ("error" in result) {
             res.status(401).json({
                 error: {
-                    message: `Access token expired or invalid`,
+                    message: result.error.message,
                 },
             });
         } else {
