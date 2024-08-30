@@ -21,10 +21,13 @@ export const UserTable = pgTable("user", {
     password: varchar("password", { length: 72 }).notNull(),
     createdAt: timestamp("created_at", {
         mode: "string",
-    }).defaultNow(),
+    })
+        .notNull()
+        .defaultNow(),
     updatedAt: timestamp("updated_at", {
         mode: "string",
     })
+        .notNull()
         .defaultNow()
         .$onUpdate(() => sql`now()`),
 });
