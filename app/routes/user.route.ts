@@ -6,6 +6,7 @@ import { validate } from "../middleware/validate";
 import {
     CreateUser,
     GetAllUsers,
+    GetUser,
     UpdateUser,
 } from "../lib/validators/userSchemas";
 
@@ -19,7 +20,7 @@ router.get(
     userController.getAll
 );
 router.post("/", validate(CreateUser), userController.save);
-router.get("/:id", authenticateJWT, userController.get);
+router.get("/:id", authenticateJWT, validate(GetUser), userController.get);
 router.put(
     "/:id",
     authenticateJWT,

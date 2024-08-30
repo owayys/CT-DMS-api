@@ -1,5 +1,32 @@
 import { z } from "zod";
 
+export const User = z.object({
+    Id: z
+        .string({
+            required_error: "User ID is required",
+        })
+        .uuid(),
+    userName: z.string({
+        required_error: "User Name is required",
+    }),
+    password: z.string({
+        required_error: "Password is required",
+    }),
+    userRole: z.enum(["ADMIN", "USER"]),
+    createdAt: z.coerce.date().or(z.string()),
+    updatedAt: z.coerce.date().or(z.string()),
+});
+
+export const GetUser = z.object({
+    params: z.object({
+        id: z
+            .string({
+                required_error: "User ID is required",
+            })
+            .uuid(),
+    }),
+});
+
 export const GetAllUsers = z.object({
     query: z.object({
         pageNumber: z.coerce
