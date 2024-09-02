@@ -70,8 +70,13 @@ export const DocumentContentResponse = z.union([
 ]);
 
 export const AddTag = z.object({
+    params: z.object({
+        id: z.string().uuid(),
+    }),
     body: Tag,
 });
+
+export const DeleteTag = AddTag;
 
 export const TagResponse = Tag;
 

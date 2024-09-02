@@ -275,6 +275,24 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
         });
     }
 
+    async removeTag(
+        documentId: string,
+        tag: { key: string; name: string }
+    ): Promise<any> {
+        await this._db
+            .delete(DocumentTagsTable)
+            .where(
+                and(
+                    eq(DocumentTagsTable.tagId, tag.key),
+                    eq(DocumentTagsTable.documentId, documentId)
+                )
+            );
+
+        return {
+            success: true,
+        };
+    }
+
     async download(link: string): Promise<any> {
         let [download] = await this._db
             .select({

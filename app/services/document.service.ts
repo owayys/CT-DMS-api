@@ -114,6 +114,20 @@ export class DocumentService {
         }
     }
 
+    async removeTag(documentId: string, tag: { key: string; name: string }) {
+        try {
+            let response = await this.repository.removeTag(documentId, tag);
+
+            const { data, success, error } = DeleteResponse.safeParse(response);
+
+            return success ? data : error;
+        } catch (err) {
+            return {
+                success: false,
+            };
+        }
+    }
+
     async download(link: string): Promise<any> {
         return await this.repository.download(link);
     }

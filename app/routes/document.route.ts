@@ -3,6 +3,7 @@ import * as documentController from "../controllers/document.controller";
 import { validate } from "../middleware/validate";
 import {
     AddTag,
+    DeleteTag,
     GetAllDocuments,
     SaveDocument,
     UpdateDocument,
@@ -19,6 +20,12 @@ router.post(
     authenticateJWT,
     validate(AddTag),
     documentController.addTag
+);
+router.delete(
+    "/:id/tag",
+    authenticateJWT,
+    validate(DeleteTag),
+    documentController.removeTag
 );
 router.get("/:id", authenticateJWT, documentController.get);
 router.put(
