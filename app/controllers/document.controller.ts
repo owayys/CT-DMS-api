@@ -38,13 +38,11 @@ export const getAll = async (
     try {
         let userId = req.user.Id;
         let { pageNumber, pageSize, tag } = req.query;
-        let pageNumberParsed = pageNumber ? parseInt(pageNumber) - 1 : 0;
-        let pageSizeParsed = pageSize ? parseInt(pageSize) : 10;
 
         let result = await documentService.getAll(
             userId,
-            pageNumberParsed,
-            pageSizeParsed,
+            pageNumber - 1,
+            pageSize,
             tag
         );
 

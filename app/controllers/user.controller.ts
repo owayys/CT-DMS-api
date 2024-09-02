@@ -15,7 +15,7 @@ export const get: RequestHandler = async (
         let result = await userService.getAlt(userId);
 
         if (result.isErr()) {
-            const err: Error | null = result.getErr();
+            const err: Error = result.getErr();
 
             if (err instanceof ZodError) {
                 res.status(404).json({
@@ -41,7 +41,7 @@ export const get: RequestHandler = async (
 type ReqDictionary = {};
 type ReqBody = { foo1?: string };
 type ResBody = { foo2?: string };
-type ReqQuery = { pageNumber: string; pageSize: string };
+type ReqQuery = { pageNumber: number; pageSize: number };
 
 export const getAll = async (
     req: Request<ReqDictionary, ResBody, ReqBody, ReqQuery>,
@@ -50,10 +50,7 @@ export const getAll = async (
 ) => {
     try {
         let { pageNumber, pageSize } = req.query;
-        let pageNumberParsed = parseInt(pageNumber) - 1 || 0;
-        let pageSizeParsed = parseInt(pageSize) || 10;
-
-        let result = await userService.getAll(pageNumberParsed, pageSizeParsed);
+        let result = await userService.getAll(pageNumber - 1, pageSize);
 
         if (result instanceof ZodError) {
             res.status(404).json({
@@ -75,7 +72,6 @@ export const save: RequestHandler = async (
     next
 ) => {
     try {
-        console.log(req.body);
         let { userName, password } = req.body;
         let result = await userService.save(userName, password);
         if (result instanceof ZodError) {
