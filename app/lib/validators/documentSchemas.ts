@@ -55,6 +55,7 @@ export const GetAllDocuments = z.object({
             .number()
             .min(1, "Page Number must be 1 or greater")
             .optional(),
+        tag: z.string().optional(),
     }),
 });
 

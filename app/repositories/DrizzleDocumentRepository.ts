@@ -5,7 +5,7 @@ import {
     DownloadTable,
     TagTable,
 } from "../database/schema";
-import { IDrizzleConnection } from "../types";
+import { IDrizzleConnection } from "./types";
 import { IDocumentRepository } from "./IDocumentRepository";
 import { unlink } from "fs/promises";
 import { UploadedFile } from "express-fileupload";
@@ -85,30 +85,35 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
             },
         });
 
-        let documentsFlattened = documents
-            .map((doc) => ({
-                ...doc,
-                tags: doc.tags.map((tag) => ({
-                    key: tag.tag.key,
-                    name: tag.tag.name,
-                })),
-            }))
-            .filter((doc) => doc.tags.some((someTag) => someTag.name === tag));
+        let documentsFlattened = documents.map((doc) => ({
+            ...doc,
+            tags: doc.tags.map((tag) => ({
+                key: tag.tag.key,
+                name: tag.tag.name,
+            })),
+        }));
+
+        if (tag) {
+            documentsFlattened = documentsFlattened.filter((doc) =>
+                doc.tags.some((someTag) => someTag.name === tag)
+            );
+        }
 
         let totalItems = documentsFlattened.length;
         let totalPages = Math.ceil(documentsFlattened.length / pageSize);
         let page = Math.min(totalPages, pageNumber);
-        let size = Math.min(totalItems, pageSize);
+        let items = documentsFlattened.slice(
+            pageNumber * pageSize,
+            pageNumber * pageSize + pageSize
+        );
+        let size = Math.min(items.length, pageSize);
 
         return {
             page: page + 1,
             size: size,
             totalPages: totalPages,
             totalItems: totalItems,
-            items: documentsFlattened.slice(
-                page * size,
-                Math.max(page * size + page, size)
-            ),
+            items: items,
         };
     }
 
