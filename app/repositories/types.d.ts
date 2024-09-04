@@ -4,7 +4,7 @@ import {
     PostgresJsQueryResultHKT,
 } from "drizzle-orm/postgres-js";
 import { ExtractTablesWithRelations } from "drizzle-orm";
-import * as schema from "./database/schema";
+import * as schema from "../database/schema";
 
 /**
  * Type of the drizzle/postgres-js transaction.
