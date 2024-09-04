@@ -1,98 +1,48 @@
-// import { Result } from "./app/lib/util/result";
+// import { pipe } from "./app/lib/util/pipe";
+// import { failure, Result, success } from "./app/lib/util/result";
 
-enum ResultKind {
-    OK = "Ok",
-    ERR = "Err",
-}
+import { pipe } from "./app/lib/util/pipe";
+import { Result } from "./app/lib/util/result";
 
-export type Result<T, E> = Ok<T> | Err<E>;
+// function len(input: any): Result<number, string> {
+//     if (typeof input !== "string") {
+//         return failure("Input must be a String!");
+//     } else {
+//         return success(input.length);
+//     }
+// }
 
-interface ResultBase<A, E> {
-    kind: ResultKind;
-    map<B>(fn: (_: A) => B): Result<B, E>;
-    bind<B>(fn: (_: A) => Result<B, E>): Result<B, E>;
-    match<B>(obj: { ok: (_: A) => B; err: (_: E) => B }): B;
-}
+// function double(input: any): Result<number, string> {
+//     if (typeof input !== "number") {
+//         return failure("Input must be a Number!");
+//     } else {
+//         return success(input * 2);
+//     }
+// }
 
-export type Ok<A> = Readonly<
-    ResultBase<A, any> & { kind: ResultKind.OK; value: A }
->;
+// function triple(input: any): Result<number, string> {
+//     if (typeof input !== "number") {
+//         return failure("Input must be a Number!");
+//     } else {
+//         return success(input * 3);
+//     }
+// }
 
-export function ok<A>(a: A): Ok<A> {
-    return {
-        kind: ResultKind.OK,
-        value: a,
-        map(fn) {
-            return ok(fn(this.value));
-        },
-        bind(fn) {
-            return fn(this.value);
-        },
-        match({ ok }) {
-            return ok(this.value);
-        },
-    };
-}
+// function square(input: any): Result<number, string> {
+//     if (typeof input !== "number") {
+//         return failure("Input must be a Number!");
+//     } else {
+//         return success(input * input);
+//     }
+// }
 
-export type Err<E> = Readonly<
-    ResultBase<any, E> & { kind: ResultKind.ERR; error: E }
->;
-
-export function err<E>(e: E): Err<E> {
-    return {
-        kind: ResultKind.ERR,
-        error: e,
-        map() {
-            return this;
-        },
-        bind() {
-            return this;
-        },
-        match({ err }) {
-            return err(this.error);
-        },
-    };
-}
-
-function len(input: any): Result<number, string> {
-    if (typeof input !== "string") {
-        return err("Input must be a String!");
-    } else {
-        return ok(input.length);
-    }
-}
-
-function double(input: any): Result<number, string> {
-    if (typeof input !== "number") {
-        return err("Input must be a Number!");
-    } else {
-        return ok(input * 2);
-    }
-}
-
-function triple(input: any): Result<number, string> {
-    if (typeof input !== "number") {
-        return err("Input must be a Number!");
-    } else {
-        return ok(input * 3);
-    }
-}
-
-function square(input: any): Result<number, string> {
-    if (typeof input !== "number") {
-        return err("Input must be a Number!");
-    } else {
-        return ok(input * input);
-    }
-}
-
-function cube(input: any): Result<number, string> {
-    if (typeof input !== "number") {
-        return err("Input must be a Number!");
-    } else {
-        return ok(input * input * input);
-    }
-}
+// function cube(input: any): Result<number, string> {
+//     if (typeof input !== "number") {
+//         return failure("Input must be a Number!");
+//     } else {
+//         return success(input * input * input);
+//     }
+// }
 
 // const resultSuccess = len("10") // Valid input
 //     .bind(square)
@@ -115,22 +65,93 @@ function cube(input: any): Result<number, string> {
 //     ? console.log(resultError.getErr())
 //     : console.log(resultError.unwrap());
 
-len(10)
-    .bind(square)
-    .bind(cube)
-    .bind(double)
-    .bind(triple)
-    .match({
-        ok: (value) => console.log(`Result: ${value}`),
-        err: (error) => console.log(`Error: ${error}`),
-    });
+// len(10)
+//     .bind(square)
+//     .bind(cube)
+//     .bind(double)
+//     .bind(triple)
+//     .match({
+//         success: (value) => console.log(`Result: ${value}`),
+//         failure: (error) => console.log(`Error: ${error}`),
+//     });
 
-len("10")
-    .bind(square)
-    .bind(cube)
-    .bind(double)
-    .bind(triple)
-    .match({
-        ok: (value) => console.log(`Result: ${value}`),
-        err: (error) => console.log(`Error: ${error}`),
-    });
+// len("10")
+//     .bind(square)
+//     .bind(cube)
+//     .bind(double)
+//     .bind(triple)
+//     .match({
+//         success: (value) => console.log(`Result: ${value}`),
+//         failure: (error) => console.log(`Error: ${error}`),
+//     });
+
+function len(input: any): Result<number, Error> {
+    if (typeof input !== "string") {
+        return new Result<number, Error>(
+            null,
+            new Error("Input must be a String!")
+        );
+    } else {
+        return new Result<number, Error>(input.length, null);
+    }
+}
+
+function double(input: any): Result<number, Error> {
+    if (typeof input !== "number") {
+        return new Result<number, Error>(
+            null,
+            new Error("Input must be a Number!")
+        );
+    } else {
+        return new Result<number, Error>(input * 2, null);
+    }
+}
+
+function triple(input: any): Result<number, Error> {
+    if (typeof input !== "number") {
+        return new Result<number, Error>(
+            null,
+            new Error("Input must be a Number!")
+        );
+    } else {
+        return new Result<number, Error>(input * 3, null);
+    }
+}
+
+function square(input: any): Result<number, Error> {
+    if (typeof input !== "number") {
+        return new Result<number, Error>(
+            null,
+            new Error("Input must be a Number!")
+        );
+    } else {
+        return new Result<number, Error>(input * input, null);
+    }
+}
+
+function cube(input: any): Result<number, Error> {
+    if (typeof input !== "number") {
+        return new Result<number, Error>(
+            null,
+            new Error("Input must be a Number!")
+        );
+    } else {
+        return new Result<number, Error>(input * input * input, null);
+    }
+}
+
+// console.log(pipe(12, len, square, cube, double, triple, double).getErr());
+
+// console.log(pipe("12", len, square, cube, double, triple, double).unwrap());
+
+function timer(fn: Function, ...args: any[]) {
+    const startTime = performance.now();
+    fn(args);
+    const endTime = performance.now();
+    console.log(
+        `Function ${fn.name} took ${endTime - startTime} seconds to execute`
+    );
+}
+
+timer(pipe, [12, len, square, cube, double, triple, double]);
+timer(pipe, ["12", len, square, cube, double, triple, double]);
