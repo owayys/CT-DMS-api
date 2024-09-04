@@ -1,7 +1,6 @@
-import jwt, { GetPublicKeyOrSecret, Secret } from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 
-const secretKey: Secret | GetPublicKeyOrSecret =
-    process.env.ACCESS_TOKEN_SECRET || "ACCESS";
+const secretKey: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 
 export const authenticateJWT = (req: any, res: any, next: any) => {
     try {
@@ -11,6 +10,14 @@ export const authenticateJWT = (req: any, res: any, next: any) => {
             return res.status(401).json({
                 error: {
                     message: "No Access Token provided",
+                },
+            });
+        }
+
+        if (secretKey === undefined) {
+            return res.status(401).json({
+                error: {
+                    message: `SECRET_KEY missing`,
                 },
             });
         }
