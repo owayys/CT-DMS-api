@@ -15,8 +15,10 @@ const Document = z.object({
     fileExtension: z.string(),
     contentType: z.string(),
     tags: Tag.array(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    // createdAt: z.coerce.date(),
+    // updatedAt: z.coerce.date(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
 });
 
 export const GetDocument = Document;
@@ -35,6 +37,13 @@ export const SaveDocument = z.object({
 });
 
 export const UpdateDocument = z.object({
+    params: z.object({
+        id: z
+            .string({
+                required_error: "Document ID is required",
+            })
+            .uuid(),
+    }),
     body: Document.pick({
         fileName: true,
         fileExtension: true,
@@ -65,7 +74,7 @@ export const DocumentContentResponse = z.union([
         isBase64: z.boolean(),
     }),
     z.object({
-        content: z.string(),
+        content: z.string().nullable(),
     }),
 ]);
 

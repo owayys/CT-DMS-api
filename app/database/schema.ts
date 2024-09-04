@@ -43,10 +43,13 @@ export const DocumentTable = pgTable("document", {
     content: text("content"),
     createdAt: timestamp("created_at", {
         mode: "string",
-    }).defaultNow(),
+    })
+        .notNull()
+        .defaultNow(),
     updatedAt: timestamp("updated_at", {
         mode: "string",
     })
+        .notNull()
         .defaultNow()
         .$onUpdate(() => sql`now()`),
 });

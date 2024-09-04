@@ -79,8 +79,10 @@ export const DeleteUser = z.object({
 export const UserResponse = z.object({
     Id: z.string().uuid(),
     userName: z.string(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    // createdAt: z.coerce.date(),
+    // updatedAt: z.coerce.date(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
 });
 
 export const AllUsersResponse = UserResponse.array();
