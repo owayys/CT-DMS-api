@@ -1,4 +1,3 @@
-// import * as userController from "../controllers/user.controller";
 import { UserController } from "../controllers/user.controller";
 import { Router } from "express";
 import { authenticateJWT } from "../middleware/authenticateJWT";
@@ -18,7 +17,7 @@ router.get(
     "/",
     authenticateJWT,
     validate(GetAllUsers),
-    // restrict("ADMIN"),
+    restrict("ADMIN"),
     userController.getAll
 );
 router.post("/", validate(CreateUser), userController.save);

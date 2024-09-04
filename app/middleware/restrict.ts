@@ -3,7 +3,7 @@ export const restrict = (...role: any) => {
         const userRole = req.user.userRole;
 
         if (!role.includes(userRole)) {
-            res.status(401).json({
+            res.status(403).json({
                 error: {
                     message: "Permission denied",
                 },
