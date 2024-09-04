@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
+import "dotenv/config";
 import "reflect-metadata";
 
 import "./lib/di"; // DI container
@@ -10,10 +10,6 @@ import fileUpload from "express-fileupload";
 import userRouter from "./routes/user.route";
 import jwtRouter from "./routes/jwt.route";
 import documentRouter from "./routes/document.route";
-
-dotenv.config({
-    path: "./.env",
-});
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
