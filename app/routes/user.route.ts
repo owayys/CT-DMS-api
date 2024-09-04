@@ -1,4 +1,5 @@
-import * as userController from "../controllers/user.controller";
+// import * as userController from "../controllers/user.controller";
+import { UserController } from "../controllers/user.controller";
 import { Router } from "express";
 import { authenticateJWT } from "../middleware/authenticateJWT";
 import { restrict } from "../middleware/restrict";
@@ -11,12 +12,13 @@ import {
 } from "../lib/validators/userSchemas";
 
 const router = Router();
+const userController = new UserController();
 
 router.get(
     "/",
     authenticateJWT,
     validate(GetAllUsers),
-    restrict("ADMIN"),
+    // restrict("ADMIN"),
     userController.getAll
 );
 router.post("/", validate(CreateUser), userController.save);

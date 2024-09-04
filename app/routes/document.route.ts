@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as documentController from "../controllers/document.controller";
+// import * as documentController from "../controllers/document.controller";
 import { validate } from "../middleware/validate";
 import {
     AddTag,
@@ -9,8 +9,10 @@ import {
     UpdateDocument,
 } from "../lib/validators/documentSchemas";
 import { authenticateJWT } from "../middleware/authenticateJWT";
+import { DocumentController } from "../controllers/document.controller";
 
 const router = Router();
+const documentController = new DocumentController();
 
 router.get("/download", documentController.download);
 router.get("/content/:id", authenticateJWT, documentController.getContent);

@@ -1,16 +1,20 @@
 import { UploadedFile } from "express-fileupload";
+import { Result } from "../lib/util/result";
 
 export interface IDocumentRepository {
-    findById(userId: string, documentId: string): Promise<any>;
+    findById(userId: string, documentId: string): Promise<Result<any, Error>>;
 
     all(
         userId: string,
         pageNumber: number,
         pageSize: number,
         tag: string | null
-    ): Promise<any>;
+    ): Promise<Result<any, Error>>;
 
-    getContentById(userId: string, documentId: string): Promise<any>;
+    getContentById(
+        userId: string,
+        documentId: string
+    ): Promise<Result<any, Error>>;
 
     save(
         userId: string,
@@ -19,7 +23,7 @@ export interface IDocumentRepository {
         contentType: string,
         tags: { key: string; name: string }[],
         content: string
-    ): Promise<any>;
+    ): Promise<Result<any, Error>>;
 
     update(
         userId: string,
@@ -29,14 +33,19 @@ export interface IDocumentRepository {
         contentType: string,
         tags: { key: string; name: string }[],
         content: string
-    ): Promise<any>;
+    ): Promise<Result<any, Error>>;
 
     addTag(
         documentId: string,
         tag: { key: string; name: string }
-    ): Promise<any>;
+    ): Promise<Result<any, Error>>;
 
-    download(link: string): Promise<any>;
+    removeTag(
+        documentId: string,
+        tag: { key: string; name: string }
+    ): Promise<Result<any, Error>>;
+
+    download(link: string): Promise<Result<any, Error>>;
 
     upload(
         userId: string,
@@ -45,7 +54,7 @@ export interface IDocumentRepository {
         fileExtension: string,
         contentType: string,
         tags: { key: string; name: string }[]
-    ): Promise<any>;
+    ): Promise<Result<any, Error>>;
 
     remove(
         user: {
@@ -54,5 +63,5 @@ export interface IDocumentRepository {
             userRole: string;
         },
         documentId: string
-    ): Promise<any>;
+    ): Promise<Result<any, Error>>;
 }

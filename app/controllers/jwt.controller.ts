@@ -1,37 +1,8 @@
 import { Request, RequestHandler, Response } from "express";
 import { ZodError } from "zod";
-import { ServiceFactory } from "../services";
-
-const jwtService = new ServiceFactory().createJWTService();
-
-export const generate: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next
-) => {
-    try {
-        let { userName, password } = req.body;
-        let result = await jwtService.generate(userName, password);
-
-        if (result instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: result.message,
-                },
-            });
-        } else if ("error" in result) {
-            res.status(401).json({
-                error: {
-                    message: result.error.message,
-                },
-            });
-        } else {
-            res.status(200).json(result);
-        }
-    } catch (err) {
-        console.error(`Error generating JWT`, err.message);
-    }
-};
+import { JWT_SERVICE } from "../lib/di/di.tokens";
+import { Inject } from "../lib/di/Inject";
+import { InjectionTarget } from "../lib/di/InjectionTarget";
 
 declare module "jsonwebtoken" {
     export interface UserNameJWTPayload extends JwtPayload {
@@ -40,40 +11,66 @@ declare module "jsonwebtoken" {
     }
 }
 
-export const refresh: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next
-) => {
-    try {
-        let refreshToken = req.headers["authorization"];
+@InjectionTarget()
+export class JWTController {
+    constructor(@Inject(JWT_SERVICE) private jwtService: any) {}
 
-        if (!refreshToken) {
-            return res.status(401).json({
-                error: {
-                    message: "No Refresh Token provided",
-                },
-            });
+    generate: RequestHandler = async (req: Request, res: Response, next) => {
+        try {
+            let { userName, password } = req.body;
+            let result = await this.jwtService.generate(userName, password);
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error generating JWT`, err.message);
         }
+    };
 
-        let result = await jwtService.refresh(refreshToken);
+    refresh: RequestHandler = async (req: Request, res: Response, next) => {
+        try {
+            let refreshToken = req.headers["authorization"];
 
-        if (result instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: result.message,
-                },
-            });
-        } else if ("error" in result) {
-            res.status(401).json({
-                error: {
-                    message: `Refresh token expired or invalid`,
-                },
-            });
-        } else {
-            res.status(200).json(result);
+            let result = await this.jwtService.refresh(refreshToken);
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error Refreshing JWT`, err.message);
         }
-    } catch (err) {
-        console.error(`Error Refreshing JWT`, err.message);
-    }
-};
+    };
+}

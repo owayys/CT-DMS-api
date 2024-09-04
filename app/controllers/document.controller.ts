@@ -1,282 +1,413 @@
-import { Request, RequestHandler, Response } from "express";
+import {
+    NextFunction,
+    Request,
+    RequestHandler,
+    response,
+    Response,
+} from "express";
 import { UploadedFile } from "express-fileupload";
 import path from "path";
 import { ZodError } from "zod";
-import { ServiceFactory } from "../services";
+import { Inject } from "../lib/di/Inject";
+import { DOCUMENT_SERVICE } from "../lib/di/di.tokens";
+import { InjectionTarget } from "../lib/di/InjectionTarget";
 
-const documentService = new ServiceFactory().createDocumentService();
+@InjectionTarget()
+export class DocumentController {
+    constructor(@Inject(DOCUMENT_SERVICE) private documentService: any) {}
 
-export const get: RequestHandler = async (
-    req: any,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { id } = req.params;
-        let userId = req.user.Id;
-        let result = await documentService.get(userId, id);
+    get: RequestHandler = async (
+        req: any,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { id } = req.params;
+            let userId = req.user.Id;
+            let result = await this.documentService.get(userId, id);
 
-        if (result instanceof ZodError) {
-            res.status(404).json({
-                error: {
-                    message: JSON.parse(result.message),
-                },
-            });
-        } else {
-            res.status(200).json(result);
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error getting document`, err.message);
         }
-    } catch (err) {
-        console.error(`Error getting document`, err.message);
-    }
-};
+    };
 
-export const getAll = async (
-    req: any,
-    res: Response,
-    next: any
-): Promise<void> => {
-    try {
-        let userId = req.user.Id;
-        let { pageNumber, pageSize, tag } = req.query;
+    getAll = async (req: any, res: Response, next: any): Promise<void> => {
+        try {
+            let userId = req.user.Id;
+            let { pageNumber, pageSize, tag } = req.query;
 
-        let result = await documentService.getAll(
-            userId,
-            pageNumber - 1,
-            pageSize,
-            tag
-        );
+            let result = await this.documentService.getAll(
+                userId,
+                pageNumber - 1,
+                pageSize,
+                tag
+            );
 
-        if (result instanceof ZodError) {
-            res.status(404).json({
-                error: {
-                    message: JSON.parse(result.message),
-                },
-            });
-        } else {
-            res.status(200).json(result);
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error getting all documents`, err.message);
         }
-    } catch (err) {
-        console.error(`Error getting all documents`, err.message);
-    }
-};
+    };
 
-export const getContent: RequestHandler = async (
-    req: any,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { id } = req.params;
-        let userId = req.user.Id;
-        let result = await documentService.getContent(userId, id);
+    getContent: RequestHandler = async (
+        req: any,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { id } = req.params;
+            let userId = req.user.Id;
+            let result = await this.documentService.getContent(userId, id);
 
-        if (result instanceof ZodError) {
-            res.status(404).json({
-                error: {
-                    message: "Document not found",
-                },
-            });
-        } else {
-            res.status(200).json(result);
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error getting document content`, err.message);
         }
-    } catch (err) {
-        console.error(`Error getting document content`, err.message);
-    }
-};
+    };
 
-export const save: RequestHandler = async (
-    req: any,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { fileName, fileExtension, contentType, tags, content } = req.body;
-        let userId = req.user.Id;
-
-        let result = await documentService.save(
-            userId,
-            fileName,
-            fileExtension,
-            contentType,
-            tags,
-            content
-        );
-
-        if (result instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: result.message,
-                },
-            });
-        } else {
-            res.status(200).json(result);
-        }
-    } catch (err) {
-        console.error(`Error saving document`, err.message);
-    }
-};
-
-export const upload: RequestHandler = async (
-    req: any,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        if (!req.files || Object.keys(req.files).length === 0) {
-            res.status(400).send("No files were uploaded.");
-        } else {
-            let file = req.files.file as UploadedFile;
-
-            let fileName = path.parse(file.name).name;
-            let fileExtension = path.parse(file.name).ext;
-
-            let contentType = file.mimetype;
-
-            let { tags } = req.body;
-            tags = JSON.parse(tags);
-
+    save: RequestHandler = async (
+        req: any,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { fileName, fileExtension, contentType, tags, content } =
+                req.body;
             let userId = req.user.Id;
 
-            let result = await documentService.upload(
+            let result = await this.documentService.save(
                 userId,
-                file,
                 fileName,
                 fileExtension,
                 contentType,
-                tags
+                tags,
+                content
             );
 
-            if (result instanceof ZodError) {
-                res.status(422).json({
-                    error: {
-                        message: result.message,
-                    },
-                });
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
             } else {
-                res.status(200).json(result);
+                res.status(200).json(result.unwrap());
             }
+        } catch (err) {
+            console.error(`Error saving document`, err.message);
         }
-    } catch (err) {
-        console.error(`Error uploading document`, err.message);
-    }
-};
+    };
 
-export const download: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { link } = req.query;
+    upload: RequestHandler = async (
+        req: any,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            if (!req.files || Object.keys(req.files).length === 0) {
+                res.status(400).send("No files were uploaded.");
+            } else {
+                let file = req.files.file as UploadedFile;
 
-        let result = await documentService.download(link as string);
+                let fileName = path.parse(file.name).name;
+                let fileExtension = path.parse(file.name).ext;
 
-        if (result) {
-            res.status(200).download(result.filePath, result.fileName);
-        } else {
-            res.status(410).json({
-                error: {
-                    message: "Download link expired or invalid",
-                },
+                let contentType = file.mimetype;
+
+                let { tags } = req.body;
+                tags = JSON.parse(tags);
+
+                let userId = req.user.Id;
+
+                let result = await this.documentService.upload(
+                    userId,
+                    file,
+                    fileName,
+                    fileExtension,
+                    contentType,
+                    tags
+                );
+
+                if (result.isErr()) {
+                    const err: Error = result.getErr();
+
+                    if (err instanceof ZodError) {
+                        res.status(404).json({
+                            error: {
+                                message: JSON.parse(err.message),
+                            },
+                        });
+                    } else {
+                        res.status(404).json({
+                            error: {
+                                message: err.message,
+                            },
+                        });
+                    }
+                } else {
+                    res.status(200).json(result.unwrap());
+                }
+            }
+        } catch (err) {
+            console.error(`Error uploading document`, err.message);
+        }
+    };
+
+    download: RequestHandler = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { link } = req.query;
+
+            let result = await this.documentService.download(link as string);
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                const requestedFile = result.unwrap();
+                res.status(200).download(
+                    requestedFile.filePath,
+                    requestedFile.fileName
+                );
+            }
+        } catch (err) {
+            console.error(`Error downloading file`, err.message);
+        }
+    };
+
+    update: RequestHandler = async (
+        req: any,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { fileName, fileExtension, contentType, tags, content } =
+                req.body;
+            let { id } = req.params;
+            let userId = req.user.Id;
+
+            let result = await this.documentService.update(
+                userId,
+                id,
+                fileName,
+                fileExtension,
+                contentType,
+                tags,
+                content
+            );
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error updating document`, err.message);
+        }
+    };
+
+    remove: RequestHandler = async (
+        req: any,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { id } = req.params;
+            let user = req.user;
+
+            let result = await this.documentService.remove(user, id);
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error deleting document`, err.message);
+        }
+    };
+
+    addTag: RequestHandler = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { id } = req.params;
+            let { key, name } = req.body;
+            console.log(id, req.body);
+            let result = await this.documentService.addTag(id, { key, name });
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error Adding Tag`, err.message);
+        }
+    };
+
+    updateTag: RequestHandler = (req: Request, res: Response, next): void => {};
+
+    removeTag: RequestHandler = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            let { id } = req.params;
+            let { key, name } = req.body;
+            console.log(id, req.body);
+            let result = await this.documentService.removeTag(id, {
+                key,
+                name,
             });
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            console.error(`Error Deleting Tag`, err.message);
         }
-    } catch (err) {
-        console.error(`Error downloading file`, err.message);
-    }
-};
-
-export const update: RequestHandler = async (
-    req: any,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { fileName, fileExtension, contentType, tags, content } = req.body;
-        let { id } = req.params;
-        let userId = req.user.Id;
-
-        let result = await documentService.update(
-            id,
-            userId,
-            fileName,
-            fileExtension,
-            contentType,
-            tags,
-            content
-        );
-
-        if (result instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: result.message,
-                },
-            });
-        } else {
-            res.status(200).json(result);
-        }
-    } catch (err) {
-        console.error(`Error updating document`, err.message);
-    }
-};
-
-export const remove: RequestHandler = async (
-    req: any,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { id } = req.params;
-        let user = req.user;
-
-        let result = await documentService.remove(id, user);
-
-        if (result instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: result.message,
-                },
-            });
-        } else {
-            res.status(200).json(result);
-        }
-    } catch (err) {
-        console.error(`Error deleting document`, err.message);
-    }
-};
-
-export const addTag: RequestHandler = async (
-    req: Request,
-    res: Response,
-    next
-): Promise<void> => {
-    try {
-        let { id } = req.params;
-        let { key, name } = req.body;
-        console.log(id, req.body);
-        let result = await documentService.addTag(id, { key, name });
-
-        if (result instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: result.message,
-                },
-            });
-        } else {
-            res.status(200).json(result);
-        }
-    } catch (err) {
-        console.error(`Error Adding Tag`, err.message);
-    }
-};
-
-export const updateTag: RequestHandler = (
-    req: Request,
-    res: Response,
-    next
-): void => {};
-
-export const removeTag: RequestHandler = (
-    req: Request,
-    res: Response,
-    next
-): void => {};
+    };
+}

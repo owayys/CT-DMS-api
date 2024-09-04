@@ -8,15 +8,41 @@ import {
     TagResponse,
 } from "../lib/validators/documentSchemas";
 import { IDocumentRepository } from "../repositories/IDocumentRepository";
+import { InjectionTarget } from "../lib/di/InjectionTarget";
+import { DOCUMENT_REPOSITORY } from "../lib/di/di.tokens";
+import { Inject } from "../lib/di/Inject";
+import { parseResponse } from "../lib/util/parseResponse";
+import { Result } from "../lib/util/result";
+import { z } from "zod";
 
+type GetDocument = z.infer<typeof GetDocument>;
+type DocumentResponse = z.infer<typeof DocumentResponse>;
+type DocumentContentResponse = z.infer<typeof DocumentContentResponse>;
+type SaveDocumentResponse = z.infer<typeof SaveDocumentResponse>;
+type UpdateResponse = z.infer<typeof UpdateResponse>;
+type TagResponse = z.infer<typeof TagResponse>;
+type DeleteResponse = z.infer<typeof DeleteResponse>;
+
+@InjectionTarget()
 export class DocumentService {
-    constructor(private repository: IDocumentRepository) {}
+    private repository: IDocumentRepository;
+    constructor(
+        @Inject(DOCUMENT_REPOSITORY)
+        repo?: IDocumentRepository | any
+    ) {
+        if (!repo) {
+            throw Error("No Document Repository provided");
+        }
+        this.repository = repo;
+    }
 
-    async get(userId: string, documentId: string): Promise<any> {
-        const response = await this.repository.findById(userId, documentId);
-        const { data, success, error } = GetDocument.safeParse(response);
-
-        return success ? data : error;
+    async get(
+        userId: string,
+        documentId: string
+    ): Promise<Result<GetDocument, Error>> {
+        return (await this.repository.findById(userId, documentId)).bind(
+            (response) => parseResponse(GetDocument, response)
+        );
     }
 
     async getAll(
@@ -24,28 +50,19 @@ export class DocumentService {
         pageNumber: number,
         pageSize: number,
         tag: string | null
-    ): Promise<any> {
-        const response = await this.repository.all(
-            userId,
-            pageNumber,
-            pageSize,
-            tag
-        );
-        const { data, success, error } = DocumentResponse.safeParse(response);
-
-        return success ? data : error;
+    ): Promise<Result<DocumentResponse, Error>> {
+        return (
+            await this.repository.all(userId, pageNumber, pageSize, tag)
+        ).bind((response) => parseResponse(DocumentResponse, response));
     }
 
-    async getContent(userId: string, documentId: string): Promise<any> {
-        const response = await this.repository.getContentById(
-            userId,
-            documentId
+    async getContent(
+        userId: string,
+        documentId: string
+    ): Promise<Result<DocumentContentResponse, Error>> {
+        return (await this.repository.getContentById(userId, documentId)).bind(
+            (response) => parseResponse(DocumentContentResponse, response)
         );
-
-        const { data, success, error } =
-            DocumentContentResponse.safeParse(response);
-
-        return success ? data : error;
     }
 
     async save(
@@ -55,20 +72,17 @@ export class DocumentService {
         contentType: string,
         tags: { key: string; name: string }[],
         content: string
-    ): Promise<any> {
-        const response = await this.repository.save(
-            userId,
-            fileName,
-            fileExtension,
-            contentType,
-            tags,
-            content
-        );
-
-        const { data, success, error } =
-            SaveDocumentResponse.safeParse(response);
-
-        return success ? data : error;
+    ): Promise<Result<SaveDocumentResponse, Error>> {
+        return (
+            await this.repository.save(
+                userId,
+                fileName,
+                fileExtension,
+                contentType,
+                tags,
+                content
+            )
+        ).bind((response) => parseResponse(SaveDocumentResponse, response));
     }
 
     async update(
@@ -79,56 +93,36 @@ export class DocumentService {
         contentType: string,
         tags: { key: string; name: string }[],
         content: string
-    ): Promise<any> {
-        const response = await this.repository.update(
-            userId,
-            documentId,
-            fileName,
-            fileExtension,
-            contentType,
-            tags,
-            content
-        );
-
-        const { data, success, error } = UpdateResponse.safeParse(response);
-
-        return success ? data : error;
+    ): Promise<Result<UpdateResponse, Error>> {
+        return (
+            await this.repository.update(
+                userId,
+                documentId,
+                fileName,
+                fileExtension,
+                contentType,
+                tags,
+                content
+            )
+        ).bind((response) => parseResponse(UpdateResponse, response));
     }
 
     async addTag(
         documentId: string,
         tag: { key: string; name: string }
-    ): Promise<any> {
-        try {
-            console.log(tag);
-            let response = await this.repository.addTag(documentId, tag);
-
-            const { data, success, error } = TagResponse.safeParse(response);
-
-            return success ? data : error;
-        } catch (err) {
-            console.error(`Error Adding Tag`, err.message);
-            console.log(err);
-
-            return err;
-        }
+    ): Promise<Result<TagResponse, Error>> {
+        return (await this.repository.addTag(documentId, tag)).bind(
+            (response) => parseResponse(TagResponse, response)
+        );
     }
 
     async removeTag(documentId: string, tag: { key: string; name: string }) {
-        try {
-            let response = await this.repository.removeTag(documentId, tag);
-
-            const { data, success, error } = DeleteResponse.safeParse(response);
-
-            return success ? data : error;
-        } catch (err) {
-            return {
-                success: false,
-            };
-        }
+        return (await this.repository.removeTag(documentId, tag)).bind(
+            (response) => parseResponse(DeleteResponse, response)
+        );
     }
 
-    async download(link: string): Promise<any> {
+    async download(link: string): Promise<Result<any, Error>> {
         return await this.repository.download(link);
     }
 
@@ -139,17 +133,17 @@ export class DocumentService {
         fileExtension: string,
         contentType: string,
         tags: { key: string; name: string }[]
-    ): Promise<any> {
-        const document = await this.repository.upload(
-            userId,
-            file,
-            fileName,
-            fileExtension,
-            contentType,
-            tags
-        );
-
-        return document;
+    ): Promise<Result<GetDocument, Error>> {
+        return (
+            await this.repository.upload(
+                userId,
+                file,
+                fileName,
+                fileExtension,
+                contentType,
+                tags
+            )
+        ).bind((response) => parseResponse(GetDocument, response));
     }
 
     async remove(
@@ -159,11 +153,9 @@ export class DocumentService {
             userRole: string;
         },
         documentId: string
-    ): Promise<any> {
-        const response = await this.repository.remove(user, documentId);
-
-        const { data, success, error } = DeleteResponse.safeParse(response);
-
-        return success ? data : error;
+    ): Promise<Result<DeleteResponse, Error>> {
+        return (await this.repository.remove(user, documentId)).bind(
+            (response) => parseResponse(DeleteResponse, response)
+        );
     }
 }
