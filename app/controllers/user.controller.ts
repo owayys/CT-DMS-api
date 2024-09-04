@@ -48,17 +48,13 @@ export class UserController {
         }
     };
 
-    getAll = async (
-        req: Request<ReqDictionary, ResBody, ReqBody, ReqQuery>,
-        res: Response,
-        next: any
-    ) => {
+    getAll = async (req: Request, res: Response, next: NextFunction) => {
         try {
             let { pageNumber, pageSize } = req.query;
 
             let result = await this.userService.getAll(
-                pageNumber - 1,
-                pageSize
+                (pageNumber as unknown as number) - 1,
+                pageSize as unknown as number
             );
 
             if (result.isErr()) {
