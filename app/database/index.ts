@@ -5,6 +5,6 @@ import { drizzle } from "drizzle-orm/postgres-js";
 export class DrizzleClientWrapper {
     constructor() {
         const client = postgres(process.env.DATABASE_URI as string);
-        return drizzle(client, { schema, logger: true });
+        return drizzle(client, { schema });
     }
 }
