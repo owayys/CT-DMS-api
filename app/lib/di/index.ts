@@ -21,6 +21,7 @@ import { DrizzleClientWrapper } from "../../database";
 import { JWTService } from "../../services/jwt.service";
 import { BunyanLogger } from "../logging/BunyanLogger";
 // import { JWTController } from "../../controllers/jwt.controller";
+Container.register(LOGGER, BunyanLogger);
 
 Container.register(DATABASE, DrizzleClientWrapper);
 
@@ -34,5 +35,3 @@ Container.register(DOCUMENT_SERVICE, DocumentService);
 
 Container.register(JWT_SERVICE, JWTService);
 // Container.register(JWT_CONTROLLER, JWTController)
-
-Container.register(LOGGER, BunyanLogger);
