@@ -137,15 +137,24 @@ export class DrizzleUserRepository implements IUserRepository {
         password: string
     ): Promise<Result<UpdateResponse, Error>> {
         try {
-            await this._db
+            const [Id] = await this._db
                 .update(UserTable)
                 .set({
                     password: password,
                 })
-                .where(eq(UserTable.Id, userId));
+                .where(eq(UserTable.Id, userId))
+                .returning({
+                    Id: UserTable.Id,
+                });
+            if (!Id) {
+                return new Result<UpdateResponse, Error>(
+                    null,
+                    new Error("UserId invalid")
+                );
+            }
             return new Result<UpdateResponse, Error>({ success: true }, null);
         } catch (err) {
-            return new Result<UpdateResponse, Error>({ success: false }, null);
+            return new Result<UpdateResponse, Error>(null, err);
         }
     }
 }

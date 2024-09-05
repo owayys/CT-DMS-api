@@ -93,7 +93,7 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
 
             if (tag) {
                 documents = documents.filter((doc) =>
-                    doc.tags.some((someTag) => someTag.name === tag)
+                    doc.tags.some((someTag) => someTag.name.includes(tag))
                 );
             }
 
