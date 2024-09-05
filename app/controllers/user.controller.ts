@@ -31,7 +31,7 @@ export class UserController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -64,7 +64,7 @@ export class UserController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -96,7 +96,7 @@ export class UserController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -117,19 +117,30 @@ export class UserController {
     };
 
     update: RequestHandler = async (
-        req: Request,
+        req: any,
         res: Response,
         next: NextFunction
     ) => {
         try {
             let userId = req.params.id;
+
+            if (req.user.Id !== userId && req.user.userRole !== "ADMIN") {
+                return res.status(403).json({
+                    err: {
+                        message: "Invalid User Id for current user",
+                    },
+                });
+            }
+
             let { password } = req.body;
+
             let result = await this.userService.update(userId, password);
+
             if (result.isErr()) {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },

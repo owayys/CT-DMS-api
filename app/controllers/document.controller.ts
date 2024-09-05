@@ -28,7 +28,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -64,7 +64,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -98,7 +98,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -141,7 +141,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -230,7 +230,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -279,7 +279,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -314,7 +314,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -349,7 +349,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -387,7 +387,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
@@ -425,7 +425,7 @@ export class DocumentController {
                 const err: Error = result.getErr();
 
                 if (err instanceof ZodError) {
-                    res.status(404).json({
+                    res.status(422).json({
                         error: {
                             message: JSON.parse(err.message),
                         },
