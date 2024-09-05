@@ -2,7 +2,8 @@ import { Request, Response, RequestHandler, NextFunction } from "express";
 import { ZodError } from "zod";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
 import { Inject } from "../lib/di/Inject";
-import { USER_SERVICE } from "../lib/di/di.tokens";
+import { LOGGER, USER_SERVICE } from "../lib/di/di.tokens";
+import { ILogger } from "../lib/logging/ILogger";
 
 type ReqDictionary = {};
 type ReqBody = { foo1?: string };
@@ -11,7 +12,10 @@ type ReqQuery = { pageNumber: number; pageSize: number };
 
 @InjectionTarget()
 export class UserController {
-    constructor(@Inject(USER_SERVICE) private userService: any) {}
+    constructor(
+        @Inject(USER_SERVICE) private userService: any,
+        @Inject(LOGGER) private logger: ILogger | any
+    ) {}
 
     get: RequestHandler = async (
         req: Request,
@@ -43,8 +47,7 @@ export class UserController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.log(err);
-            console.error(`Error while getting user`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -77,7 +80,7 @@ export class UserController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error while getting all users`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -109,7 +112,7 @@ export class UserController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error while creating user`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -142,7 +145,7 @@ export class UserController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error while updating user`, err.message);
+            this.logger.warn(err);
         }
     };
 }

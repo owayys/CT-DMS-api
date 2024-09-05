@@ -1,8 +1,9 @@
 import { Request, RequestHandler, Response } from "express";
 import { ZodError } from "zod";
-import { JWT_SERVICE } from "../lib/di/di.tokens";
+import { JWT_SERVICE, LOGGER } from "../lib/di/di.tokens";
 import { Inject } from "../lib/di/Inject";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
+import { ILogger } from "../lib/logging/ILogger";
 
 declare module "jsonwebtoken" {
     export interface UserNameJWTPayload extends JwtPayload {
@@ -13,7 +14,10 @@ declare module "jsonwebtoken" {
 
 @InjectionTarget()
 export class JWTController {
-    constructor(@Inject(JWT_SERVICE) private jwtService: any) {}
+    constructor(
+        @Inject(JWT_SERVICE) private jwtService: any,
+        @Inject(LOGGER) private logger: ILogger | any
+    ) {}
 
     generate: RequestHandler = async (req: Request, res: Response, next) => {
         try {

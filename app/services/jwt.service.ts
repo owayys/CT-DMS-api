@@ -5,17 +5,28 @@ import { JwtRefreshResponse, JwtResponse } from "../lib/validators/JWTSchemas";
 import { Result } from "../lib/util/result";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
 import { Inject } from "../lib/di/Inject";
-import { USER_REPOSITORY } from "../lib/di/di.tokens";
+import { LOGGER, USER_REPOSITORY } from "../lib/di/di.tokens";
 import { parseResponse } from "../lib/util/parseResponse";
+import { ILogger } from "../lib/logging/ILogger";
 
 const accessSecret: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 const refreshSecret: Secret | undefined = process.env.REFRESH_TOKEN_SECRET;
 
 @InjectionTarget()
 export class JWTService {
+    private repository: IUserRepository;
+    private logger: ILogger;
     constructor(
-        @Inject(USER_REPOSITORY) private repository: IUserRepository | any
-    ) {}
+        @Inject(USER_REPOSITORY) repository?: IUserRepository | any,
+        @Inject(LOGGER)
+        logger?: ILogger | any
+    ) {
+        if (!repository) {
+            throw Error("No User Repository provided");
+        }
+        this.repository = repository;
+        this.logger = logger;
+    }
 
     async generate(userName: string, password: string) {
         if (accessSecret === undefined) {

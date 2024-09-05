@@ -1,20 +1,18 @@
-import {
-    NextFunction,
-    Request,
-    RequestHandler,
-    response,
-    Response,
-} from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import { UploadedFile } from "express-fileupload";
 import path from "path";
 import { ZodError } from "zod";
 import { Inject } from "../lib/di/Inject";
-import { DOCUMENT_SERVICE } from "../lib/di/di.tokens";
+import { DOCUMENT_SERVICE, LOGGER } from "../lib/di/di.tokens";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
+import { ILogger } from "../lib/logging/ILogger";
 
 @InjectionTarget()
 export class DocumentController {
-    constructor(@Inject(DOCUMENT_SERVICE) private documentService: any) {}
+    constructor(
+        @Inject(DOCUMENT_SERVICE) private documentService: any,
+        @Inject(LOGGER) private logger: ILogger | any
+    ) {}
 
     get: RequestHandler = async (
         req: any,
@@ -46,7 +44,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error getting document`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -82,7 +80,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error getting all documents`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -116,7 +114,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error getting document content`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -159,7 +157,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error saving document`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -214,7 +212,7 @@ export class DocumentController {
                 }
             }
         } catch (err) {
-            console.error(`Error uploading document`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -252,7 +250,7 @@ export class DocumentController {
                 );
             }
         } catch (err) {
-            console.error(`Error downloading file`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -297,7 +295,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error updating document`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -332,7 +330,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error deleting document`, err.message);
+            this.logger.warn(err);
         }
     };
 
@@ -344,7 +342,7 @@ export class DocumentController {
         try {
             let { id } = req.params;
             let { key, name } = req.body;
-            console.log(id, req.body);
+
             let result = await this.documentService.addTag(id, { key, name });
 
             if (result.isErr()) {
@@ -367,11 +365,47 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error Adding Tag`, err.message);
+            this.logger.warn(err);
         }
     };
 
-    updateTag: RequestHandler = (req: Request, res: Response, next): void => {};
+    updateTag: RequestHandler = async (
+        req: Request,
+        res: Response,
+        next
+    ): Promise<void> => {
+        try {
+            let { id } = req.params;
+            let { key, name } = req.body;
+
+            const result = await this.documentService.updateTag(id, {
+                key,
+                name,
+            });
+
+            if (result.isErr()) {
+                const err: Error = result.getErr();
+
+                if (err instanceof ZodError) {
+                    res.status(404).json({
+                        error: {
+                            message: JSON.parse(err.message),
+                        },
+                    });
+                } else {
+                    res.status(404).json({
+                        error: {
+                            message: err.message,
+                        },
+                    });
+                }
+            } else {
+                res.status(200).json(result.unwrap());
+            }
+        } catch (err) {
+            this.logger.warn(err);
+        }
+    };
 
     removeTag: RequestHandler = async (
         req: Request,
@@ -407,7 +441,7 @@ export class DocumentController {
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
-            console.error(`Error Deleting Tag`, err.message);
+            this.logger.warn(err);
         }
     };
 }

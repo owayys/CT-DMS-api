@@ -3,19 +3,20 @@ import { DeleteResponse, UpdateResponse } from "../lib/validators/common";
 import {
     DocumentContentResponse,
     DocumentResponse,
-    GetDocument,
+    GetDocumentResponse,
     SaveDocumentResponse,
     TagResponse,
 } from "../lib/validators/documentSchemas";
 import { IDocumentRepository } from "../repositories/IDocumentRepository";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
-import { DOCUMENT_REPOSITORY } from "../lib/di/di.tokens";
+import { DOCUMENT_REPOSITORY, LOGGER } from "../lib/di/di.tokens";
 import { Inject } from "../lib/di/Inject";
 import { parseResponse } from "../lib/util/parseResponse";
 import { Result } from "../lib/util/result";
 import { z } from "zod";
+import { ILogger } from "../lib/logging/ILogger";
 
-type GetDocument = z.infer<typeof GetDocument>;
+type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
 type DocumentContentResponse = z.infer<typeof DocumentContentResponse>;
 type SaveDocumentResponse = z.infer<typeof SaveDocumentResponse>;
@@ -26,22 +27,26 @@ type DeleteResponse = z.infer<typeof DeleteResponse>;
 @InjectionTarget()
 export class DocumentService {
     private repository: IDocumentRepository;
+    private logger: ILogger;
     constructor(
         @Inject(DOCUMENT_REPOSITORY)
-        repo?: IDocumentRepository | any
+        repository?: IDocumentRepository | any,
+        @Inject(LOGGER)
+        logger?: ILogger | any
     ) {
-        if (!repo) {
+        if (!repository) {
             throw Error("No Document Repository provided");
         }
-        this.repository = repo;
+        this.repository = repository;
+        this.logger = logger;
     }
 
     async get(
         userId: string,
         documentId: string
-    ): Promise<Result<GetDocument, Error>> {
+    ): Promise<Result<GetDocumentResponse, Error>> {
         return (await this.repository.findById(userId, documentId)).bind(
-            (response) => parseResponse(GetDocument, response)
+            (response) => parseResponse(GetDocumentResponse, response)
         );
     }
 
@@ -116,6 +121,18 @@ export class DocumentService {
         );
     }
 
+    async updateTag(
+        documentId: string,
+        tag: {
+            key: string;
+            name: string;
+        }
+    ): Promise<Result<UpdateResponse, Error>> {
+        return (await this.repository.updateTag(documentId, tag)).bind(
+            (response) => parseResponse(UpdateResponse, response)
+        );
+    }
+
     async removeTag(documentId: string, tag: { key: string; name: string }) {
         return (await this.repository.removeTag(documentId, tag)).bind(
             (response) => parseResponse(DeleteResponse, response)
@@ -133,7 +150,7 @@ export class DocumentService {
         fileExtension: string,
         contentType: string,
         tags: { key: string; name: string }[]
-    ): Promise<Result<GetDocument, Error>> {
+    ): Promise<Result<GetDocumentResponse, Error>> {
         return (
             await this.repository.upload(
                 userId,
@@ -143,7 +160,7 @@ export class DocumentService {
                 contentType,
                 tags
             )
-        ).bind((response) => parseResponse(GetDocument, response));
+        ).bind((response) => parseResponse(GetDocumentResponse, response));
     }
 
     async remove(

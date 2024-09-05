@@ -1,7 +1,7 @@
 import { IUserRepository } from "../repositories/IUserRepository";
 
 import { Result } from "../lib/util/result";
-import { USER_REPOSITORY } from "../lib/di/di.tokens";
+import { LOGGER, USER_REPOSITORY } from "../lib/di/di.tokens";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
 import { Inject } from "../lib/di/Inject";
 
@@ -10,6 +10,7 @@ import { parseResponse } from "../lib/util/parseResponse";
 import { AllUsersResponse, UserResponse } from "../lib/validators/userSchemas";
 import { UpdateResponse } from "../lib/validators/common";
 import { generateHash } from "../lib/util/generateHash";
+import { ILogger } from "../lib/logging/ILogger";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
@@ -28,14 +29,18 @@ type UserResponse = z.infer<typeof UserResponse>;
 @InjectionTarget()
 export class UserService {
     private repository: IUserRepository;
+    private logger: ILogger;
     constructor(
         @Inject(USER_REPOSITORY)
-        repo?: IUserRepository | any
+        repository?: IUserRepository | any,
+        @Inject(LOGGER)
+        logger?: ILogger | any
     ) {
-        if (!repo) {
+        if (!repository) {
             throw Error("No User Repository provided");
         }
-        this.repository = repo;
+        this.repository = repository;
+        this.logger = logger;
     }
 
     async save(
