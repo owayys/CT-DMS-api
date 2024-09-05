@@ -1,10 +1,5 @@
 import { and, eq, gt, sql } from "drizzle-orm";
-import {
-    DocumentTable,
-    DocumentTagsTable,
-    DownloadTable,
-    TagTable,
-} from "../database/schema";
+import { DocumentTable, DownloadTable, TagTable } from "../database/schema";
 import { IDrizzleConnection } from "./types";
 import { IDocumentRepository } from "./IDocumentRepository";
 import { unlink } from "fs/promises";
@@ -17,13 +12,15 @@ import { z } from "zod";
 import {
     DocumentContentResponse,
     DocumentResponse,
-    GetDocument,
+    GetDocumentResponse,
     SaveDocumentResponse,
     TagResponse,
 } from "../lib/validators/documentSchemas";
 import { DeleteResponse, UpdateResponse } from "../lib/validators/common";
+import { stat } from "fs";
+import { FgCyan, FgWhite } from "../lib/colors";
 
-type GetDocument = z.infer<typeof GetDocument>;
+type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
 type DocumentContentResponse = z.infer<typeof DocumentContentResponse>;
 type SaveDocumentResponse = z.infer<typeof SaveDocumentResponse>;
@@ -44,7 +41,7 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
     async findById(
         userId: string,
         documentId: string
-    ): Promise<Result<GetDocument, Error>> {
+    ): Promise<Result<GetDocumentResponse, Error>> {
         try {
             const document = await this._db.query.DocumentTable.findFirst({
                 where: and(
@@ -53,48 +50,26 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
                 ),
                 with: {
                     tags: {
-                        with: {
-                            tag: {
-                                columns: {
-                                    key: true,
-                                    name: true,
-                                },
-                            },
-                        },
                         columns: {
                             documentId: false,
-                            tagId: false,
                         },
                     },
                 },
+                columns: {
+                    userId: false,
+                },
             });
 
-            let response;
-
             if (document) {
-                response = {
-                    Id: document.Id,
-                    fileName: document.fileName,
-                    fileExtension: document.fileExtension,
-                    contentType: document.contentType,
-                    tags: document.tags.map((tag) => ({
-                        key: tag.tag.key,
-                        name: tag.tag.name,
-                    })),
-                    createdAt: document.createdAt,
-                    updatedAt: document.updatedAt,
-                };
-
-                return new Result<GetDocument, Error>(response, null);
+                return new Result<GetDocumentResponse, Error>(document, null);
             } else {
-                response = null;
-                return new Result<GetDocument, Error>(
+                return new Result<GetDocumentResponse, Error>(
                     null,
                     new Error("Document not found")
                 );
             }
         } catch (err) {
-            return new Result<GetDocument, Error>(null, err);
+            return new Result<GetDocumentResponse, Error>(null, err);
         }
     }
 
@@ -109,40 +84,23 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
                 where: and(eq(DocumentTable.userId, userId)),
                 with: {
                     tags: {
-                        with: {
-                            tag: {
-                                columns: {
-                                    key: true,
-                                    name: true,
-                                },
-                            },
-                        },
                         columns: {
                             documentId: false,
-                            tagId: false,
                         },
                     },
                 },
             });
 
-            let documentsFlattened = documents.map((doc) => ({
-                ...doc,
-                tags: doc.tags.map((tag) => ({
-                    key: tag.tag.key,
-                    name: tag.tag.name,
-                })),
-            }));
-
             if (tag) {
-                documentsFlattened = documentsFlattened.filter((doc) =>
+                documents = documents.filter((doc) =>
                     doc.tags.some((someTag) => someTag.name === tag)
                 );
             }
 
-            let totalItems = documentsFlattened.length;
-            let totalPages = Math.ceil(documentsFlattened.length / pageSize);
+            let totalItems = documents.length;
+            let totalPages = Math.ceil(documents.length / pageSize);
             let page = Math.min(totalPages, pageNumber);
-            let items = documentsFlattened.slice(
+            let items = documents.slice(
                 pageNumber * pageSize,
                 pageNumber * pageSize + pageSize
             );
@@ -249,25 +207,31 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
                         updatedAt: DocumentTable.updatedAt,
                     });
 
-                await tx.insert(TagTable).values(tags).onConflictDoNothing({
-                    target: TagTable.key,
-                });
-
                 let docTags = tags.map(
                     (tag: { key: string; name: string }) => ({
                         documentId: document.Id,
-                        tagId: tag.key,
+                        key: tag.key,
+                        name: tag.name,
                     })
                 );
 
-                await tx.insert(DocumentTagsTable).values(docTags);
+                const insertedTags = await tx
+                    .insert(TagTable)
+                    .values(docTags)
+                    .onConflictDoNothing({
+                        target: [TagTable.documentId, TagTable.key],
+                    })
+                    .returning({
+                        key: TagTable.key,
+                        name: TagTable.name,
+                    });
 
                 const response = {
                     Id: document.Id,
                     fileName: document.fileName,
                     fileExtension: document.fileExtension,
                     contentType: document.contentType,
-                    tags: tags,
+                    tags: insertedTags,
                     createdAt: document.createdAt,
                     updatedAt: document.updatedAt,
                 };
@@ -290,6 +254,23 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
     ): Promise<Result<UpdateResponse, Error>> {
         try {
             return await this._db.transaction(async (tx) => {
+                const [document] = await tx
+                    .select()
+                    .from(DocumentTable)
+                    .where(
+                        and(
+                            eq(DocumentTable.Id, documentId),
+                            eq(DocumentTable.userId, userId)
+                        )
+                    );
+
+                if (!document) {
+                    return new Result<UpdateResponse, Error>(
+                        null,
+                        new Error("Document not found for current user")
+                    );
+                }
+
                 await tx
                     .update(DocumentTable)
                     .set({
@@ -305,20 +286,17 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
                         )
                     );
 
-                await tx.insert(TagTable).values(tags).onConflictDoNothing({
+                let docTags = tags.map(
+                    (tag: { key: string; name: string }) => ({
+                        documentId: documentId,
+                        key: tag.key,
+                        name: tag.name,
+                    })
+                );
+
+                await tx.insert(TagTable).values(docTags).onConflictDoNothing({
                     target: TagTable.key,
                 });
-
-                await tx
-                    .delete(DocumentTagsTable)
-                    .where(eq(DocumentTagsTable.documentId, documentId));
-
-                let tagValues = tags.map((tag) => ({
-                    documentId: documentId,
-                    tagId: tag.key,
-                }));
-
-                await tx.insert(DocumentTagsTable).values(tagValues);
 
                 const response = {
                     success: true,
@@ -340,19 +318,18 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
             return await this._db.transaction(async (tx) => {
                 const [tagResult] = await tx
                     .insert(TagTable)
-                    .values(tag)
+                    .values({
+                        documentId: documentId,
+                        key: tag.key,
+                        name: tag.name,
+                    })
                     .returning({
                         key: TagTable.key,
                         name: TagTable.name,
                     })
                     .onConflictDoNothing({
-                        target: TagTable.key,
+                        target: [TagTable.documentId, TagTable.key],
                     });
-
-                await tx.insert(DocumentTagsTable).values({
-                    documentId: documentId,
-                    tagId: tagResult ? tagResult.key : tag.key,
-                });
 
                 return tagResult
                     ? new Result<TagResponse, Error>(tagResult, null)
@@ -363,17 +340,47 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
         }
     }
 
+    async updateTag(
+        documentId: string,
+        tag: {
+            key: string;
+            name: string;
+        }
+    ): Promise<Result<UpdateResponse, Error>> {
+        try {
+            await this._db
+                .update(TagTable)
+                .set({
+                    name: tag.name,
+                })
+                .where(
+                    and(
+                        eq(TagTable.key, tag.key),
+                        eq(TagTable.documentId, documentId)
+                    )
+                );
+
+            const response = {
+                success: true,
+            };
+
+            return new Result<UpdateResponse, Error>(response, null);
+        } catch (err) {
+            return new Result<UpdateResponse, Error>(null, err);
+        }
+    }
+
     async removeTag(
         documentId: string,
         tag: { key: string; name: string }
     ): Promise<Result<DeleteResponse, Error>> {
         try {
             await this._db
-                .delete(DocumentTagsTable)
+                .delete(TagTable)
                 .where(
                     and(
-                        eq(DocumentTagsTable.tagId, tag.key),
-                        eq(DocumentTagsTable.documentId, documentId)
+                        eq(TagTable.key, tag.key),
+                        eq(TagTable.documentId, documentId)
                     )
                 );
 
@@ -433,7 +440,7 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
         fileExtension: string,
         contentType: string,
         tags: { key: string; name: string }[]
-    ): Promise<Result<GetDocument, Error>> {
+    ): Promise<Result<GetDocumentResponse, Error>> {
         try {
             return await this._db.transaction(async (tx) => {
                 const [document] = await tx
@@ -454,18 +461,24 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
                         updatedAt: DocumentTable.updatedAt,
                     });
 
-                await tx.insert(TagTable).values(tags).onConflictDoNothing({
-                    target: TagTable.key,
-                });
-
                 let docTags = tags.map(
                     (tag: { key: string; name: string }) => ({
                         documentId: document.Id,
-                        tagId: tag.key,
+                        key: tag.key,
+                        name: tag.name,
                     })
                 );
 
-                await tx.insert(DocumentTagsTable).values(docTags);
+                const insertedTags = await tx
+                    .insert(TagTable)
+                    .values(docTags)
+                    .onConflictDoNothing({
+                        target: [TagTable.documentId, TagTable.key],
+                    })
+                    .returning({
+                        key: TagTable.key,
+                        name: TagTable.name,
+                    });
 
                 file.mv(`./app/uploads/${document.Id}`, async function (err) {
                     if (err) {
@@ -476,13 +489,13 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
 
                 const response = {
                     ...document,
-                    tags: tags,
+                    tags: insertedTags,
                 };
 
-                return new Result<GetDocument, Error>(response, null);
+                return new Result<GetDocumentResponse, Error>(response, null);
             });
         } catch (err) {
-            return new Result<GetDocument, Error>(null, err);
+            return new Result<GetDocumentResponse, Error>(null, err);
         }
     }
 
@@ -515,15 +528,28 @@ export class DrizzleDocumentRepository implements IDocumentRepository {
                         .delete(DownloadTable)
                         .where(eq(DownloadTable.Id, documentId));
                     await tx
-                        .delete(DocumentTagsTable)
-                        .where(eq(DocumentTagsTable.documentId, documentId));
-                    let result = await tx
+                        .delete(TagTable)
+                        .where(eq(TagTable.documentId, documentId));
+                    await tx
                         .delete(DocumentTable)
                         .where(eq(DocumentTable.Id, documentId));
-                    console.log(result);
                     try {
-                        await unlink(`./app/uploads/${documentId}`);
-                        console.log(`Document [${documentId}] was deleted`);
+                        stat(
+                            `./app/uploads/${documentId}`,
+                            async (err, stats) => {
+                                if (err && err.code !== "ENOENT") {
+                                    console.error(
+                                        `Error deleting document [${FgCyan}${documentId}${FgWhite}]`,
+                                        err.message
+                                    );
+                                } else if (stats && stats.isFile()) {
+                                    await unlink(`./app/uploads/${documentId}`);
+                                    console.log(
+                                        `Document [${FgCyan}${documentId}${FgWhite}] was deleted`
+                                    );
+                                }
+                            }
+                        );
                     } catch (err) {
                         console.error(
                             `Error deleting document [${documentId}]`,

@@ -40,6 +40,11 @@ export interface IDocumentRepository {
         tag: { key: string; name: string }
     ): Promise<Result<any, Error>>;
 
+    updateTag(
+        documentId: string,
+        tag: { key: string; name: string }
+    ): Promise<Result<any, Error>>;
+
     removeTag(
         documentId: string,
         tag: { key: string; name: string }
