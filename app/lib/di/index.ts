@@ -1,5 +1,4 @@
 import { Container } from "./Container";
-// import { db } from "../../database/database.client";
 import { DrizzleUserRepository } from "../../repositories/DrizzleUserRepository";
 import { UserService } from "../../services/user.service";
 // import { UserController } from "../../controllers/user.controller";
@@ -11,15 +10,18 @@ import {
     // DOCUMENT_CONTROLLER,
     DOCUMENT_REPOSITORY,
     DOCUMENT_SERVICE,
+    // JWT_CONTROLLER,
     JWT_SERVICE,
+    LOGGER,
     // USER_CONTROLLER,
     USER_REPOSITORY,
     USER_SERVICE,
 } from "./di.tokens";
 import { DrizzleClientWrapper } from "../../database";
 import { JWTService } from "../../services/jwt.service";
+import { BunyanLogger } from "../logging/BunyanLogger";
+// import { JWTController } from "../../controllers/jwt.controller";
 
-// Container.register(DATABASE, db);
 Container.register(DATABASE, DrizzleClientWrapper);
 
 Container.register(USER_REPOSITORY, DrizzleUserRepository);
@@ -31,3 +33,6 @@ Container.register(DOCUMENT_SERVICE, DocumentService);
 // Container.register(DOCUMENT_CONTROLLER, DocumentController);
 
 Container.register(JWT_SERVICE, JWTService);
+// Container.register(JWT_CONTROLLER, JWTController)
+
+Container.register(LOGGER, BunyanLogger);

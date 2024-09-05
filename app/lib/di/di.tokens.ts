@@ -11,3 +11,6 @@ export const DOCUMENT_SERVICE = Symbol("DOCUMENT_SERVICE");
 export const DOCUMENT_CONTROLLER = Symbol("DOCUMENT_CONTROLLER");
 
 export const JWT_SERVICE = Symbol("JWT_SERVICE");
+export const JWT_CONTROLLER = Symbol("JWT_CONTROLLER");
+
+export const LOGGER = Symbol("LOGGER");
