@@ -1,0 +1,19 @@
+meta {
+  name: Get Document
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/document/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 
+}
+
+headers {
+  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImYwY2ZkZDVlLWY3ZjctNGNjOS1iODIwLTc5M2YxZjJmMWJlMCIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NTIxMzkzLCJleHAiOjE3MjU1MjQ5OTN9.NYFcPGIc21P5bsXPrFj5qcmLh0BTavpGvgVJmwsF8jY
+}

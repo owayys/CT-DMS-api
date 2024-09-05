@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "CT-DMS-api",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

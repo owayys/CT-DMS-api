@@ -1,0 +1,26 @@
+meta {
+  name: Update Tag
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/v1/document/:id/tag
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 9236e87e-0441-4008-8e3e-dbe26ba790a4
+}
+
+headers {
+  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImYwY2ZkZDVlLWY3ZjctNGNjOS1iODIwLTc5M2YxZjJmMWJlMCIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NTQxMTk4LCJleHAiOjE3MjU1NDQ3OTh9.D1ohoCDkSpHerXh_b34FRN92PplVVMHRYJDZqPlC72M
+}
+
+body:json {
+  {
+    "key": "1",
+    "name": "tag2"
+  }
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Upload New Document
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/document/upload
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImYwY2ZkZDVlLWY3ZjctNGNjOS1iODIwLTc5M2YxZjJmMWJlMCIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NTM1OTI3LCJleHAiOjE3MjU1Mzk1Mjd9.nGPZWknE6TqdSSOmRXqZTu5aTVRKeTqTMq6qk0l14Rw
+}
+
+body:multipart-form {
+  file: @file(/home/owais/Downloads/GIT FLOW.png)
+  tags: [{ "key": "1", "name": "tag1"},{"key": "3","name": "tag5"} ]
+}

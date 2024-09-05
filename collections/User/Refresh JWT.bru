@@ -1,0 +1,26 @@
+meta {
+  name: Refresh JWT
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v1/jwt/refreshtoken
+  body: none
+  auth: none
+}
+
+headers {
+  authorization: {{refresh_token}}
+}
+
+body:json {
+  {
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InN1a3VuYSIsImlhdCI6MTcyNDQxNTU1NCwiZXhwIjoxNzI0NDE1ODU0fQ.gugkOvS5H0uWp05KrgjMkoozGo6Iw3yAqWp_rkJbmwA"
+  }
+}
+
+script:post-response {
+  let data = res.getBody();
+  bru.setVar("access_token",data.accessToken);
+}

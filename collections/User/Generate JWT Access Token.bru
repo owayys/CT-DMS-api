@@ -1,0 +1,24 @@
+meta {
+  name: Generate JWT Access Token
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/jwt
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userName": "megumi",
+    "password": "zenin"
+  }
+}
+
+script:post-response {
+  let data = res.getBody();
+  bru.setVar("access_token",data.accessToken);
+  bru.setVar("refresh_token",data.refreshToken);
+}

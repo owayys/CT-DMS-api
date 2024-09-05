@@ -1,0 +1,42 @@
+meta {
+  name: Update Document
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/v1/document/:id
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 5651441c-36cd-47d3-b2f4-9b2aafdd5084
+}
+
+headers {
+  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImI4YmUwN2E3LWI2NDYtNGYyNS04ZmIxLWM4NjA5ZjRlYWJjMyIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NDQxMTc0LCJleHAiOjE3MjU0NDQ3NzR9.YLTGKSeNCNYIlYBnhaBQEUiayw2sCC0yK3O9uO1i1pY
+}
+
+body:json {
+  {
+    "fileName": "NEW fileName",
+    "fileExtension": ".md",
+    "contentType": "contentType",
+    "tags": [
+      {
+        "key": "1",
+        "name": "tag1"
+      },
+      {
+        "key": "2",
+        "name": "tag2"
+      },
+      {
+        "key": "3",
+        "name": "tag3"
+      }
+    ],
+    "content": "NEW content"
+  }
+}

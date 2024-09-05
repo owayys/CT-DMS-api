@@ -1,0 +1,26 @@
+meta {
+  name: Add Tag
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/document/:id/tag
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 5651441c-36cd-47d3-b2f4-9b2aafdd5084
+}
+
+headers {
+  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImI4YmUwN2E3LWI2NDYtNGYyNS04ZmIxLWM4NjA5ZjRlYWJjMyIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NDQxMTc0LCJleHAiOjE3MjU0NDQ3NzR9.YLTGKSeNCNYIlYBnhaBQEUiayw2sCC0yK3O9uO1i1pY
+}
+
+body:json {
+  {
+    "key": "4",
+    "name": "tag4"
+  }
+}
