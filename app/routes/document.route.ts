@@ -10,6 +10,7 @@ import {
     GetDocumentContent,
     SaveDocument,
     UpdateDocument,
+    UpdateTag,
 } from "../lib/validators/documentSchemas";
 import { authenticateJWT } from "../middleware/authenticateJWT";
 import { DocumentController } from "../controllers/document.controller";
@@ -30,6 +31,12 @@ router.post(
     authenticateJWT,
     validate(AddTag),
     documentController.addTag
+);
+router.put(
+    "/:id/tag",
+    authenticateJWT,
+    validate(UpdateTag),
+    documentController.updateTag
 );
 router.delete(
     "/:id/tag",

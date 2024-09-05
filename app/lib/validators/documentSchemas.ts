@@ -95,6 +95,8 @@ export const AddTag = z.object({
     body: Tag,
 });
 
+export const UpdateTag = AddTag;
+
 export const DeleteTag = AddTag;
 
 export const TagResponse = Tag;
