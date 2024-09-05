@@ -1,7 +1,6 @@
 import { FgCyan, FgYellow } from "../colors";
 import { INJECTION_KEY } from "./di.tokens";
 import { Container } from "./Container";
-import "reflect-metadata";
 
 interface Injection {
     index: number;

@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { INJECTION_KEY } from "./di.tokens";
 
 interface Injection {
