@@ -21,7 +21,17 @@ const Document = z.object({
     updatedAt: z.string(),
 });
 
-export const GetDocument = Document;
+export const GetDocumentResponse = Document;
+
+export const GetDocumentContent = z.object({
+    params: z.object({
+        id: z.string().uuid(),
+    }),
+});
+
+export const GetDocument = GetDocumentContent;
+
+export const DeleteDocument = GetDocumentContent;
 
 export const SaveDocumentResponse = Document;
 
