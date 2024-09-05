@@ -4,17 +4,17 @@ import "reflect-metadata";
 
 import "./lib/di"; // DI container
 
-import morgan from "morgan";
 import fileUpload from "express-fileupload";
 
 import userRouter from "./routes/user.route";
 import jwtRouter from "./routes/jwt.route";
 import documentRouter from "./routes/document.route";
+import { logRequests } from "./middleware/logRequests";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-app.use(morgan("dev"));
+app.use(logRequests);
 app.use(express.json());
 app.use(fileUpload());
 
