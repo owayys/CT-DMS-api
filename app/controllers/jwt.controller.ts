@@ -16,7 +16,7 @@ declare module "jsonwebtoken" {
 export class JWTController {
     constructor(
         @Inject(JWT_SERVICE) private jwtService: any,
-        @Inject(LOGGER) private logger: ILogger | any
+        @Inject(LOGGER) private logger: ILogger
     ) {}
 
     generate: RequestHandler = async (req: Request, res: Response, next) => {

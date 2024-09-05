@@ -11,7 +11,7 @@ import { ILogger } from "../lib/logging/ILogger";
 export class DocumentController {
     constructor(
         @Inject(DOCUMENT_SERVICE) private documentService: any,
-        @Inject(LOGGER) private logger: ILogger | any
+        @Inject(LOGGER) private logger: ILogger
     ) {}
 
     get: RequestHandler = async (
@@ -20,9 +20,9 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { id } = req.params;
-            let userId = req.user.Id;
-            let result = await this.documentService.get(userId, id);
+            const { id } = req.params;
+            const userId = req.user.Id;
+            const result = await this.documentService.get(userId, id);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
@@ -50,10 +50,10 @@ export class DocumentController {
 
     getAll = async (req: any, res: Response, next: any): Promise<void> => {
         try {
-            let userId = req.user.Id;
-            let { pageNumber, pageSize, tag } = req.query;
+            const userId = req.user.Id;
+            const { pageNumber, pageSize, tag } = req.query;
 
-            let result = await this.documentService.getAll(
+            const result = await this.documentService.getAll(
                 userId,
                 pageNumber - 1,
                 pageSize,
@@ -90,9 +90,9 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { id } = req.params;
-            let userId = req.user.Id;
-            let result = await this.documentService.getContent(userId, id);
+            const { id } = req.params;
+            const userId = req.user.Id;
+            const result = await this.documentService.getContent(userId, id);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
@@ -124,11 +124,11 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { fileName, fileExtension, contentType, tags, content } =
+            const { fileName, fileExtension, contentType, tags, content } =
                 req.body;
-            let userId = req.user.Id;
+            const userId = req.user.Id;
 
-            let result = await this.documentService.save(
+            const result = await this.documentService.save(
                 userId,
                 fileName,
                 fileExtension,
@@ -170,19 +170,19 @@ export class DocumentController {
             if (!req.files || Object.keys(req.files).length === 0) {
                 res.status(400).send("No files were uploaded.");
             } else {
-                let file = req.files.file as UploadedFile;
+                const file = req.files.file as UploadedFile;
 
-                let fileName = path.parse(file.name).name;
-                let fileExtension = path.parse(file.name).ext;
+                const fileName = path.parse(file.name).name;
+                const fileExtension = path.parse(file.name).ext;
 
-                let contentType = file.mimetype;
+                const contentType = file.mimetype;
 
                 let { tags } = req.body;
                 tags = JSON.parse(tags);
 
-                let userId = req.user.Id;
+                const userId = req.user.Id;
 
-                let result = await this.documentService.upload(
+                const result = await this.documentService.upload(
                     userId,
                     file,
                     fileName,
@@ -222,9 +222,9 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { link } = req.query;
+            const { link } = req.query;
 
-            let result = await this.documentService.download(link as string);
+            const result = await this.documentService.download(link as string);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
@@ -260,12 +260,12 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { fileName, fileExtension, contentType, tags, content } =
+            const { fileName, fileExtension, contentType, tags, content } =
                 req.body;
-            let { id } = req.params;
-            let userId = req.user.Id;
+            const { id } = req.params;
+            const userId = req.user.Id;
 
-            let result = await this.documentService.update(
+            const result = await this.documentService.update(
                 userId,
                 id,
                 fileName,
@@ -305,10 +305,10 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { id } = req.params;
-            let user = req.user;
+            const { id } = req.params;
+            const user = req.user;
 
-            let result = await this.documentService.remove(user, id);
+            const result = await this.documentService.remove(user, id);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
@@ -340,10 +340,10 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { id } = req.params;
-            let { key, name } = req.body;
+            const { id } = req.params;
+            const { key, name } = req.body;
 
-            let result = await this.documentService.addTag(id, { key, name });
+            const result = await this.documentService.addTag(id, { key, name });
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
@@ -375,8 +375,8 @@ export class DocumentController {
         next
     ): Promise<void> => {
         try {
-            let { id } = req.params;
-            let { key, name } = req.body;
+            const { id } = req.params;
+            const { key, name } = req.body;
 
             const result = await this.documentService.updateTag(id, {
                 key,
@@ -413,10 +413,10 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            let { id } = req.params;
-            let { key, name } = req.body;
+            const { id } = req.params;
+            const { key, name } = req.body;
             console.log(id, req.body);
-            let result = await this.documentService.removeTag(id, {
+            const result = await this.documentService.removeTag(id, {
                 key,
                 name,
             });

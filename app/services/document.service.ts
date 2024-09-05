@@ -26,20 +26,12 @@ type DeleteResponse = z.infer<typeof DeleteResponse>;
 
 @InjectionTarget()
 export class DocumentService {
-    private repository: IDocumentRepository;
-    private logger: ILogger;
     constructor(
         @Inject(DOCUMENT_REPOSITORY)
-        repository?: IDocumentRepository | any,
+        private repository: IDocumentRepository,
         @Inject(LOGGER)
-        logger?: ILogger | any
-    ) {
-        if (!repository) {
-            throw Error("No Document Repository provided");
-        }
-        this.repository = repository;
-        this.logger = logger;
-    }
+        private logger: ILogger
+    ) {}
 
     async get(
         userId: string,

@@ -11,7 +11,6 @@
         "mongoose": "^8.5.3",
         "postgres": "^3.4.4",
         "reflect-metadata": "^0.2.2",
-        "ts-node": "^10.9.2",
         "zod": "^3.23.8"
     },
     "name": "ct-dms-api",
@@ -20,11 +19,11 @@
     "main": "app/index.ts",
     "scripts": {
         "build": "npx tsc",
-        "start": "node --loader ts-node/esm app/index.ts | bunyan -o short",
+        "start": "tsx app/index.ts | bunyan -o short",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "nodemon --exec node --loader ts-node/esm app/index.ts",
+        "dev": "nodemon --exec tsx app/index.ts",
         "db:generate": "drizzle-kit generate",
-        "db:migrate": "node --loader ts-node/esm app/database/migrate.ts"
+        "db:migrate": "tsx app/database/migrate.ts"
     },
     "author": "owayys",
     "license": "ISC",
@@ -33,11 +32,10 @@
         "@types/bunyan": "^1.8.11",
         "@types/express": "^4.17.21",
         "@types/express-fileupload": "^1.5.1",
-        "@types/morgan": "^1.9.9",
         "@types/node": "^22.5.0",
         "drizzle-kit": "^0.24.1",
-        "morgan": "^1.10.0",
         "nodemon": "^3.1.4",
+        "tsx": "^4.19.0",
         "typescript": "^5.5.4"
     },
     "type": "module"

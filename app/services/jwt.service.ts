@@ -14,19 +14,11 @@ const refreshSecret: Secret | undefined = process.env.REFRESH_TOKEN_SECRET;
 
 @InjectionTarget()
 export class JWTService {
-    private repository: IUserRepository;
-    private logger: ILogger;
     constructor(
-        @Inject(USER_REPOSITORY) repository?: IUserRepository | any,
+        @Inject(USER_REPOSITORY) private repository: IUserRepository,
         @Inject(LOGGER)
-        logger?: ILogger | any
-    ) {
-        if (!repository) {
-            throw Error("No User Repository provided");
-        }
-        this.repository = repository;
-        this.logger = logger;
-    }
+        private logger: ILogger
+    ) {}
 
     async generate(userName: string, password: string) {
         if (accessSecret === undefined) {

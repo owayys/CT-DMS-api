@@ -1,5 +1,5 @@
 {
-    "exec": "node --loader ts-node/esm app/index.ts | bunyan -o short",
+    "exec": "tsx app/index.ts | bunyan -o short",
     "watch": ["app/*"],
     "ext": "ts"
 }

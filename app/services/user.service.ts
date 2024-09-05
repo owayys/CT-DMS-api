@@ -14,34 +14,14 @@ import { ILogger } from "../lib/logging/ILogger";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
-// interface IUserRepository {
-//     findById(userId: string): Promise<Result<any, Error>>;
-
-//     findByName(userName: string): Promise<any>;
-
-//     all(pageNumber: number, pageSize: number): Promise<any>;
-
-//     save(userName: string, passwordHash: string): Promise<any>;
-
-//     update(userId: string, password: string): Promise<any>;
-// }
-
 @InjectionTarget()
 export class UserService {
-    private repository: IUserRepository;
-    private logger: ILogger;
     constructor(
         @Inject(USER_REPOSITORY)
-        repository?: IUserRepository | any,
+        private repository: IUserRepository,
         @Inject(LOGGER)
-        logger?: ILogger | any
-    ) {
-        if (!repository) {
-            throw Error("No User Repository provided");
-        }
-        this.repository = repository;
-        this.logger = logger;
-    }
+        private logger: ILogger
+    ) {}
 
     async save(
         userName: string,

@@ -30,13 +30,7 @@ type DeleteResponse = z.infer<typeof DeleteResponse>;
 
 @InjectionTarget()
 export class DrizzleDocumentRepository implements IDocumentRepository {
-    private _db: IDrizzleConnection;
-    constructor(@Inject(DATABASE) connection?: IDrizzleConnection | any) {
-        if (!connection) {
-            throw Error("No Database provided");
-        }
-        this._db = connection;
-    }
+    constructor(@Inject(DATABASE) private _db: IDrizzleConnection) {}
 
     async findById(
         userId: string,

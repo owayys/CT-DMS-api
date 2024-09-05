@@ -5,16 +5,11 @@ import { Inject } from "../lib/di/Inject";
 import { LOGGER, USER_SERVICE } from "../lib/di/di.tokens";
 import { ILogger } from "../lib/logging/ILogger";
 
-type ReqDictionary = {};
-type ReqBody = { foo1?: string };
-type ResBody = { foo2?: string };
-type ReqQuery = { pageNumber: number; pageSize: number };
-
 @InjectionTarget()
 export class UserController {
     constructor(
         @Inject(USER_SERVICE) private userService: any,
-        @Inject(LOGGER) private logger: ILogger | any
+        @Inject(LOGGER) private logger: ILogger
     ) {}
 
     get: RequestHandler = async (
@@ -23,9 +18,9 @@ export class UserController {
         next: NextFunction
     ) => {
         try {
-            let userId = req.params.id;
+            const userId = req.params.id;
 
-            let result = await this.userService.get(userId);
+            const result = await this.userService.get(userId);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
@@ -53,9 +48,9 @@ export class UserController {
 
     getAll = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            let { pageNumber, pageSize } = req.query;
+            const { pageNumber, pageSize } = req.query;
 
-            let result = await this.userService.getAll(
+            const result = await this.userService.getAll(
                 (pageNumber as unknown as number) - 1,
                 pageSize as unknown as number
             );
@@ -90,8 +85,8 @@ export class UserController {
         next: NextFunction
     ) => {
         try {
-            let { userName, password } = req.body;
-            let result = await this.userService.save(userName, password);
+            const { userName, password } = req.body;
+            const result = await this.userService.save(userName, password);
             if (result.isErr()) {
                 const err: Error = result.getErr();
 
@@ -122,7 +117,7 @@ export class UserController {
         next: NextFunction
     ) => {
         try {
-            let userId = req.params.id;
+            const userId = req.params.id;
 
             if (req.user.Id !== userId && req.user.userRole !== "ADMIN") {
                 return res.status(403).json({
@@ -132,9 +127,9 @@ export class UserController {
                 });
             }
 
-            let { password } = req.body;
+            const { password } = req.body;
 
-            let result = await this.userService.update(userId, password);
+            const result = await this.userService.update(userId, password);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();
