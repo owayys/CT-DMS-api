@@ -25,10 +25,11 @@ export class BunyanLogger implements ILogger, Logger {
 
     logQuery(query: string, params: unknown[]): void {
         this.logger.info(
-            `${FgGreen}DATABASE QUERY${FgWhite}\n${FgCyan}QUERY${FgYellow}`,
+            `${FgGreen}DATABASE QUERY [ ${FgWhite}\n${FgCyan}QUERY${FgYellow}`,
             query,
             `\n${FgCyan}PARAMS${FgYellow}`,
-            params
+            params,
+            `${FgGreen} ]${FgWhite}`
         );
     }
 }
