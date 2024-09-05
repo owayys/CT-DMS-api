@@ -90,7 +90,6 @@ export class JWTService {
         }
 
         let decoded = jwt.verify(refreshToken, refreshSecret);
-        console.log(decoded);
 
         let result;
 
