@@ -18,13 +18,15 @@ export function InjectionTarget() {
             constructor(...args: any[]) {
                 const injections: Injection[] =
                     Reflect.getMetadata(INJECTION_KEY, constructor) || [];
-                const injectedArgs = injections.map(({ key }) => {
-                    console.log(
-                        `${FgCyan}[DI]: Injecting ${FgYellow}${key.description}${FgCyan} into ${FgYellow}${constructor.name}`
-                    );
+                const injectedArgs = injections
+                    .sort((a, b) => a.index - b.index)
+                    .map(({ key }) => {
+                        console.log(
+                            `${FgCyan}[DI]: Injecting ${FgYellow}${key.description}${FgCyan} into ${FgYellow}${constructor.name}`
+                        );
 
-                    return new (Container.get(key) as Constructor)();
-                });
+                        return new (Container.get(key) as Constructor)();
+                    });
                 super(...injectedArgs);
             }
         };
