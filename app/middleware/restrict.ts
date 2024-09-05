@@ -8,8 +8,8 @@ export const restrict = (...role: any) => {
                     message: "Permission denied",
                 },
             });
+        } else {
+            next();
         }
-
-        next();
     };
 };
