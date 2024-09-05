@@ -3,8 +3,11 @@ import { Router } from "express";
 import { validate } from "../middleware/validate";
 import {
     AddTag,
+    DeleteDocument,
     DeleteTag,
     GetAllDocuments,
+    GetDocument,
+    GetDocumentContent,
     SaveDocument,
     UpdateDocument,
 } from "../lib/validators/documentSchemas";
@@ -15,7 +18,12 @@ const router = Router();
 const documentController = new DocumentController();
 
 router.get("/download", documentController.download);
-router.get("/content/:id", authenticateJWT, documentController.getContent);
+router.get(
+    "/content/:id",
+    authenticateJWT,
+    validate(GetDocumentContent),
+    documentController.getContent
+);
 router.post("/upload", authenticateJWT, documentController.upload);
 router.post(
     "/:id/tag",
@@ -29,14 +37,24 @@ router.delete(
     validate(DeleteTag),
     documentController.removeTag
 );
-router.get("/:id", authenticateJWT, documentController.get);
+router.get(
+    "/:id",
+    authenticateJWT,
+    validate(GetDocument),
+    documentController.get
+);
 router.put(
     "/:id",
     authenticateJWT,
     validate(UpdateDocument),
     documentController.update
 );
-router.delete("/:id", authenticateJWT, documentController.remove);
+router.delete(
+    "/:id",
+    authenticateJWT,
+    validate(DeleteDocument),
+    documentController.remove
+);
 router.get(
     "/",
     authenticateJWT,
