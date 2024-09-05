@@ -64,24 +64,18 @@ export const DownloadTable = pgTable("download", {
     }).default(sql`NOW() + INTERVAL '5' MINUTE`),
 });
 
-export const TagTable = pgTable("tag", {
-    key: varchar("key", { length: 60 }).primaryKey().notNull(),
-    name: varchar("name", { length: 60 }).notNull(),
-});
-
-export const DocumentTagsTable = pgTable(
-    "document_tags",
+export const TagTable = pgTable(
+    "tag",
     {
         documentId: uuid("document_id")
             .references(() => DocumentTable.Id)
             .notNull(),
-        tagId: varchar("tag_id", { length: 60 })
-            .references(() => TagTable.key)
-            .notNull(),
+        key: varchar("key", { length: 60 }).notNull(),
+        name: varchar("name", { length: 60 }).notNull(),
     },
     (table) => {
         return {
-            pk: primaryKey({ columns: [table.documentId, table.tagId] }),
+            pk: primaryKey({ columns: [table.documentId, table.key] }),
         };
     }
 );
@@ -97,20 +91,12 @@ export const documentRelations = relations(DocumentTable, ({ one, many }) => ({
         fields: [DocumentTable.userId],
         references: [UserTable.Id],
     }),
-    tags: many(DocumentTagsTable),
+    tags: many(TagTable),
 }));
 
-export const tagRelations = relations(TagTable, ({ one, many }) => ({
-    document: many(DocumentTagsTable),
-}));
-
-export const documentTagRelations = relations(DocumentTagsTable, ({ one }) => ({
+export const tagRelations = relations(TagTable, ({ one }) => ({
     document: one(DocumentTable, {
-        fields: [DocumentTagsTable.documentId],
+        fields: [TagTable.documentId],
         references: [DocumentTable.Id],
-    }),
-    tag: one(TagTable, {
-        fields: [DocumentTagsTable.tagId],
-        references: [TagTable.key],
     }),
 }));

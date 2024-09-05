@@ -11,14 +11,8 @@ CREATE TABLE IF NOT EXISTS "document" (
 	"file_extension" varchar(255) NOT NULL,
 	"content_type" varchar(255) NOT NULL,
 	"content" text,
-	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp DEFAULT now()
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "document_tags" (
-	"document_id" uuid NOT NULL,
-	"tag_id" varchar(60) NOT NULL,
-	CONSTRAINT "document_tags_document_id_tag_id_pk" PRIMARY KEY("document_id","tag_id")
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "download" (
@@ -28,8 +22,10 @@ CREATE TABLE IF NOT EXISTS "download" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tag" (
-	"key" varchar(60) PRIMARY KEY NOT NULL,
-	"name" varchar(60) NOT NULL
+	"document_id" uuid NOT NULL,
+	"key" varchar(60) NOT NULL,
+	"name" varchar(60) NOT NULL,
+	CONSTRAINT "tag_document_id_key_pk" PRIMARY KEY("document_id","key")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user" (
@@ -37,8 +33,8 @@ CREATE TABLE IF NOT EXISTS "user" (
 	"user_name" varchar(255) NOT NULL,
 	"user_role" "userRole" DEFAULT 'USER' NOT NULL,
 	"password" varchar(72) NOT NULL,
-	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp DEFAULT now(),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "user_user_name_unique" UNIQUE("user_name")
 );
 --> statement-breakpoint
@@ -49,19 +45,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "document_tags" ADD CONSTRAINT "document_tags_document_id_document_id_fk" FOREIGN KEY ("document_id") REFERENCES "public"."document"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "document_tags" ADD CONSTRAINT "document_tags_tag_id_tag_key_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tag"("key") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "download" ADD CONSTRAINT "download_id_document_id_fk" FOREIGN KEY ("id") REFERENCES "public"."document"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "tag" ADD CONSTRAINT "tag_document_id_document_id_fk" FOREIGN KEY ("document_id") REFERENCES "public"."document"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
