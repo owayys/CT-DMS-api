@@ -66,7 +66,7 @@ export const Document = z.object({
     fileExtension: z.string(),
     content: z.string(),
     contentType: z.string(),
-    meta: z.record(z.string(), z.any()).nullable(),
+    meta: z.record(z.string(), z.any()).optional(),
     tags: Tag.pick({ key: true, name: true }).array(),
     // createdAt: z.coerce.date(),
     // updatedAt: z.coerce.date(),

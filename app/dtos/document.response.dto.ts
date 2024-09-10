@@ -7,7 +7,7 @@ export class DocumentResponseDto extends ResponseBase {
     fileExtension: string;
     contentType: string;
     content: string;
-    meta: UserDefinedMetadata | null;
+    meta?: UserDefinedMetadata;
     tags: {
         key: string;
         name: string;

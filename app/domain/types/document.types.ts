@@ -8,7 +8,7 @@ export type DocumentProps<T> = {
     content: string;
     contentType: string;
     tags: TagEntity[];
-    meta: { [Property in keyof T]: T[Property] } | null;
+    meta?: { [Property in keyof T]: T[Property] };
 };
 
 export type CreateDocumentProps<T> = {
@@ -21,7 +21,7 @@ export type CreateDocumentProps<T> = {
         key: string;
         name: string;
     }[];
-    meta: { [Property in keyof T]: T[Property] } | null;
+    meta?: { [Property in keyof T]: T[Property] };
 };
 
 type Primitive = string | boolean | number;
