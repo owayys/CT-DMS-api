@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1725521071919,
-      "tag": "0000_clammy_spyke",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1725521228636,
-      "tag": "0001_low_scourge",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1725521253451,
-      "tag": "0002_spicy_mole_man",
+      "when": 1725975310622,
+      "tag": "0000_naive_carlie_cooper",
       "breakpoints": true
     }
   ]

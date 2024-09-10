@@ -1,5 +1,5 @@
 {
-  "id": "c65efb5e-2775-4049-8b14-e797cee5cbbb",
+  "id": "d6cd3d0b-2b9e-446a-9907-be590cd3026d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -45,6 +45,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "other": {
+          "name": "other",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -72,51 +78,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.download": {
-      "name": "download",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "download": {
-          "name": "download",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "gen_random_uuid()"
-        },
-        "expires": {
-          "name": "expires",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "NOW() + INTERVAL '5' MINUTE"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "download_id_document_id_fk": {
-          "name": "download_id_document_id_fk",
-          "tableFrom": "download",
-          "tableTo": "document",
-          "columnsFrom": [
-            "id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -158,7 +120,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
