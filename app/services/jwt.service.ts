@@ -1,6 +1,5 @@
-import { IUserRepository } from "../repositories/IUserRepository";
+import { IUserRepository } from "../domain/repositories/user.repository.port";
 import jwt, { Secret } from "jsonwebtoken";
-import { compare } from "bcrypt";
 import { JwtRefreshResponse, JwtResponse } from "../lib/validators/JWTSchemas";
 import { Result } from "../lib/util/result";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
@@ -28,7 +27,7 @@ export class JWTService {
             );
         }
 
-        let response = await this.repository.findByName(userName);
+        let response = await this.repository.findOneByName(userName);
 
         if (response.isErr()) {
             return new Result<any, Error>(null, response.getErr());
@@ -43,7 +42,7 @@ export class JWTService {
             );
         }
 
-        const isMatch = await compare(password, user!.password);
+        const isMatch = await user.validatePassword(password);
 
         if (!isMatch) {
             return new Result<any, Error>(null, new Error("Password invalid"));
@@ -51,15 +50,15 @@ export class JWTService {
 
         let accessToken = jwt.sign(
             {
-                Id: user.Id,
-                userName: userName,
-                userRole: user.userRole,
+                Id: user.id!.toString(),
+                userName: user.userName,
+                userRole: user.role.toString(),
             },
             accessSecret as string,
             { expiresIn: "1h" }
         );
         let refreshToken = jwt.sign(
-            { Id: user.Id, userName: userName },
+            { Id: user.id!.toString(), userName: user.userName },
             refreshSecret as string,
             {
                 expiresIn: "2h",
@@ -95,7 +94,7 @@ export class JWTService {
 
         if (typeof decoded === "string" || typeof decoded === "undefined") {
         } else {
-            let response = await this.repository.findById(decoded.Id);
+            let response = await this.repository.findOneById(decoded.Id);
 
             if (response.isErr()) {
                 return new Result<any, Error>(null, response.getErr());
@@ -114,7 +113,7 @@ export class JWTService {
                 {
                     userName: user!.userName,
                     password: user!.password,
-                    userRole: user?.userRole,
+                    userRole: user?.role.toString(),
                 },
                 accessSecret as string,
                 { expiresIn: "1h" }

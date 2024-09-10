@@ -7,14 +7,30 @@ import {
     SaveDocumentResponse,
     TagResponse,
 } from "../lib/validators/documentSchemas";
-import { IDocumentRepository } from "../repositories/IDocumentRepository";
+// import { IDocumentRepository } from "../repositories/IDocumentRepository";
+import { IDocumentRepository } from "../domain/repositories/document.repository";
 import { InjectionTarget } from "../lib/di/InjectionTarget";
-import { DOCUMENT_REPOSITORY, LOGGER } from "../lib/di/di.tokens";
+import {
+    DOCUMENT_MAPPER,
+    DOCUMENT_REPOSITORY,
+    LOGGER,
+    TAG_MAPPER,
+} from "../lib/di/di.tokens";
 import { Inject } from "../lib/di/Inject";
 import { parseResponse } from "../lib/util/parseResponse";
 import { Result } from "../lib/util/result";
 import { z } from "zod";
 import { ILogger } from "../lib/logging/ILogger";
+import { UserDefinedMetadata } from "../domain/types/document.types";
+import { DocumentEntity } from "../domain/entities/document.entity";
+import { UUID } from "../domain/value-objects/uuid.value-object";
+import { TagEntity } from "../domain/entities/tag.entity";
+import { Mapper } from "../lib/ddd/mapper.interface";
+import { DocumentModel } from "../mappers/document.mapper";
+import { DocumentResponseDto } from "../dtos/document.response.dto";
+import { PaginatedQueryParams } from "../lib/ddd/repository.port";
+import { TagModel } from "../mappers/tag.mapper";
+import { TagResponseDto } from "../dtos/tag.response.dto";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -30,37 +46,52 @@ export class DocumentService {
         @Inject(DOCUMENT_REPOSITORY)
         private repository: IDocumentRepository,
         @Inject(LOGGER)
-        private logger: ILogger
+        private logger: ILogger,
+        @Inject(DOCUMENT_MAPPER)
+        private documentMapper: Mapper<
+            DocumentEntity,
+            DocumentModel,
+            DocumentResponseDto
+        >,
+        @Inject(TAG_MAPPER)
+        private tagMapper: Mapper<TagEntity, TagModel, TagResponseDto>
     ) {}
 
     async get(
         userId: string,
         documentId: string
     ): Promise<Result<GetDocumentResponse, Error>> {
-        return (await this.repository.findById(userId, documentId)).bind(
+        return (await this.repository.findOneById(documentId)).bind(
             (response) => parseResponse(GetDocumentResponse, response)
         );
     }
 
     async getAll(
-        userId: string,
         pageNumber: number,
         pageSize: number,
         tag: string | null
     ): Promise<Result<DocumentResponse, Error>> {
-        return (
-            await this.repository.all(userId, pageNumber, pageSize, tag)
-        ).bind((response) => parseResponse(DocumentResponse, response));
-    }
-
-    async getContent(
-        userId: string,
-        documentId: string
-    ): Promise<Result<DocumentContentResponse, Error>> {
-        return (await this.repository.getContentById(userId, documentId)).bind(
-            (response) => parseResponse(DocumentContentResponse, response)
+        const params: PaginatedQueryParams = {
+            pageSize,
+            pageNumber,
+            orderBy: {
+                field: "id",
+                param: "asc",
+            },
+        };
+        return (await this.repository.findAllPaginated(params)).bind(
+            (response) => parseResponse(DocumentResponse, response)
         );
     }
+
+    // async getContent(
+    //     userId: string,
+    //     documentId: string
+    // ): Promise<Result<DocumentContentResponse, Error>> {
+    //     return (await this.repository.getContentById(userId, documentId)).bind(
+    //         (response) => parseResponse(DocumentContentResponse, response)
+    //     );
+    // }
 
     async save(
         userId: string,
@@ -68,18 +99,24 @@ export class DocumentService {
         fileExtension: string,
         contentType: string,
         tags: { key: string; name: string }[],
-        content: string
+        content: string,
+        meta: UserDefinedMetadata
     ): Promise<Result<SaveDocumentResponse, Error>> {
-        return (
-            await this.repository.save(
-                userId,
-                fileName,
-                fileExtension,
-                contentType,
-                tags,
-                content
+        const document = DocumentEntity.create({
+            userId: UUID.fromString(userId),
+            fileName,
+            fileExtension,
+            contentType,
+            tags: tags.map(TagEntity.create),
+            content,
+            meta,
+        });
+        return (await this.repository.insert(document)).bind((response) =>
+            parseResponse(
+                SaveDocumentResponse,
+                this.documentMapper.toResponse(response)
             )
-        ).bind((response) => parseResponse(SaveDocumentResponse, response));
+        );
     }
 
     async update(
@@ -91,25 +128,28 @@ export class DocumentService {
         tags: { key: string; name: string }[],
         content: string
     ): Promise<Result<UpdateResponse, Error>> {
-        return (
-            await this.repository.update(
-                userId,
-                documentId,
-                fileName,
-                fileExtension,
-                contentType,
-                tags,
-                content
-            )
-        ).bind((response) => parseResponse(UpdateResponse, response));
+        const document = this.documentMapper.toDomain({
+            userId,
+            documentId: documentId,
+            fileName,
+            fileExtension,
+            contentType,
+            content,
+            tags: tags.map(this.tagMapper.toDomain),
+        });
+        return (await this.repository.update(document)).bind((response) =>
+            parseResponse(UpdateResponse, { success: response })
+        );
     }
 
     async addTag(
         documentId: string,
         tag: { key: string; name: string }
     ): Promise<Result<TagResponse, Error>> {
-        return (await this.repository.addTag(documentId, tag)).bind(
-            (response) => parseResponse(TagResponse, response)
+        const entity = this.tagMapper.toDomain(tag);
+        return (await this.repository.addTag(documentId, entity)).bind(
+            (response) =>
+                parseResponse(TagResponse, this.tagMapper.toResponse(response))
         );
     }
 
@@ -120,40 +160,50 @@ export class DocumentService {
             name: string;
         }
     ): Promise<Result<UpdateResponse, Error>> {
-        return (await this.repository.updateTag(documentId, tag)).bind(
-            (response) => parseResponse(UpdateResponse, response)
+        const entity = this.tagMapper.toDomain(tag);
+        return (await this.repository.updateTag(documentId, entity)).bind(
+            (response) =>
+                parseResponse(
+                    UpdateResponse,
+                    this.tagMapper.toResponse(response)
+                )
         );
     }
 
     async removeTag(documentId: string, tag: { key: string; name: string }) {
-        return (await this.repository.removeTag(documentId, tag)).bind(
-            (response) => parseResponse(DeleteResponse, response)
+        const entity = this.tagMapper.toDomain(tag);
+        return (await this.repository.removeTag(documentId, entity)).bind(
+            (response) =>
+                parseResponse(
+                    DeleteResponse,
+                    this.tagMapper.toResponse(response)
+                )
         );
     }
 
-    async download(link: string): Promise<Result<any, Error>> {
-        return await this.repository.download(link);
-    }
+    // async download(link: string): Promise<Result<any, Error>> {
+    //     return await this.repository.download(link);
+    // }
 
-    async upload(
-        userId: string,
-        file: UploadedFile,
-        fileName: string,
-        fileExtension: string,
-        contentType: string,
-        tags: { key: string; name: string }[]
-    ): Promise<Result<GetDocumentResponse, Error>> {
-        return (
-            await this.repository.upload(
-                userId,
-                file,
-                fileName,
-                fileExtension,
-                contentType,
-                tags
-            )
-        ).bind((response) => parseResponse(GetDocumentResponse, response));
-    }
+    // async upload(
+    //     userId: string,
+    //     file: UploadedFile,
+    //     fileName: string,
+    //     fileExtension: string,
+    //     contentType: string,
+    //     tags: { key: string; name: string }[]
+    // ): Promise<Result<GetDocumentResponse, Error>> {
+    //     return (
+    //         await this.repository.upload(
+    //             userId,
+    //             file,
+    //             fileName,
+    //             fileExtension,
+    //             contentType,
+    //             tags
+    //         )
+    //     ).bind((response) => parseResponse(GetDocumentResponse, response));
+    // }
 
     async remove(
         user: {
@@ -162,9 +212,16 @@ export class DocumentService {
             userRole: string;
         },
         documentId: string
-    ): Promise<Result<DeleteResponse, Error>> {
-        return (await this.repository.remove(user, documentId)).bind(
-            (response) => parseResponse(DeleteResponse, response)
-        );
+    ): Promise<Result<DocumentEntity, Error>> {
+        const response = await this.repository.findOneById(documentId);
+
+        if (response.isOk()) {
+            const document = response.unwrap();
+            return (await this.repository.delete(document)).bind((response) =>
+                parseResponse(DeleteResponse, { success: response })
+            );
+        } else {
+            return response;
+        }
     }
 }
