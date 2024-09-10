@@ -64,7 +64,7 @@ export class DocumentMapper
         response.fileExtension = props.fileExtension;
         response.contentType = props.contentType;
         response.content = props.content;
-        response.meta = props.meta;
+        if (props.meta) response.meta = props.meta;
         response.tags = props.tags.map((t) => {
             return {
                 key: t.key,
