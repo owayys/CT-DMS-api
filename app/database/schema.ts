@@ -7,6 +7,7 @@ import {
     uuid,
     varchar,
     primaryKey,
+    jsonb,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -36,11 +37,12 @@ export const DocumentTable = pgTable("document", {
     Id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
         .notNull()
-        .references(() => UserTable.Id),
+        .references(() => UserTable.Id, { onDelete: "cascade" }),
     fileName: varchar("file_name", { length: 255 }).notNull(),
     fileExtension: varchar("file_extension", { length: 255 }).notNull(),
     contentType: varchar("content_type", { length: 255 }).notNull(),
     content: text("content"),
+    meta: jsonb("meta"),
     createdAt: timestamp("created_at", {
         mode: "string",
     })
@@ -54,21 +56,21 @@ export const DocumentTable = pgTable("document", {
         .$onUpdate(() => sql`now()`),
 });
 
-export const DownloadTable = pgTable("download", {
-    Id: uuid("id")
-        .references(() => DocumentTable.Id)
-        .primaryKey(),
-    link: uuid("download").defaultRandom(),
-    expires: timestamp("expires", {
-        mode: "string",
-    }).default(sql`NOW() + INTERVAL '5' MINUTE`),
-});
+// export const DownloadTable = pgTable("download", {
+//     Id: uuid("id")
+//         .references(() => DocumentTable.Id)
+//         .primaryKey(),
+//     link: uuid("download").defaultRandom(),
+//     expires: timestamp("expires", {
+//         mode: "string",
+//     }).default(sql`NOW() + INTERVAL '5' MINUTE`),
+// });
 
 export const TagTable = pgTable(
     "tag",
     {
         documentId: uuid("document_id")
-            .references(() => DocumentTable.Id)
+            .references(() => DocumentTable.Id, { onDelete: "cascade" })
             .notNull(),
         key: varchar("key", { length: 60 }).notNull(),
         name: varchar("name", { length: 60 }).notNull(),
