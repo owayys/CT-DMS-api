@@ -11,24 +11,35 @@ post {
 }
 
 headers {
-  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImYwY2ZkZDVlLWY3ZjctNGNjOS1iODIwLTc5M2YxZjJmMWJlMCIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NTIxMzkzLCJleHAiOjE3MjU1MjQ5OTN9.NYFcPGIc21P5bsXPrFj5qcmLh0BTavpGvgVJmwsF8jY
+  authorization: {{access_token}}
 }
 
 body:json {
   {
-    "fileName": "fileName 2",
+    "fileName": "fileName 4",
     "fileExtension": ".md",
     "contentType": "contentType",
     "tags": [
       {
-        "key": "1",
+        "key": "3",
         "name": "tag1"
       },
       {
-        "key": "3",
+        "key": "4",
         "name": "tag3"
       }
     ],
-    "content": "fileContent 2"
+    "content": "fileContent 4",
+    "meta": {
+      "item1": "item1",
+      "item2": 2,
+      "item3": {
+        "item4": true,
+        "item5": 1
+      },
+      "item6": ["string", 1, true, {
+        "item7": "item"
+      }]
+    }
   }
 }
