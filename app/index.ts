@@ -6,15 +6,15 @@ import "./lib/di"; // DI container
 
 import fileUpload from "express-fileupload";
 
-import userRouter from "./routes/user.route";
-import jwtRouter from "./routes/jwt.route";
-import documentRouter from "./routes/document.route";
-import { logRequests } from "./middleware/logRequests";
+import userRouter from "./presentation/routes/user.route";
+import jwtRouter from "./presentation/routes/jwt.route";
+import documentRouter from "./presentation/routes/document.route";
+import { RequestLogger } from "./middleware/logRequests";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-app.use(logRequests);
+app.use(new RequestLogger().logRequests);
 app.use(express.json());
 app.use(fileUpload());
 
