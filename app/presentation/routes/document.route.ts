@@ -1,6 +1,6 @@
 import { Router } from "express";
 // import * as documentController from "../controllers/document.controller";
-import { validate } from "../middleware/validate";
+import { validate } from "../../middleware/validate";
 import {
     AddTag,
     DeleteDocument,
@@ -11,8 +11,8 @@ import {
     SaveDocument,
     UpdateDocument,
     UpdateTag,
-} from "../lib/validators/documentSchemas";
-import { authenticateJWT } from "../middleware/authenticateJWT";
+} from "../../lib/validators/documentSchemas";
+import { authenticateJWT } from "../../middleware/authenticateJWT";
 import { DocumentController } from "../controllers/document.controller";
 
 const router = Router();
