@@ -1,20 +1,73 @@
 import { z } from "zod";
 
-const Tag = z.object({
+export const Tag = z.object({
     key: z.string({
         required_error: "Tag Key is required",
     }),
     name: z.string({
         required_error: "Tag Name is required",
     }),
+    createdAt: z.string(),
+    updatedAt: z.string(),
 });
 
-const Document = z.object({
+// const jsonSchema = z
+//     .string()
+//     .refine((value) => {
+//         try {
+//             JSON.parse(value);
+//             return true;
+//         } catch (_) {
+//             return false;
+//         }
+//     })
+//     .transform((value) => JSON.parse(value));
+
+// const stringToJSONSchema = z
+//     .string()
+//     .transform((str, ctx): z.infer<ReturnType<typeof json>> => {
+//         try {
+//             return JSON.parse(str);
+//         } catch (e) {
+//             ctx.addIssue({ code: "custom", message: "Invalid JSON" });
+//             return z.NEVER;
+//         }
+//     });
+
+// const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+
+// type Literal = z.infer<typeof literalSchema>;
+
+// type Json = Literal | { [key: string]: Json } | Json[];
+
+// const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+//     z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
+// );
+
+// const json = () => jsonSchema;
+
+// const stringToJSONSchema = z
+//     .object()
+//     .transform((str, ctx): z.infer<ReturnType<typeof json>> => {
+//         try {
+//             console.log(str);
+//             return JSON.parse(str);
+//         } catch (e) {
+//             console.log(e);
+//             ctx.addIssue({ code: "custom", message: "Invalid JSON" });
+//             return z.NEVER;
+//         }
+//     });
+
+export const Document = z.object({
+    userId: z.string().uuid(),
     Id: z.string().uuid(),
     fileName: z.string(),
     fileExtension: z.string(),
+    content: z.string(),
     contentType: z.string(),
-    tags: Tag.array(),
+    meta: z.record(z.string(), z.any()).nullable(),
+    tags: Tag.pick({ key: true, name: true }).array(),
     // createdAt: z.coerce.date(),
     // updatedAt: z.coerce.date(),
     createdAt: z.string(),
@@ -41,6 +94,7 @@ export const SaveDocument = z.object({
         fileExtension: true,
         contentType: true,
         tags: true,
+        meta: true,
     }).extend({
         content: z.string(),
     }),

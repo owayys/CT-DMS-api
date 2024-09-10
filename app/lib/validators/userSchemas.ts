@@ -85,4 +85,10 @@ export const UserResponse = z.object({
     updatedAt: z.string(),
 });
 
-export const AllUsersResponse = UserResponse.array();
+export const AllUsersResponse = z.object({
+    page: z.number(),
+    size: z.number(),
+    totalPages: z.number(),
+    totalItems: z.number(),
+    items: UserResponse.array(),
+});
