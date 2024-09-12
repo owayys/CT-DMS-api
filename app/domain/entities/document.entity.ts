@@ -8,7 +8,7 @@ import {
 } from "../types/document.types";
 import { Timestamp } from "../value-objects/timestamp.value-object";
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
-import { AutoUpdate } from "../../lib/util/auto-update";
+import { AutoUpdate } from "../../lib/util/auto-update.util";
 
 export class DocumentEntity extends AggregateRoot<
     DocumentProps<UserDefinedMetadata>
@@ -23,7 +23,6 @@ export class DocumentEntity extends AggregateRoot<
             tags: tagList,
         };
         const document = new DocumentEntity({ id, props });
-        console.log(document);
         return document;
     }
 

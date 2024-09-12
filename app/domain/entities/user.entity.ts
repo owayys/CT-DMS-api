@@ -1,5 +1,5 @@
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
-import { AutoUpdate } from "../../lib/util/auto-update";
+import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { CreateUserProps, UserProps } from "../types/user.types";
 import { Timestamp } from "../value-objects/timestamp.value-object";
 import { UserPassword } from "../value-objects/user-password.value-object";
