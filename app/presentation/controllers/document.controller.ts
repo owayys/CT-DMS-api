@@ -66,8 +66,8 @@ export class DocumentController {
             const { pageNumber, pageSize, tag } = req.query;
 
             const result = await this.documentService.getAll(
-                userId,
-                pageNumber - 1,
+                // userId,
+                pageNumber,
                 pageSize,
                 tag
             );

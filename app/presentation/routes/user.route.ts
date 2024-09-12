@@ -1,14 +1,14 @@
 import { UserController } from "../controllers/user.controller";
 import { Router } from "express";
-import { authenticateJWT } from "../../middleware/authenticateJWT";
-import { restrict } from "../../middleware/restrict";
-import { validate } from "../../middleware/validate";
+import { authenticateJWT } from "../middleware/authenticate-jwt.middleware";
+import { restrict } from "../middleware/restrict.middleware";
+import { validate } from "../middleware/validate.middleware";
 import {
     CreateUser,
     GetAllUsers,
     GetUser,
     UpdateUser,
-} from "../../lib/validators/userSchemas";
+} from "../../lib/validators/user.validators";
 
 const router = Router();
 const userController = new UserController();
