@@ -1,5 +1,7 @@
+import { UploadedFile } from "express-fileupload";
 import { TagEntity } from "../entities/tag.entity";
 import { UUID } from "../value-objects/uuid.value-object";
+import { DocumentEntity } from "../entities/document.entity";
 
 export type DocumentProps<T extends UserDefinedMetadata> = {
     userId: UUID;
@@ -38,3 +40,18 @@ export type UpdateDocumentProps = Omit<
     DocumentProps<UserDefinedMetadata>,
     "userId"
 >;
+
+export class UploadFileCommand {
+    id: string;
+    file: UploadedFile;
+}
+
+export class AuthorizeDocumentAccessCommand {
+    userId: string;
+    document: DocumentEntity;
+}
+
+export class GetDocumentCommand {
+    userId: string;
+    documentId: string;
+}

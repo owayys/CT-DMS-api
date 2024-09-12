@@ -11,3 +11,17 @@ export type CreateUserProps = {
     userName: string;
     password: string;
 };
+
+export class RegisterUserCommand {
+    userName: string;
+    password: string;
+}
+
+export class LoginUserCommand {
+    userName: string;
+    password: string;
+}
+
+export class DeleteUserCommand {
+    Id: string;
+}
