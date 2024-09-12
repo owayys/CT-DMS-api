@@ -56,16 +56,6 @@ export const DocumentTable = pgTable("document", {
         .$onUpdate(() => sql`now()`),
 });
 
-// export const DownloadTable = pgTable("download", {
-//     Id: uuid("id")
-//         .references(() => DocumentTable.Id)
-//         .primaryKey(),
-//     link: uuid("download").defaultRandom(),
-//     expires: timestamp("expires", {
-//         mode: "string",
-//     }).default(sql`NOW() + INTERVAL '5' MINUTE`),
-// });
-
 export const TagTable = pgTable(
     "tag",
     {
