@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { UserDefinedMetadata } from "../../domain/types/document.types";
 
 export const Tag = z.object({
     key: z.string({
@@ -11,53 +12,29 @@ export const Tag = z.object({
     updatedAt: z.string(),
 });
 
-// const jsonSchema = z
-//     .string()
-//     .refine((value) => {
-//         try {
-//             JSON.parse(value);
-//             return true;
-//         } catch (_) {
-//             return false;
-//         }
-//     })
-//     .transform((value) => JSON.parse(value));
+const PrimitiveSchema = z.union([z.string(), z.number(), z.boolean()]);
 
-// const stringToJSONSchema = z
-//     .string()
-//     .transform((str, ctx): z.infer<ReturnType<typeof json>> => {
-//         try {
-//             return JSON.parse(str);
-//         } catch (e) {
-//             ctx.addIssue({ code: "custom", message: "Invalid JSON" });
-//             return z.NEVER;
-//         }
-//     });
+const UserDefinedMetadataSchema: z.ZodSchema<UserDefinedMetadata> = z.lazy(() =>
+    z.record(
+        z.union([
+            PrimitiveSchema,
+            PrimitiveSchema.array(),
+            UserDefinedMetadataSchema,
+            RecursiveNestedArray,
+        ])
+    )
+);
 
-// const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
-
-// type Literal = z.infer<typeof literalSchema>;
-
-// type Json = Literal | { [key: string]: Json } | Json[];
-
-// const jsonSchema: z.ZodType<Json> = z.lazy(() =>
-//     z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
-// );
-
-// const json = () => jsonSchema;
-
-// const stringToJSONSchema = z
-//     .object()
-//     .transform((str, ctx): z.infer<ReturnType<typeof json>> => {
-//         try {
-//             console.log(str);
-//             return JSON.parse(str);
-//         } catch (e) {
-//             console.log(e);
-//             ctx.addIssue({ code: "custom", message: "Invalid JSON" });
-//             return z.NEVER;
-//         }
-//     });
+const RecursiveNestedArray: any = z.lazy(() =>
+    z.array(
+        z.union([
+            UserDefinedMetadataSchema,
+            PrimitiveSchema,
+            PrimitiveSchema.array(),
+            RecursiveNestedArray,
+        ])
+    )
+);
 
 export const Document = z.object({
     userId: z.string().uuid(),
@@ -66,10 +43,8 @@ export const Document = z.object({
     fileExtension: z.string(),
     content: z.string(),
     contentType: z.string(),
-    meta: z.record(z.string(), z.any()).optional(),
+    meta: UserDefinedMetadataSchema.optional(),
     tags: Tag.pick({ key: true, name: true }).array(),
-    // createdAt: z.coerce.date(),
-    // updatedAt: z.coerce.date(),
     createdAt: z.string(),
     updatedAt: z.string(),
 });
