@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { Mapper } from "../lib/ddd/mapper.interface";
-import { Document } from "../lib/validators/documentSchemas";
-import { DocumentEntity } from "../domain/entities/document.entity";
-import { DocumentResponseDto } from "../dtos/document.response.dto";
-import { UUID } from "../domain/value-objects/uuid.value-object";
-import { Timestamp } from "../domain/value-objects/timestamp.value-object";
-import { TagEntity } from "../domain/entities/tag.entity";
+import { Mapper } from "../../lib/ddd/mapper.interface";
+import { Document } from "../../lib/validators/document.validators";
+import { DocumentEntity } from "../../domain/entities/document.entity";
+import { DocumentResponseDto } from "../../infrastructure/dtos/document.response.dto";
+import { UUID } from "../../domain/value-objects/uuid.value-object";
+import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
+import { TagEntity } from "../../domain/entities/tag.entity";
 
 export type DocumentModel = z.infer<typeof Document>;
 
@@ -32,7 +32,6 @@ export class DocumentMapper
     }
 
     toDomain(record: DocumentModel): DocumentEntity {
-        console.log(record);
         const entity = new DocumentEntity({
             id: UUID.fromString(record.Id),
             createdAt: Timestamp.fromString(record.createdAt),

@@ -1,12 +1,12 @@
-import { Mapper } from "../lib/ddd/mapper.interface";
-import { UserEntity } from "../domain/entities/user.entity";
+import { Mapper } from "../../lib/ddd/mapper.interface";
+import { UserEntity } from "../../domain/entities/user.entity";
 import { UserResponseDto } from "../dtos/user.response.dto";
-import { User } from "../lib/validators/userSchemas";
+import { User } from "../../lib/validators/user.validators";
 import { z } from "zod";
-import { Timestamp } from "../domain/value-objects/timestamp.value-object";
-import { UUID } from "../domain/value-objects/uuid.value-object";
-import { UserRole } from "../domain/value-objects/user-role.value-object";
-import { UserPassword } from "../domain/value-objects/user-password.value-object";
+import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
+import { UUID } from "../../domain/value-objects/uuid.value-object";
+import { UserRole } from "../../domain/value-objects/user-role.value-object";
+import { UserPassword } from "../../domain/value-objects/user-password.value-object";
 
 export type UserModel = z.infer<typeof User>;
 

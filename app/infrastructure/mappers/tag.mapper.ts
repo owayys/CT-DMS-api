@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { Tag } from "../lib/validators/documentSchemas";
-import { Mapper } from "../lib/ddd/mapper.interface";
-import { TagEntity } from "../domain/entities/tag.entity";
+import { Tag } from "../../lib/validators/document.validators";
+import { Mapper } from "../../lib/ddd/mapper.interface";
+import { TagEntity } from "../../domain/entities/tag.entity";
 import { TagResponseDto } from "../dtos/tag.response.dto";
-import { Timestamp } from "../domain/value-objects/timestamp.value-object";
+import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
 
 export type TagModel = z.infer<typeof Tag>;
 
