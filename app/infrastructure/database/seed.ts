@@ -3,9 +3,9 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { UserTable, DocumentTable, TagTable } from "./schema";
 import { faker } from "@faker-js/faker";
-import { UUID } from "../domain/value-objects/uuid.value-object";
+import { UUID } from "../../domain/value-objects/uuid.value-object";
 import { writeFile } from "fs";
-import { UserPassword } from "../domain/value-objects/user-password.value-object";
+import { UserPassword } from "../../domain/value-objects/user-password.value-object";
 
 function randomMetadata() {
     let objects = [

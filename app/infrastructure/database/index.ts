@@ -2,9 +2,9 @@ import postgres from "postgres";
 import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { Logger } from "drizzle-orm";
-import { Inject } from "../lib/di/Inject";
-import { LOGGER } from "../lib/di/di.tokens";
-import { InjectionTarget } from "../lib/di/InjectionTarget";
+import { Inject } from "../../lib/di/Inject";
+import { LOGGER } from "../../lib/di/di.tokens";
+import { InjectionTarget } from "../../lib/di/InjectionTarget";
 
 @InjectionTarget()
 export class DrizzleClientWrapper {
