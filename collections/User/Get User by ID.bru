@@ -1,7 +1,7 @@
 meta {
   name: Get User by ID
   type: http
-  seq: 2
+  seq: 4
 }
 
 get {
@@ -11,9 +11,14 @@ get {
 }
 
 params:path {
-  id: f0cfdd5e-f7f7-4cc9-b820-793f1f2f1be0
+  id: 6aafc974-1e9e-45ac-88f4-bf6ff5b04839
 }
 
 headers {
   authorization: {{access_token}}
+}
+
+script:post-response {
+  let data = res.getBody();
+  bru.setVar("userId",data.Id);
 }

@@ -5,17 +5,17 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/v1/document?pageNumber=1&pageSize=10&tag=tag1
+  url: {{baseUrl}}/api/v1/document?pageNumber=11&pageSize=105
   body: none
   auth: none
 }
 
 params:query {
-  pageNumber: 1
-  pageSize: 10
-  tag: tag1
+  pageNumber: 11
+  pageSize: 105
+  ~tag: tag1
 }
 
 headers {
-  authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6ImYwY2ZkZDVlLWY3ZjctNGNjOS1iODIwLTc5M2YxZjJmMWJlMCIsInVzZXJOYW1lIjoibWVndW1pIiwidXNlclJvbGUiOiJVU0VSIiwiaWF0IjoxNzI1NTM1OTI3LCJleHAiOjE3MjU1Mzk1Mjd9.nGPZWknE6TqdSSOmRXqZTu5aTVRKeTqTMq6qk0l14Rw
+  authorization: {{access_token}}
 }
