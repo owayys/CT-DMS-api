@@ -1,21 +1,24 @@
 // import { IUserRepository } from "../repositories/IUserRepository";
-import { IUserRepository } from "../domain/repositories/user.repository.port";
+import { IUserRepository } from "../../domain/repositories/user.repository.port";
 
-import { Result } from "../lib/util/result";
-import { LOGGER, USER_MAPPER, USER_REPOSITORY } from "../lib/di/di.tokens";
-import { InjectionTarget } from "../lib/di/InjectionTarget";
-import { Inject } from "../lib/di/Inject";
+import { Result } from "../../lib/util/result";
+import { LOGGER, USER_MAPPER, USER_REPOSITORY } from "../../lib/di/di.tokens";
+import { InjectionTarget } from "../../lib/di/InjectionTarget";
+import { Inject } from "../../lib/di/Inject";
 
 import { z } from "zod";
-import { parseResponse } from "../lib/util/parseResponse";
-import { AllUsersResponse, UserResponse } from "../lib/validators/userSchemas";
-import { UpdateResponse } from "../lib/validators/common";
-import { ILogger } from "../lib/logging/ILogger";
-import { Mapper } from "../lib/ddd/mapper.interface";
-import { UserEntity } from "../domain/entities/user.entity";
-import { UserModel } from "../mappers/user.mapper";
-import { UserResponseDto } from "../dtos/user.response.dto";
-import { PaginatedQueryParams } from "../lib/ddd/repository.port";
+import { parseResponse } from "../../lib/util/parse-response.util";
+import {
+    AllUsersResponse,
+    UserResponse,
+} from "../../lib/validators/user.validators";
+import { UpdateResponse } from "../../lib/validators/common";
+import { ILogger } from "../../lib/logging/ILogger";
+import { Mapper } from "../../lib/ddd/mapper.interface";
+import { UserEntity } from "../../domain/entities/user.entity";
+import { UserModel } from "../../infrastructure/mappers/user.mapper";
+import { UserResponseDto } from "../../infrastructure/dtos/user.response.dto";
+import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
 
 type UserResponse = z.infer<typeof UserResponse>;
 

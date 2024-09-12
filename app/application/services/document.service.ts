@@ -1,36 +1,36 @@
 import { UploadedFile } from "express-fileupload";
-import { DeleteResponse, UpdateResponse } from "../lib/validators/common";
+import { DeleteResponse, UpdateResponse } from "../../lib/validators/common";
 import {
     DocumentContentResponse,
     DocumentResponse,
     GetDocumentResponse,
     SaveDocumentResponse,
     TagResponse,
-} from "../lib/validators/documentSchemas";
+} from "../../lib/validators/document.validators";
 // import { IDocumentRepository } from "../repositories/IDocumentRepository";
-import { IDocumentRepository } from "../domain/repositories/document.repository";
-import { InjectionTarget } from "../lib/di/InjectionTarget";
+import { IDocumentRepository } from "../../domain/repositories/document.repository";
+import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import {
     DOCUMENT_MAPPER,
     DOCUMENT_REPOSITORY,
     LOGGER,
     TAG_MAPPER,
-} from "../lib/di/di.tokens";
-import { Inject } from "../lib/di/Inject";
-import { parseResponse } from "../lib/util/parseResponse";
-import { Result } from "../lib/util/result";
+} from "../../lib/di/di.tokens";
+import { Inject } from "../../lib/di/Inject";
+import { parseResponse } from "../../lib/util/parse-response.util";
+import { Result } from "../../lib/util/result";
 import { z } from "zod";
-import { ILogger } from "../lib/logging/ILogger";
-import { UserDefinedMetadata } from "../domain/types/document.types";
-import { DocumentEntity } from "../domain/entities/document.entity";
-import { UUID } from "../domain/value-objects/uuid.value-object";
-import { TagEntity } from "../domain/entities/tag.entity";
-import { Mapper } from "../lib/ddd/mapper.interface";
-import { DocumentModel } from "../mappers/document.mapper";
-import { DocumentResponseDto } from "../dtos/document.response.dto";
-import { PaginatedQueryParams } from "../lib/ddd/repository.port";
-import { TagModel } from "../mappers/tag.mapper";
-import { TagResponseDto } from "../dtos/tag.response.dto";
+import { ILogger } from "../../lib/logging/ILogger";
+import { UserDefinedMetadata } from "../../domain/types/document.types";
+import { DocumentEntity } from "../../domain/entities/document.entity";
+import { UUID } from "../../domain/value-objects/uuid.value-object";
+import { TagEntity } from "../../domain/entities/tag.entity";
+import { Mapper } from "../../lib/ddd/mapper.interface";
+import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
+import { DocumentResponseDto } from "../../infrastructure/dtos/document.response.dto";
+import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
+import { TagModel } from "../../infrastructure/mappers/tag.mapper";
+import { TagResponseDto } from "../../infrastructure/dtos/tag.response.dto";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -62,7 +62,11 @@ export class DocumentService {
         documentId: string
     ): Promise<Result<GetDocumentResponse, Error>> {
         return (await this.repository.findOneById(documentId)).bind(
-            (response) => parseResponse(GetDocumentResponse, response)
+            (response) =>
+                parseResponse(
+                    GetDocumentResponse,
+                    this.documentMapper.toResponse(response)
+                )
         );
     }
 
@@ -80,7 +84,11 @@ export class DocumentService {
             },
         };
         return (await this.repository.findAllPaginated(params)).bind(
-            (response) => parseResponse(DocumentResponse, response)
+            (response) =>
+                parseResponse(DocumentResponse, {
+                    ...response,
+                    items: response.items.map(this.documentMapper.toResponse),
+                })
         );
     }
 
