@@ -1,5 +1,5 @@
-import { UserDefinedMetadata } from "../domain/types/document.types";
-import { ResponseBase } from "../lib/api/response.base";
+import { UserDefinedMetadata } from "../../domain/types/document.types";
+import { ResponseBase } from "../../lib/api/response.base";
 
 export class DocumentResponseDto extends ResponseBase {
     userId: string;
