@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS "document" (
 	"file_extension" varchar(255) NOT NULL,
 	"content_type" varchar(255) NOT NULL,
 	"content" text,
-	"other" jsonb,
+	"meta" jsonb,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
