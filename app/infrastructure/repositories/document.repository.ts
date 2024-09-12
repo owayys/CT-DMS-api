@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { DocumentEntity } from "../../domain/entities/document.entity";
-import { IDocumentRepository } from "../../domain/repositories/document.repository";
+import { IDocumentRepository } from "../../domain/repositories/document.repository.port";
 import { DocumentResponseDto } from "../dtos/document.response.dto";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { Paginated, PaginatedQueryParams } from "../../lib/ddd/repository.port";
@@ -168,6 +168,24 @@ export class DocumentRepository implements IDocumentRepository {
         } catch (err) {
             console.log(err);
             return new Result<Paginated<DocumentEntity>, Error>(null, err);
+        }
+    }
+
+    async findByOwner(owner: string): Promise<Result<DocumentEntity[], Error>> {
+        try {
+            const documents = await this._db.query.DocumentTable.findMany({
+                where: eq(DocumentTable.userId, owner),
+            });
+
+            return new Result<DocumentEntity[], Error>(
+                documents.map(this.documentMapper.toDomain),
+                null
+            );
+        } catch (err) {
+            return new Result<DocumentEntity[], Error>(
+                null,
+                new Error("Error finding documents")
+            );
         }
     }
 
