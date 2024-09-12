@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { Document } from "../../lib/validators/document.validators";
 import { DocumentEntity } from "../../domain/entities/document.entity";
-import { DocumentResponseDto } from "../../infrastructure/dtos/document.response.dto";
+import { DocumentResponseDto } from "../../application/dtos/document.response.dto";
 import { UUID } from "../../domain/value-objects/uuid.value-object";
 import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
 import { TagEntity } from "../../domain/entities/tag.entity";

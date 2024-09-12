@@ -1,6 +1,6 @@
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserEntity } from "../../domain/entities/user.entity";
-import { UserResponseDto } from "../dtos/user.response.dto";
+import { UserResponseDto } from "../../application/dtos/user.response.dto";
 import { User } from "../../lib/validators/user.validators";
 import { z } from "zod";
 import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
