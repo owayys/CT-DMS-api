@@ -1,17 +1,17 @@
 import { TagEntity } from "../entities/tag.entity";
 import { UUID } from "../value-objects/uuid.value-object";
 
-export type DocumentProps<T> = {
+export type DocumentProps<T extends UserDefinedMetadata> = {
     userId: UUID;
     fileName: string;
     fileExtension: string;
     content: string;
     contentType: string;
     tags: TagEntity[];
-    meta?: { [Property in keyof T]: T[Property] };
+    meta?: T;
 };
 
-export type CreateDocumentProps<T> = {
+export type CreateDocumentProps<T extends UserDefinedMetadata> = {
     userId: UUID;
     fileName: string;
     fileExtension: string;
@@ -21,13 +21,17 @@ export type CreateDocumentProps<T> = {
         key: string;
         name: string;
     }[];
-    meta?: { [Property in keyof T]: T[Property] };
+    meta?: T;
 };
 
-type Primitive = string | boolean | number;
+export type MetadataTypes = string | number | boolean | UserDefinedMetadata;
 
 export type UserDefinedMetadata = {
-    [key: string]: Primitive | Array<Primitive> | UserDefinedMetadata;
+    [key: string]:
+        | MetadataTypes
+        | MetadataTypes[]
+        | UserDefinedMetadata
+        | UserDefinedMetadata[];
 };
 
 export type UpdateDocumentProps = Omit<
