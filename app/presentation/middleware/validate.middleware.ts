@@ -14,6 +14,7 @@ export const validate = (schema: z.ZodObject<any, any>) => {
             req.params = response.params;
             next();
         } catch (err) {
+            console.log(err);
             if (err instanceof ZodError) {
                 const errorMessages = err.errors.map((issue: any) => ({
                     message: `${issue.message}`,

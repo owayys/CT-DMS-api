@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { reqSerializer } from "../lib/logging/reqSerializer";
-import { ILogger } from "../lib/logging/ILogger";
-import { Inject } from "../lib/di/Inject";
-import { LOGGER } from "../lib/di/di.tokens";
-import { InjectionTarget } from "../lib/di/InjectionTarget";
+import { reqSerializer } from "../../lib/logging/reqSerializer";
+import { ILogger } from "../../lib/logging/ILogger";
+import { Inject } from "../../lib/di/Inject";
+import { LOGGER } from "../../lib/di/di.tokens";
+import { InjectionTarget } from "../../lib/di/InjectionTarget";
 
 @InjectionTarget()
 export class RequestLogger {
