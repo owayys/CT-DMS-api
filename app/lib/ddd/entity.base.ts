@@ -62,6 +62,7 @@ export abstract class Entity<EntityProps> {
 
     public onUpdate(): void {
         this._updatedAt.update();
+        this.validate();
     }
 
     public abstract validate(): void;
