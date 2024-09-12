@@ -21,16 +21,19 @@ import { parseResponse } from "../../lib/util/parse-response.util";
 import { Result } from "../../lib/util/result";
 import { z } from "zod";
 import { ILogger } from "../../lib/logging/ILogger";
-import { UserDefinedMetadata } from "../../domain/types/document.types";
+import {
+    AuthorizeDocumentAccessCommand,
+    UserDefinedMetadata,
+} from "../../domain/types/document.types";
 import { DocumentEntity } from "../../domain/entities/document.entity";
 import { UUID } from "../../domain/value-objects/uuid.value-object";
 import { TagEntity } from "../../domain/entities/tag.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
-import { DocumentResponseDto } from "../../infrastructure/dtos/document.response.dto";
+import { DocumentResponseDto } from "../dtos/document.response.dto";
 import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
 import { TagModel } from "../../infrastructure/mappers/tag.mapper";
-import { TagResponseDto } from "../../infrastructure/dtos/tag.response.dto";
+import { TagResponseDto } from "../dtos/tag.response.dto";
 import { IDomainService } from "../../lib/ddd/domain-service.interface";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
@@ -49,7 +52,10 @@ export class DocumentService {
         @Inject(LOGGER)
         private logger: ILogger,
         @Inject(AUTHORIZE_DOCUMENT_ACCESS_SERVICE)
-        private authService: IDomainService<DocumentEntity>,
+        private authService: IDomainService<
+            AuthorizeDocumentAccessCommand,
+            DocumentEntity
+        >,
         @Inject(DOCUMENT_MAPPER)
         private documentMapper: Mapper<
             DocumentEntity,

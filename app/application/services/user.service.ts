@@ -23,9 +23,13 @@ import { ILogger } from "../../lib/logging/ILogger";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserEntity } from "../../domain/entities/user.entity";
 import { UserModel } from "../../infrastructure/mappers/user.mapper";
-import { UserResponseDto } from "../../infrastructure/dtos/user.response.dto";
+import { UserResponseDto } from "../dtos/user.response.dto";
 import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
 import { IDomainService } from "../../lib/ddd/domain-service.interface";
+import {
+    LoginUserCommand,
+    RegisterUserCommand,
+} from "../../domain/types/user.types";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
@@ -37,9 +41,12 @@ export class UserService {
         @Inject(LOGGER)
         private logger: ILogger,
         @Inject(REGISTER_USER_SERVICE)
-        private registerUserService: IDomainService<UserEntity>,
+        private registerUserService: IDomainService<
+            RegisterUserCommand,
+            UserEntity
+        >,
         @Inject(LOGIN_USER_SERVICE)
-        private loginUserService: IDomainService<UserEntity>,
+        private loginUserService: IDomainService<LoginUserCommand, UserEntity>,
         @Inject(USER_MAPPER)
         private mapper: Mapper<UserEntity, UserModel, UserResponseDto>
     ) {}
