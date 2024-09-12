@@ -3,6 +3,7 @@
         "@types/jsonwebtoken": "^9.0.6",
         "bcrypt": "^5.1.1",
         "bunyan": "^1.8.15",
+        "commander": "^12.1.0",
         "dotenv": "^16.4.5",
         "drizzle-orm": "^0.33.0",
         "express": "^4.19.2",
@@ -21,13 +22,15 @@
         "build": "npx tsc",
         "start": "tsx app/index.ts | bunyan -o short",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "nodemon --exec tsx app/index.ts",
+        "dev": "tsx app/index.ts | bunyan -o short",
         "db:generate": "drizzle-kit generate",
-        "db:migrate": "tsx app/database/migrate.ts"
+        "db:migrate": "tsx app/database/migrate.ts",
+        "db:seed": "tsx app/database/seed.ts"
     },
     "author": "owayys",
     "license": "ISC",
     "devDependencies": {
+        "@faker-js/faker": "^9.0.0",
         "@types/bcrypt": "^5.0.2",
         "@types/bunyan": "^1.8.11",
         "@types/express": "^4.17.21",

@@ -9,7 +9,7 @@ import fileUpload from "express-fileupload";
 import userRouter from "./presentation/routes/user.route";
 import jwtRouter from "./presentation/routes/jwt.route";
 import documentRouter from "./presentation/routes/document.route";
-import { RequestLogger } from "./middleware/logRequests";
+import { RequestLogger } from "./presentation/middleware/log-requests.middleware";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
