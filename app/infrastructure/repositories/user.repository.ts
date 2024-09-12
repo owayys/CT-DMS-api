@@ -1,16 +1,16 @@
 import { eq } from "drizzle-orm";
-import { IUserRepository } from "../domain/repositories/user.repository.port";
-import { DATABASE, USER_MAPPER } from "../lib/di/di.tokens";
-import { Inject } from "../lib/di/Inject";
-import { InjectionTarget } from "../lib/di/InjectionTarget";
-import { Result } from "../lib/util/result";
-import { IDrizzleConnection } from "./types";
-import { UserTable } from "./schema";
-import { UserEntity } from "../domain/entities/user.entity";
-import { Mapper } from "../lib/ddd/mapper.interface";
+import { IUserRepository } from "../../domain/repositories/user.repository.port";
+import { DATABASE, USER_MAPPER } from "../../lib/di/di.tokens";
+import { Inject } from "../../lib/di/Inject";
+import { InjectionTarget } from "../../lib/di/InjectionTarget";
+import { Result } from "../../lib/util/result";
+import { IDrizzleConnection } from "../../database/types";
+import { UserTable } from "../../database/schema";
+import { UserEntity } from "../../domain/entities/user.entity";
+import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserModel } from "../mappers/user.mapper";
 import { UserResponseDto } from "../dtos/user.response.dto";
-import { Paginated, PaginatedQueryParams } from "../lib/ddd/repository.port";
+import { Paginated, PaginatedQueryParams } from "../../lib/ddd/repository.port";
 
 @InjectionTarget()
 export class UserRepository implements IUserRepository {

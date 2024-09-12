@@ -1,17 +1,17 @@
 import { and, eq } from "drizzle-orm";
-import { DocumentEntity } from "../domain/entities/document.entity";
-import { IDocumentRepository } from "../domain/repositories/document.repository";
+import { DocumentEntity } from "../../domain/entities/document.entity";
+import { IDocumentRepository } from "../../domain/repositories/document.repository";
 import { DocumentResponseDto } from "../dtos/document.response.dto";
-import { Mapper } from "../lib/ddd/mapper.interface";
-import { Paginated, PaginatedQueryParams } from "../lib/ddd/repository.port";
-import { DATABASE, DOCUMENT_MAPPER, TAG_MAPPER } from "../lib/di/di.tokens";
-import { Inject } from "../lib/di/Inject";
-import { InjectionTarget } from "../lib/di/InjectionTarget";
-import { Result } from "../lib/util/result";
+import { Mapper } from "../../lib/ddd/mapper.interface";
+import { Paginated, PaginatedQueryParams } from "../../lib/ddd/repository.port";
+import { DATABASE, DOCUMENT_MAPPER, TAG_MAPPER } from "../../lib/di/di.tokens";
+import { Inject } from "../../lib/di/Inject";
+import { InjectionTarget } from "../../lib/di/InjectionTarget";
+import { Result } from "../../lib/util/result";
 import { DocumentModel } from "../mappers/document.mapper";
-import { IDrizzleConnection } from "./types";
-import { DocumentTable, TagTable } from "./schema";
-import { TagEntity } from "../domain/entities/tag.entity";
+import { IDrizzleConnection } from "../../database/types";
+import { DocumentTable, TagTable } from "../../database/schema";
+import { TagEntity } from "../../domain/entities/tag.entity";
 import { TagResponseDto } from "../dtos/tag.response.dto";
 import { TagModel } from "../mappers/tag.mapper";
 
@@ -33,7 +33,6 @@ export class DocumentRepository implements IDocumentRepository {
     ): Promise<Result<DocumentEntity, Error>> {
         try {
             return await this._db.transaction(async (tx) => {
-                console.log(entity.id!.toString());
                 const [document] = await tx
                     .insert(DocumentTable)
                     .values({
@@ -69,8 +68,6 @@ export class DocumentRepository implements IDocumentRepository {
                     ...document,
                     tags: insertedTags,
                 };
-
-                console.log(response);
 
                 return new Result<DocumentEntity, Error>(
                     this.documentMapper.toDomain(response),
@@ -140,19 +137,27 @@ export class DocumentRepository implements IDocumentRepository {
         params: PaginatedQueryParams
     ): Promise<Result<Paginated<DocumentEntity>, Error>> {
         try {
-            let users = await this._db.query.DocumentTable.findMany();
+            let documents = await this._db.query.DocumentTable.findMany({
+                with: {
+                    tags: {
+                        columns: {
+                            documentId: false,
+                        },
+                    },
+                },
+            });
 
-            let totalItems = users.length;
-            let totalPages = Math.ceil(users.length / params.pageSize);
+            let totalItems = documents.length;
+            let totalPages = Math.ceil(documents.length / params.pageSize);
             let page = Math.min(totalPages, params.pageNumber);
-            let items = users.slice(
-                params.pageNumber * params.pageSize,
-                params.pageNumber * params.pageSize + params.pageSize
+            let items = documents.slice(
+                (page - 1) * params.pageSize,
+                (page - 1) * params.pageSize + params.pageSize
             );
             let size = Math.min(items.length, params.pageSize);
 
             const response: Paginated<DocumentEntity> = {
-                page: page + 1,
+                page: page,
                 size: size,
                 totalPages: totalPages,
                 totalItems: totalItems,
@@ -161,6 +166,7 @@ export class DocumentRepository implements IDocumentRepository {
 
             return new Result<Paginated<DocumentEntity>, Error>(response, null);
         } catch (err) {
+            console.log(err);
             return new Result<Paginated<DocumentEntity>, Error>(null, err);
         }
     }
