@@ -1,4 +1,3 @@
-import { UploadedFile } from "express-fileupload";
 import { DeleteResponse, UpdateResponse } from "../../lib/validators/common";
 import {
     DocumentContentResponse,
@@ -8,9 +7,10 @@ import {
     TagResponse,
 } from "../../lib/validators/document.validators";
 // import { IDocumentRepository } from "../repositories/IDocumentRepository";
-import { IDocumentRepository } from "../../domain/repositories/document.repository";
+import { IDocumentRepository } from "../../domain/repositories/document.repository.port";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import {
+    AUTHORIZE_DOCUMENT_ACCESS_SERVICE,
     DOCUMENT_MAPPER,
     DOCUMENT_REPOSITORY,
     LOGGER,
@@ -31,6 +31,7 @@ import { DocumentResponseDto } from "../../infrastructure/dtos/document.response
 import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
 import { TagModel } from "../../infrastructure/mappers/tag.mapper";
 import { TagResponseDto } from "../../infrastructure/dtos/tag.response.dto";
+import { IDomainService } from "../../lib/ddd/domain-service.interface";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -47,6 +48,8 @@ export class DocumentService {
         private repository: IDocumentRepository,
         @Inject(LOGGER)
         private logger: ILogger,
+        @Inject(AUTHORIZE_DOCUMENT_ACCESS_SERVICE)
+        private authService: IDomainService<DocumentEntity>,
         @Inject(DOCUMENT_MAPPER)
         private documentMapper: Mapper<
             DocumentEntity,
@@ -61,7 +64,18 @@ export class DocumentService {
         userId: string,
         documentId: string
     ): Promise<Result<GetDocumentResponse, Error>> {
-        return (await this.repository.findOneById(documentId)).bind(
+        const documentResponse = await this.repository.findOneById(documentId);
+
+        if (documentResponse.isErr()) {
+            return new Result<GetDocumentResponse, Error>(
+                null,
+                new Error("Error getting document")
+            );
+        }
+
+        const document = documentResponse.unwrap();
+
+        return (await this.authService.execute({ userId, document })).bind(
             (response) =>
                 parseResponse(
                     GetDocumentResponse,
