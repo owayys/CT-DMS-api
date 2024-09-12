@@ -27,8 +27,13 @@ export class UUID {
         return new UUID(value);
     }
 
-    public equals(other: UUID): boolean {
-        return this.value === other.value;
+    public equals(other: any): boolean {
+        if (other instanceof UUID) {
+            return this.value === other.value;
+        } else if (other instanceof String) {
+            return this.value === other;
+        }
+        return false;
     }
 
     public toString(): string {
