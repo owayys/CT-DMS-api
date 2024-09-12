@@ -83,14 +83,14 @@ export class UserController {
         }
     };
 
-    save: RequestHandler = async (
+    register: RequestHandler = async (
         req: Request,
         res: Response,
         next: NextFunction
     ) => {
         try {
             const { userName, password } = req.body;
-            const result = await this.userService.save(userName, password);
+            const result = await this.userService.register(userName, password);
             if (result.isErr()) {
                 const err: Error = result.getErr();
 

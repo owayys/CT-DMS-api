@@ -20,7 +20,7 @@ router.get(
     restrict("ADMIN"),
     userController.getAll
 );
-router.post("/", validate(CreateUser), userController.save);
+router.post("/", validate(CreateUser), userController.register);
 router.get("/:id", authenticateJWT, validate(GetUser), userController.get);
 router.put(
     "/:id",
