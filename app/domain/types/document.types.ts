@@ -2,18 +2,19 @@ import { UploadedFile } from "express-fileupload";
 import { TagEntity } from "../entities/tag.entity";
 import { UUID } from "../value-objects/uuid.value-object";
 import { DocumentEntity } from "../entities/document.entity";
+import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
 
-export type DocumentProps<T extends UserDefinedMetadata> = {
+export type DocumentProps = {
     userId: UUID;
     fileName: string;
     fileExtension: string;
     content: string;
     contentType: string;
     tags: TagEntity[];
-    meta?: T;
+    meta?: DocumentMetadata;
 };
 
-export type CreateDocumentProps<T extends UserDefinedMetadata> = {
+export type CreateDocumentProps = {
     userId: UUID;
     fileName: string;
     fileExtension: string;
@@ -23,7 +24,7 @@ export type CreateDocumentProps<T extends UserDefinedMetadata> = {
         key: string;
         name: string;
     }[];
-    meta?: T;
+    meta?: any;
 };
 
 export type MetadataTypes = string | number | boolean | UserDefinedMetadata;
@@ -36,10 +37,7 @@ export type UserDefinedMetadata = {
         | UserDefinedMetadata[];
 };
 
-export type UpdateDocumentProps = Omit<
-    DocumentProps<UserDefinedMetadata>,
-    "userId"
->;
+export type UpdateDocumentProps = Omit<DocumentProps, "userId">;
 
 export class UploadFileCommand {
     id: string;

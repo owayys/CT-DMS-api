@@ -9,18 +9,21 @@ import {
 import { Timestamp } from "../value-objects/timestamp.value-object";
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
+import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
 
-export class DocumentEntity extends AggregateRoot<
-    DocumentProps<UserDefinedMetadata>
-> {
-    static create(create: CreateDocumentProps<UserDefinedMetadata>) {
+export class DocumentEntity extends AggregateRoot<DocumentProps> {
+    static create(create: CreateDocumentProps) {
         const id = UUID.generate();
         const tagList = create.tags.map((tag) => {
             return TagEntity.create({ key: tag.key, name: tag.name });
         });
-        const props: DocumentProps<UserDefinedMetadata> = {
+        const metaData = create.meta
+            ? DocumentMetadata.fromData(create.meta)
+            : create.meta;
+        const props: DocumentProps = {
             ...create,
             tags: tagList,
+            meta: metaData,
         };
         const document = new DocumentEntity({ id, props });
         return document;
@@ -50,7 +53,7 @@ export class DocumentEntity extends AggregateRoot<
         return Array.from(this.props.tags.values());
     }
 
-    get meta(): UserDefinedMetadata | null {
+    get meta(): DocumentMetadata | null {
         return this.props.meta ?? null;
     }
 
@@ -87,6 +90,11 @@ export class DocumentEntity extends AggregateRoot<
         }
         if (!UUID.validate(this.props.userId.toString())) {
             throw Error("Document owner id invalid!");
+        }
+        if (this.props.meta) {
+            if (!DocumentMetadata.validate(this.props.meta.val)) {
+                throw Error("Invalid Document metadata");
+            }
         }
         if (!Timestamp.validate(this.createdAt.toString())) {
             throw Error("Document creation time invalid!");
