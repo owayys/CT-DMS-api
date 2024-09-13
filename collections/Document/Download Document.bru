@@ -5,11 +5,11 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/v1/document/download/?link=ea7d8a8d-9616-401e-be9a-7d2785ee78b3
+  url: {{baseUrl}}/api/v1/document/download/:url
   body: none
   auth: none
 }
 
-params:query {
-  link: ea7d8a8d-9616-401e-be9a-7d2785ee78b3
+params:path {
+  url: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRoIjoiLi9hcHAvdXBsb2Fkcy9iZDhhMmQxZC1lMmM1LTRiYmMtYjk2My0wNjZjNDQwZjhmMWMiLCJwYXJhbXMiOnsiZmlsZU5hbWUiOiJHSVQgRkxPVyIsImZpbGVFeHRlbnNpb24iOiIucG5nIn0sImlhdCI6MTcyNjIyNDM4OCwiZXhwIjoxNzI2MjI1Mjg4fQ.iJHoV4wUg44hslz8uDt3lU08ZuYxr8ipFywLOx76xs4
 }
