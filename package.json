@@ -20,12 +20,12 @@
     "main": "app/index.ts",
     "scripts": {
         "build": "npx tsc",
-        "start": "tsx app/index.ts | bunyan -o short",
+        "start": "tsx app/index.ts | bunyan -j",
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "tsx app/index.ts | bunyan -o short",
         "db:generate": "drizzle-kit generate",
-        "db:migrate": "tsx app/database/migrate.ts",
-        "db:seed": "tsx app/database/seed.ts"
+        "db:migrate": "tsx app/infrastructure/database/migrate.ts",
+        "db:seed": "tsx app/infrastructure/database/seed.ts"
     },
     "author": "owayys",
     "license": "ISC",
