@@ -10,6 +10,9 @@ export class Timestamp {
     }
 
     public static validate(timestamp: string): boolean {
+        if (new Date(timestamp).getTime() > new Date().getTime()) {
+            return false;
+        }
         if (
             /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}$/.test(timestamp) ||
             /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3,6}$/.test(
