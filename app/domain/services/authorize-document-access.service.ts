@@ -3,7 +3,7 @@ import { DocumentEntity } from "../entities/document.entity";
 import { AuthorizeDocumentAccessCommand } from "../types/document.types";
 
 export class AuthorizeDocumentAccessService {
-    static async execute(
+    async execute(
         command: AuthorizeDocumentAccessCommand
     ): Promise<Result<DocumentEntity, Error>> {
         const authorized = command.document.owner.equals(command.userId);
