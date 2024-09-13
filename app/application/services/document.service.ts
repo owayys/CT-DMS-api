@@ -4,9 +4,7 @@ import {
     DocumentResponse,
     GetDocumentResponse,
     SaveDocumentResponse,
-    TagResponse,
 } from "../../lib/validators/document.validators";
-// import { IDocumentRepository } from "../repositories/IDocumentRepository";
 import { IDocumentRepository } from "../../domain/repositories/document.repository.port";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import {
@@ -46,7 +44,6 @@ type DocumentResponse = z.infer<typeof DocumentResponse>;
 type DocumentContentResponse = z.infer<typeof DocumentContentResponse>;
 type SaveDocumentResponse = z.infer<typeof SaveDocumentResponse>;
 type UpdateResponse = z.infer<typeof UpdateResponse>;
-type TagResponse = z.infer<typeof TagResponse>;
 type DeleteResponse = z.infer<typeof DeleteResponse>;
 
 @InjectionTarget()
