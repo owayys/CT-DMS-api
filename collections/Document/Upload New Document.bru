@@ -7,11 +7,11 @@ meta {
 post {
   url: {{baseUrl}}/api/v1/document/upload
   body: multipartForm
-  auth: none
+  auth: inherit
 }
 
 headers {
-  authorization: {{access_token}}
+  ~authorization: {{access_token}}
 }
 
 body:multipart-form {

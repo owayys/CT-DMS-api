@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/api/v1/document?pageNumber=5&pageSize=10
   body: none
-  auth: none
+  auth: inherit
 }
 
 params:query {
@@ -17,5 +17,5 @@ params:query {
 }
 
 headers {
-  authorization: {{access_token}}
+  ~authorization: {{access_token}}
 }

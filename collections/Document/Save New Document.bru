@@ -7,11 +7,11 @@ meta {
 post {
   url: {{baseUrl}}/api/v1/document
   body: json
-  auth: none
+  auth: inherit
 }
 
 headers {
-  authorization: {{access_token}}
+  ~authorization: {{access_token}}
 }
 
 body:json {
@@ -31,36 +31,37 @@ body:json {
     ],
     "content": "fileContent TEST 1",
     "meta": {
-    "item1": "h",
-    "item2": 4953952293521149,
-    "item3": false,
-    "item4": {
-      "item5": [
-        8544131700845257,
-        5570144997728958
-      ]
-    },
-    "item6": [
-      "K",
-      "Y",
-      [
-        {
-          "item7": "2"
-        },
-        "G",
+      "item1": "h",
+      "item2": 4953952293521149,
+      "item3": false,
+      "item4": {
+        "item5": [
+          8544131700845257,
+          5570144997728958
+        ]
+      },
+      "item6": [
+        "K",
+        "Y",
         [
-        {
-          "item7": "2", "item8": [
-        {
-          "item7": "2"
-        },
-        "G"
+          {
+            "item7": "2"
+          },
+          "G",
+          [
+            {
+              "item7": "2",
+              "item8": [
+                {
+                  "item7": "2"
+                },
+                "G"
+              ]
+            },
+            "G"
+          ]
+        ]
       ]
-        },
-        "G"
-      ]
-      ]
-    ]
-  }
+    }
   }
 }
