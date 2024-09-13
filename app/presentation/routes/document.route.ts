@@ -18,7 +18,7 @@ import { DocumentController } from "../controllers/document.controller";
 const router = Router();
 const documentController = new DocumentController();
 
-router.get("/download", documentController.download);
+router.get("/download/:url", documentController.download);
 router.get(
     "/content/:id",
     authenticateJWT,

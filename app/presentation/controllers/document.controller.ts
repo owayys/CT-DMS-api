@@ -242,9 +242,9 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         try {
-            const { link } = req.query;
+            const { url } = req.params;
 
-            const result = await this.documentService.download(link as string);
+            const result = await this.documentService.download(url as string);
 
             if (result.isErr()) {
                 const err: Error = result.getErr();

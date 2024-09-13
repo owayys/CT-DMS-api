@@ -34,16 +34,22 @@ export class FileHandlerService implements IFileHandler {
         }
     }
 
-    async exists(id: string): Promise<Result<boolean, Error>> {
+    async getFile(id: string): Promise<Result<string, Error>> {
         try {
             const statCheck = await stat(`./app/uploads/${id}`);
             if (statCheck && statCheck.isFile()) {
-                return new Result<boolean, Error>(true, null);
+                return new Result<string, Error>(`./app/uploads/${id}`, null);
             } else {
-                return new Result<boolean, Error>(false, null);
+                return new Result<string, Error>(
+                    null,
+                    new Error(`File [${id}] not found`)
+                );
             }
         } catch (err) {
-            return new Result<boolean, Error>(false, null);
+            return new Result<string, Error>(
+                null,
+                new Error(`File [${id}] not found`)
+            );
         }
     }
 }
