@@ -121,14 +121,12 @@ export const AddTag = z.object({
     params: z.object({
         id: z.string().uuid(),
     }),
-    body: Tag,
+    body: Tag.pick({ key: true, name: true }),
 });
 
 export const UpdateTag = AddTag;
 
 export const DeleteTag = AddTag;
-
-export const TagResponse = Tag;
 
 export const DocumentResponse = z.object({
     page: z.number(),

@@ -56,7 +56,7 @@ export class DocumentEntity extends AggregateRoot<
 
     @AutoUpdate()
     public addTag(tag: TagEntity): void {
-        this.props.tags.push(tag);
+        this.props.tags.includes(tag) ? null : this.props.tags.push(tag);
     }
 
     @AutoUpdate()

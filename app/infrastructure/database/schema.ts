@@ -64,6 +64,17 @@ export const TagTable = pgTable(
             .notNull(),
         key: varchar("key", { length: 60 }).notNull(),
         name: varchar("name", { length: 60 }).notNull(),
+        createdAt: timestamp("created_at", {
+            mode: "string",
+        })
+            .notNull()
+            .defaultNow(),
+        updatedAt: timestamp("updated_at", {
+            mode: "string",
+        })
+            .notNull()
+            .defaultNow()
+            .$onUpdate(() => sql`now()`),
     },
     (table) => {
         return {

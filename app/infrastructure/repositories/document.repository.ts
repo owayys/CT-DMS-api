@@ -222,9 +222,12 @@ export class DocumentRepository implements IDocumentRepository {
                     })
                 );
 
-                await tx.insert(TagTable).values(docTags).onConflictDoNothing({
-                    target: TagTable.key,
-                });
+                await tx
+                    .insert(TagTable)
+                    .values(docTags)
+                    .onConflictDoNothing({
+                        target: [TagTable.documentId, TagTable.key],
+                    });
 
                 return new Result<boolean, Error>(true, null);
             });
@@ -272,10 +275,7 @@ export class DocumentRepository implements IDocumentRepository {
                         key: entity.key,
                         name: entity.name,
                     })
-                    .returning({
-                        key: TagTable.key,
-                        name: TagTable.name,
-                    })
+                    .returning()
                     .onConflictDoNothing({
                         target: [TagTable.documentId, TagTable.key],
                     });
@@ -295,7 +295,7 @@ export class DocumentRepository implements IDocumentRepository {
     async updateTag(
         id: string,
         entity: TagEntity
-    ): Promise<Result<TagEntity, Error>> {
+    ): Promise<Result<boolean, Error>> {
         try {
             const [tag] = await this._db
                 .update(TagTable)
@@ -308,24 +308,20 @@ export class DocumentRepository implements IDocumentRepository {
                         eq(TagTable.documentId, id)
                     )
                 )
-                .returning({
-                    key: TagTable.key,
-                    name: TagTable.name,
-                });
+                .returning();
 
-            return new Result<TagEntity, Error>(
-                this.tagMapper.toDomain(tag),
-                null
-            );
+            console.log(tag);
+
+            return new Result<boolean, Error>(true, null);
         } catch (err) {
-            return new Result<TagEntity, Error>(null, err);
+            return new Result<boolean, Error>(null, err);
         }
     }
 
     async removeTag(
         id: string,
         entity: TagEntity
-    ): Promise<Result<TagEntity, Error>> {
+    ): Promise<Result<boolean, Error>> {
         try {
             const [tag] = await this._db
                 .delete(TagTable)
@@ -335,17 +331,14 @@ export class DocumentRepository implements IDocumentRepository {
                         eq(TagTable.documentId, id)
                     )
                 )
-                .returning({
-                    key: TagTable.key,
-                    name: TagTable.name,
-                });
+                .returning();
 
-            return new Result<TagEntity, Error>(
-                this.tagMapper.toDomain(tag),
-                null
-            );
+            return tag
+                ? new Result<boolean, Error>(true, null)
+                : new Result<boolean, Error>(false, null);
         } catch (err) {
-            return new Result<TagEntity, Error>(null, err);
+            console.log("ERROR", err);
+            return new Result<boolean, Error>(null, err);
         }
     }
 }

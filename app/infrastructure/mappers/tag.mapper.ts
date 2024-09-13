@@ -32,7 +32,6 @@ export class TagMapper implements Mapper<TagEntity, TagModel, TagResponseDto> {
     toResponse(entity: TagEntity): TagResponseDto {
         const props = entity.getProps();
         const response = new TagResponseDto({
-            Id: props.id!.toString(),
             createdAt: new Date(props.createdAt.toString()),
             updatedAt: new Date(props.updatedAt.toString()),
         });

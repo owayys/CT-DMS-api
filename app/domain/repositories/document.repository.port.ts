@@ -8,7 +8,7 @@ export interface IDocumentRepository extends RepositoryPort<DocumentEntity> {
 
     addTag(id: string, entity: TagEntity): Promise<Result<TagEntity, Error>>;
 
-    updateTag(id: string, entity: TagEntity): Promise<Result<TagEntity, Error>>;
+    updateTag(id: string, entity: TagEntity): Promise<Result<boolean, Error>>;
 
-    removeTag(id: string, entity: TagEntity): Promise<Result<TagEntity, Error>>;
+    removeTag(id: string, entity: TagEntity): Promise<Result<boolean, Error>>;
 }
