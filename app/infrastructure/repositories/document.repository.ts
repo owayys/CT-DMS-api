@@ -310,8 +310,6 @@ export class DocumentRepository implements IDocumentRepository {
                 )
                 .returning();
 
-            console.log(tag);
-
             return new Result<boolean, Error>(true, null);
         } catch (err) {
             return new Result<boolean, Error>(null, err);

@@ -173,7 +173,6 @@ export class DocumentController {
                     });
                 }
             } else {
-                console.log(result.unwrap());
                 res.status(200).json(result.unwrap());
             }
         } catch (err) {
@@ -435,7 +434,6 @@ export class DocumentController {
         try {
             const { id } = req.params;
             const { key, name } = req.body;
-            console.log(id, req.body);
             const result = await this.documentService.removeTag(id, {
                 key,
                 name,
