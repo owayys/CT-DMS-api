@@ -122,7 +122,7 @@ const main = async () => {
     }
 
     writeFile(
-        "./app/database/seeded/seeded-users.json",
+        "./app/infrastructure/database/seeded/seeded-users.json",
         JSON.stringify(userData),
         "utf8",
         function (err) {
@@ -135,7 +135,7 @@ const main = async () => {
     );
 
     writeFile(
-        "./app/database/seeded/seeded-documents.json",
+        "./app/infrastructure/database/seeded/seeded-documents.json",
         JSON.stringify(documents),
         "utf8",
         function (err) {

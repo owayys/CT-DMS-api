@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS "tag" (
 	"document_id" uuid NOT NULL,
 	"key" varchar(60) NOT NULL,
 	"name" varchar(60) NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "tag_document_id_key_pk" PRIMARY KEY("document_id","key")
 );
 --> statement-breakpoint
