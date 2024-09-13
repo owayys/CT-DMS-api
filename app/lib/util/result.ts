@@ -4,7 +4,7 @@ export class Result<T, E extends Error> {
 
     constructor(ok: T | null, err: E | null) {
         {
-            if (!ok && !err) {
+            if (ok === null && err === null) {
                 throw new Error("Result must have a value or an error");
             }
             if (ok && err) {
@@ -73,18 +73,4 @@ export class Result<T, E extends Error> {
         }
         return new Result<U, E>(null, this.getErr());
     }
-
-    // match<U>(obj: { ok: string; err: string }): Result<U, E> {
-    //     if (this.isOk()) {
-    //         if (obj.ok) {
-    //             return this.unwrap();
-    //         } else {
-    //             return
-    //         }
-    //     } else {
-    //         if (obj.err) {
-    //             return this.getErr();
-    //         }
-    //     }
-    // }
 }
