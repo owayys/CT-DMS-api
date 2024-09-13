@@ -30,7 +30,7 @@ export class UUID {
     public equals(other: any): boolean {
         if (other instanceof UUID) {
             return this.value === other.value;
-        } else if (other instanceof String) {
+        } else if (typeof other === "string") {
             return this.value === other;
         }
         return false;
