@@ -83,7 +83,6 @@ export class UserService {
                     ...response,
                     items: response.items.map(this.mapper.toResponse),
                 };
-                console.log(mappedResponse);
                 return parseResponse(AllUsersResponse, mappedResponse);
             }
         );
