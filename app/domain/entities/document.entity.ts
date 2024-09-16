@@ -2,7 +2,6 @@ import { TagEntity } from "./tag.entity";
 import { UUID } from "../value-objects/uuid.value-object";
 import {
     CreateDocumentProps,
-    UserDefinedMetadata,
     DocumentProps,
     UpdateDocumentProps,
 } from "../types/document.types";
