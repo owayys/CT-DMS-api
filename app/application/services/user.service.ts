@@ -2,13 +2,7 @@
 import { IUserRepository } from "../../domain/repositories/user.repository.port";
 
 import { Result } from "../../lib/util/result";
-import {
-    LOGGER,
-    LOGIN_USER_SERVICE,
-    REGISTER_USER_SERVICE,
-    USER_MAPPER,
-    USER_REPOSITORY,
-} from "../../lib/di/di.tokens";
+import { LOGGER, USER_MAPPER, USER_REPOSITORY } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 
@@ -25,11 +19,6 @@ import { UserEntity } from "../../domain/entities/user.entity";
 import { UserModel } from "../../infrastructure/mappers/user.mapper";
 import { UserResponseDto } from "../dtos/user.response.dto";
 import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
-import { IDomainService } from "../../lib/ddd/domain-service.interface";
-import {
-    LoginUserCommand,
-    RegisterUserCommand,
-} from "../../domain/types/user.types";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
@@ -40,13 +29,6 @@ export class UserService {
         private repository: IUserRepository,
         @Inject(LOGGER)
         private logger: ILogger,
-        @Inject(REGISTER_USER_SERVICE)
-        private registerUserService: IDomainService<
-            RegisterUserCommand,
-            UserEntity
-        >,
-        @Inject(LOGIN_USER_SERVICE)
-        private loginUserService: IDomainService<LoginUserCommand, UserEntity>,
         @Inject(USER_MAPPER)
         private mapper: Mapper<UserEntity, UserModel, UserResponseDto>
     ) {}
@@ -55,9 +37,8 @@ export class UserService {
         userName: string,
         password: string
     ): Promise<Result<UserResponse, Error>> {
-        return (
-            await this.registerUserService.execute({ userName, password })
-        ).bind((response) =>
+        const user = UserEntity.create({ userName, password });
+        return (await this.repository.insert(user)).bind((response) =>
             parseResponse(UserResponse, this.mapper.toResponse(response))
         );
     }
