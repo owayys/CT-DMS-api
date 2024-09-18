@@ -41,7 +41,7 @@ export const DocumentTable = pgTable("document", {
     fileName: varchar("file_name", { length: 255 }).notNull(),
     fileExtension: varchar("file_extension", { length: 255 }).notNull(),
     contentType: varchar("content_type", { length: 255 }).notNull(),
-    content: text("content"),
+    content: text("content").notNull(),
     meta: jsonb("meta"),
     createdAt: timestamp("created_at", {
         mode: "string",

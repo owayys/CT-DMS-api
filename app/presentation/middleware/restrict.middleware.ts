@@ -1,6 +1,6 @@
-import { IRequest, IRequestHandler, IResponse, NextFunction } from "express";
+import { IRequest, IResponse, NextFunction } from "express";
 
-export const restrict: IRequestHandler = (...role: any) => {
+export const restrict = (...role: any) => {
     return (req: IRequest, res: IResponse, next: NextFunction) => {
         const userRole = req.user.userRole;
 
