@@ -16,34 +16,26 @@ export class UserController {
         res: IResponse,
         next: NextFunction
     ) => {
-        try {
-            const userId = req.params.id;
+        const userId = req.params.id;
 
-            const result = await this.userService.get(userId);
+        const result = await this.userService.get(userId);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     getAll = async (req: IRequest, res: IResponse, next: NextFunction) => {
-        try {
-            const { pageNumber, pageSize } = req.query;
+        const { pageNumber, pageSize } = req.query;
 
-            const result = await this.userService.getAll(
-                (pageNumber as unknown as number) - 1,
-                pageSize as unknown as number
-            );
+        const result = await this.userService.getAll(
+            (pageNumber as unknown as number) - 1,
+            pageSize as unknown as number
+        );
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     register: IRequestHandler = async (
@@ -51,15 +43,11 @@ export class UserController {
         res: IResponse,
         next: NextFunction
     ) => {
-        try {
-            const { userName, password } = req.body;
-            const result = await this.userService.register(userName, password);
-            req.result = result;
+        const { userName, password } = req.body;
+        const result = await this.userService.register(userName, password);
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     update: IRequestHandler = async (
@@ -67,26 +55,22 @@ export class UserController {
         res: IResponse,
         next: NextFunction
     ) => {
-        try {
-            const userId = req.params.id;
+        const userId = req.params.id;
 
-            if (req.user.Id !== userId && req.user.userRole !== "ADMIN") {
-                return res.status(403).json({
-                    err: {
-                        message: "Invalid User Id for current user",
-                    },
-                });
-            }
-
-            const { password } = req.body;
-
-            const result = await this.userService.update(userId, password);
-
-            req.result = result;
-
-            next();
-        } catch (err) {
-            this.logger.warn(err);
+        if (req.user.Id !== userId && req.user.userRole !== "ADMIN") {
+            return res.status(403).json({
+                err: {
+                    message: "Invalid User Id for current user",
+                },
+            });
         }
+
+        const { password } = req.body;
+
+        const result = await this.userService.update(userId, password);
+
+        req.result = result;
+
+        next();
     };
 }

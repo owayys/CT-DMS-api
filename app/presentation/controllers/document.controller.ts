@@ -20,17 +20,13 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { id } = req.params;
-            const userId = req.user.Id;
-            const result = await this.documentService.get(userId, id);
+        const { id } = req.params;
+        const userId = req.user.Id;
+        const result = await this.documentService.get(userId, id);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     getAll: IRequestHandler = async (
@@ -38,23 +34,19 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const userId = req.user.Id;
-            const { pageNumber, pageSize, tag } = req.query;
+        const userId = req.user.Id;
+        const { pageNumber, pageSize, tag } = req.query;
 
-            const result = await this.documentService.getAll(
-                // userId,
-                pageNumber,
-                pageSize,
-                tag
-            );
+        const result = await this.documentService.getAll(
+            // userId,
+            pageNumber,
+            pageSize,
+            tag
+        );
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     getContent: IRequestHandler = async (
@@ -62,17 +54,13 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { id } = req.params;
-            const userId = req.user.Id;
-            const result = await this.documentService.getContent(userId, id);
+        const { id } = req.params;
+        const userId = req.user.Id;
+        const result = await this.documentService.getContent(userId, id);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     save: IRequestHandler = async (
@@ -80,33 +68,23 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const {
-                fileName,
-                fileExtension,
-                contentType,
-                tags,
-                content,
-                meta,
-            } = req.body;
-            const userId = req.user.Id;
+        const { fileName, fileExtension, contentType, tags, content, meta } =
+            req.body;
+        const userId = req.user.Id;
 
-            const result = await this.documentService.save(
-                userId,
-                fileName,
-                fileExtension,
-                contentType,
-                tags,
-                content,
-                meta || null
-            );
+        const result = await this.documentService.save(
+            userId,
+            fileName,
+            fileExtension,
+            contentType,
+            tags,
+            content,
+            meta || null
+        );
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     upload: IRequestHandler = async (
@@ -114,41 +92,37 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            if (!req.files || Object.keys(req.files).length === 0) {
-                req.result = new Result(
-                    null,
-                    new ArgumentNotProvidedException("No file uploaded")
-                );
-                next();
-            } else {
-                const file = req.files.file as UploadedFile;
+        if (!req.files || Object.keys(req.files).length === 0) {
+            req.result = new Result(
+                null,
+                new ArgumentNotProvidedException("No file uploaded")
+            );
+            next();
+        } else {
+            const file = req.files.file as UploadedFile;
 
-                const fileName = path.parse(file.name).name;
-                const fileExtension = path.parse(file.name).ext;
+            const fileName = path.parse(file.name).name;
+            const fileExtension = path.parse(file.name).ext;
 
-                const contentType = file.mimetype;
+            const contentType = file.mimetype;
 
-                let { tags } = req.body;
-                tags = JSON.parse(tags);
+            let { tags } = req.body;
+            tags = JSON.parse(tags);
 
-                const userId = req.user.Id;
+            const userId = req.user.Id;
 
-                const result = await this.documentService.upload(
-                    userId,
-                    file,
-                    fileName,
-                    fileExtension,
-                    contentType,
-                    tags
-                );
+            const result = await this.documentService.upload(
+                userId,
+                file,
+                fileName,
+                fileExtension,
+                contentType,
+                tags
+            );
 
-                req.result = result;
+            req.result = result;
 
-                next();
-            }
-        } catch (err) {
-            this.logger.warn(err);
+            next();
         }
     };
 
@@ -157,17 +131,13 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { url } = req.params;
+        const { url } = req.params;
 
-            const result = await this.documentService.download(url as string);
+        const result = await this.documentService.download(url as string);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     update: IRequestHandler = async (
@@ -175,28 +145,24 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { fileName, fileExtension, contentType, tags, content } =
-                req.body;
-            const { id } = req.params;
-            const userId = req.user.Id;
+        const { fileName, fileExtension, contentType, tags, content } =
+            req.body;
+        const { id } = req.params;
+        const userId = req.user.Id;
 
-            const result = await this.documentService.update(
-                userId,
-                id,
-                fileName,
-                fileExtension,
-                contentType,
-                tags,
-                content
-            );
+        const result = await this.documentService.update(
+            userId,
+            id,
+            fileName,
+            fileExtension,
+            contentType,
+            tags,
+            content
+        );
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     remove: IRequestHandler = async (
@@ -204,18 +170,14 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { id } = req.params;
-            const user = req.user;
+        const { id } = req.params;
+        const user = req.user;
 
-            const result = await this.documentService.remove(user, id);
+        const result = await this.documentService.remove(user, id);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     addTag: IRequestHandler = async (
@@ -223,18 +185,14 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { id } = req.params;
-            const { key, name } = req.body;
+        const { id } = req.params;
+        const { key, name } = req.body;
 
-            const result = await this.documentService.addTag(id, { key, name });
+        const result = await this.documentService.addTag(id, { key, name });
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     updateTag: IRequestHandler = async (
@@ -242,21 +200,17 @@ export class DocumentController {
         res: IResponse,
         next
     ): Promise<void> => {
-        try {
-            const { id } = req.params;
-            const { key, name } = req.body;
+        const { id } = req.params;
+        const { key, name } = req.body;
 
-            const result = await this.documentService.updateTag(id, {
-                key,
-                name,
-            });
+        const result = await this.documentService.updateTag(id, {
+            key,
+            name,
+        });
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 
     removeTag: IRequestHandler = async (
@@ -264,19 +218,15 @@ export class DocumentController {
         res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        try {
-            const { id } = req.params;
-            const { key, name } = req.body;
-            const result = await this.documentService.removeTag(id, {
-                key,
-                name,
-            });
+        const { id } = req.params;
+        const { key, name } = req.body;
+        const result = await this.documentService.removeTag(id, {
+            key,
+            name,
+        });
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            this.logger.warn(err);
-        }
+        next();
     };
 }

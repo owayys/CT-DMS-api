@@ -16,16 +16,12 @@ export class JWTController {
         res: IResponse,
         next: NextFunction
     ) => {
-        try {
-            let { userName, password } = req.body;
-            let result = await this.jwtService.generate(userName, password);
+        let { userName, password } = req.body;
+        let result = await this.jwtService.generate(userName, password);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            console.error(`Error generating JWT`, err.message);
-        }
+        next();
     };
 
     refresh: IRequestHandler = async (
@@ -33,16 +29,12 @@ export class JWTController {
         res: IResponse,
         next: NextFunction
     ) => {
-        try {
-            let refreshToken = req.headers["authorization"];
+        let refreshToken = req.headers["authorization"];
 
-            let result = await this.jwtService.refresh(refreshToken);
+        let result = await this.jwtService.refresh(refreshToken);
 
-            req.result = result;
+        req.result = result;
 
-            next();
-        } catch (err) {
-            console.error(`Error Refreshing JWT`, err.message);
-        }
+        next();
     };
 }
