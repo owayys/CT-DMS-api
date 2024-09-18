@@ -5,8 +5,8 @@ import { DocumentEntity } from "../../domain/entities/document.entity";
 import { DocumentResponseDto } from "../../application/dtos/document.response.dto";
 import { UUID } from "../../domain/value-objects/uuid.value-object";
 import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
-import { TagEntity } from "../../domain/entities/tag.entity";
 import { DocumentMetadata } from "../../domain/value-objects/document-metadata.value-object";
+import { TagCollection } from "../../domain/entities/tag-collection.entity";
 
 export type DocumentModel = z.infer<typeof Document>;
 
@@ -25,7 +25,7 @@ export class DocumentMapper
             contentType: copy.contentType,
             content: copy.content,
             meta: copy.meta?.val,
-            tags: copy.tags.map((t) => {
+            tags: copy.tags.values.map((t) => {
                 return { key: t.key, name: t.name };
             }),
         };
@@ -44,9 +44,7 @@ export class DocumentMapper
                 contentType: record.contentType,
                 content: record.content,
                 meta: DocumentMetadata.fromData(record.meta),
-                tags: record.tags.map((t) => {
-                    return TagEntity.create({ key: t.key, name: t.name });
-                }),
+                tags: TagCollection.create({ tags: record.tags }),
             },
         });
         return entity;
@@ -65,7 +63,7 @@ export class DocumentMapper
         response.contentType = props.contentType;
         response.content = props.content;
         if (props.meta) response.meta = props.meta.val;
-        response.tags = props.tags.map((t) => {
+        response.tags = props.tags.values.map((t) => {
             return {
                 key: t.key,
                 name: t.name,

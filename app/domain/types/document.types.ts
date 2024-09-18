@@ -3,6 +3,7 @@ import { TagEntity } from "../entities/tag.entity";
 import { UUID } from "../value-objects/uuid.value-object";
 import { DocumentEntity } from "../entities/document.entity";
 import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
+import { TagCollection } from "../entities/tag-collection.entity";
 
 export type DocumentProps = {
     userId: UUID;
@@ -10,7 +11,7 @@ export type DocumentProps = {
     fileExtension: string;
     content: string;
     contentType: string;
-    tags: TagEntity[];
+    tags: TagCollection;
     meta?: DocumentMetadata;
 };
 

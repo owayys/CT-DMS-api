@@ -10,19 +10,21 @@ import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
 import { DocumentInvalidError } from "../exceptions/document.exceptions";
+import { TagCollection } from "./tag-collection.entity";
 
 export class DocumentEntity extends AggregateRoot<DocumentProps> {
     static create(create: CreateDocumentProps) {
         const id = UUID.generate();
-        const tagList = create.tags.map((tag) => {
-            return TagEntity.create({ key: tag.key, name: tag.name });
+        const tagCollection = TagCollection.create({ tags: create.tags });
+        create.tags.forEach((tag) => {
+            tagCollection.addTag(tag);
         });
         const metaData = create.meta
             ? DocumentMetadata.fromData(create.meta)
             : create.meta;
         const props: DocumentProps = {
             ...create,
-            tags: tagList,
+            tags: tagCollection,
             meta: metaData,
         };
         const document = new DocumentEntity({ id, props });
@@ -50,7 +52,7 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
     }
 
     get tags(): TagEntity[] {
-        return Array.from(this.props.tags.values());
+        return this.props.tags.values;
     }
 
     get meta(): DocumentMetadata | null {
@@ -59,19 +61,17 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
 
     @AutoUpdate()
     public addTag(tag: { key: string; name: string }): void {
-        let newTag = TagEntity.create(tag);
-        this.props.tags.includes(newTag) ? null : this.props.tags.push(newTag);
+        this.props.tags.addTag(tag);
     }
 
     @AutoUpdate()
     public updateTag(tag: { key: string; name: string }): void {
-        const currentTag = this.props.tags.find((t) => t.key === tag.key);
-        currentTag?.update(tag.name);
+        this.props.tags.updateTag(tag);
     }
 
     @AutoUpdate()
     public deleteTag(key: string): void {
-        this.props.tags = this.props.tags.filter((t) => t.key !== key);
+        this.props.tags.deleteTag(key);
     }
 
     @AutoUpdate()
@@ -79,9 +79,7 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
         this.props.fileName = update.fileName;
         this.props.fileExtension = update.fileExtension;
         this.props.contentType = update.contentType;
-        this.props.tags = update.tags.map((tag) => {
-            return TagEntity.create({ key: tag.key, name: tag.name });
-        });
+        update.tags.map(this.props.tags.updateTag);
         this.props.content = update.content;
     }
 
