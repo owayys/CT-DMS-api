@@ -57,12 +57,13 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
     }
 
     @AutoUpdate()
-    public addTag(tag: TagEntity): void {
-        this.props.tags.includes(tag) ? null : this.props.tags.push(tag);
+    public addTag(tag: { key: string; name: string }): void {
+        let newTag = TagEntity.create(tag);
+        this.props.tags.includes(newTag) ? null : this.props.tags.push(newTag);
     }
 
     @AutoUpdate()
-    public updateTag(tag: TagEntity): void {
+    public updateTag(tag: { key: string; name: string }): void {
         const currentTag = this.props.tags.find((t) => t.key === tag.key);
         currentTag?.update(tag.name);
     }

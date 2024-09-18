@@ -37,7 +37,7 @@ export type UserDefinedMetadata = {
         | UserDefinedMetadata[];
 };
 
-export type UpdateDocumentProps = Omit<DocumentProps, "userId">;
+export type UpdateDocumentProps = Omit<CreateDocumentProps, "userId">;
 
 export class UploadFileCommand {
     id: string;

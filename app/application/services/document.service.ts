@@ -173,7 +173,7 @@ export class DocumentService {
             fileName,
             fileExtension,
             contentType,
-            tags: tags.map(TagEntity.create),
+            tags,
             content,
             meta,
         });
@@ -216,7 +216,7 @@ export class DocumentService {
             fileExtension,
             content,
             contentType,
-            tags: tags.map(this.tagMapper.toDomain),
+            tags,
         });
 
         return (await this.repository.update(document)).bind((response) =>
@@ -235,9 +235,8 @@ export class DocumentService {
         }
 
         const document = documentResponse.unwrap();
-        const newTag = TagEntity.create(tag);
 
-        document.addTag(newTag);
+        document.addTag(tag);
 
         return (await this.repository.update(document)).bind((response) =>
             parseResponse(UpdateResponse, { success: response })
@@ -322,7 +321,7 @@ export class DocumentService {
             fileName,
             fileExtension,
             contentType,
-            tags: tags.map(TagEntity.create),
+            tags,
             content: `[FILE_UPLOADED]`,
             meta,
         });
