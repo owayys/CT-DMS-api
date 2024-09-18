@@ -1,10 +1,4 @@
-import {
-    NextFunction,
-    Request,
-    RequestHandler,
-    Response,
-    UserRequest,
-} from "express";
+import { NextFunction, IResponse, IRequest, IRequestHandler } from "express";
 import { UploadedFile } from "express-fileupload";
 import path from "path";
 import { ZodError } from "zod";
@@ -13,12 +7,6 @@ import { DOCUMENT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
 
-declare module "express" {
-    export interface UserRequest extends Request {
-        user: { Id: string; userName: string; userRole: string };
-    }
-}
-
 @InjectionTarget()
 export class DocumentController {
     constructor(
@@ -26,9 +14,9 @@ export class DocumentController {
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
-    get: RequestHandler = async (
-        req: any,
-        res: Response,
+    get: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -60,7 +48,11 @@ export class DocumentController {
         }
     };
 
-    getAll = async (req: any, res: Response, next: any): Promise<void> => {
+    getAll: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
+        next: NextFunction
+    ): Promise<void> => {
         try {
             const userId = req.user.Id;
             const { pageNumber, pageSize, tag } = req.query;
@@ -96,9 +88,9 @@ export class DocumentController {
         }
     };
 
-    getContent: RequestHandler = async (
-        req: any,
-        res: Response,
+    getContent: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -130,9 +122,9 @@ export class DocumentController {
         }
     };
 
-    save: RequestHandler = async (
-        req: any,
-        res: Response,
+    save: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -180,9 +172,9 @@ export class DocumentController {
         }
     };
 
-    upload: RequestHandler = async (
-        req: any,
-        res: Response,
+    upload: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -235,9 +227,9 @@ export class DocumentController {
         }
     };
 
-    download: RequestHandler = async (
-        req: Request,
-        res: Response,
+    download: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -273,9 +265,9 @@ export class DocumentController {
         }
     };
 
-    update: RequestHandler = async (
-        req: any,
-        res: Response,
+    update: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -318,9 +310,9 @@ export class DocumentController {
         }
     };
 
-    remove: RequestHandler = async (
-        req: any,
-        res: Response,
+    remove: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -353,9 +345,9 @@ export class DocumentController {
         }
     };
 
-    addTag: RequestHandler = async (
-        req: Request,
-        res: Response,
+    addTag: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {
@@ -388,9 +380,9 @@ export class DocumentController {
         }
     };
 
-    updateTag: RequestHandler = async (
-        req: Request,
-        res: Response,
+    updateTag: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next
     ): Promise<void> => {
         try {
@@ -426,9 +418,9 @@ export class DocumentController {
         }
     };
 
-    removeTag: RequestHandler = async (
-        req: Request,
-        res: Response,
+    removeTag: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         try {

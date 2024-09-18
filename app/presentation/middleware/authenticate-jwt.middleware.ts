@@ -1,10 +1,15 @@
-import jwt, { Secret } from "jsonwebtoken";
+import { IRequest, IRequestHandler, IResponse, NextFunction } from "express";
+import jwt, { Secret, UserJWTPayload } from "jsonwebtoken";
 
 const secretKey: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 
-export const authenticateJWT = (req: any, res: any, next: any) => {
+export const authenticateJWT: IRequestHandler = (
+    req: IRequest,
+    res: IResponse,
+    next: NextFunction
+) => {
     try {
-        let accessToken = req.headers["authorization"].split(" ")[1];
+        let accessToken = req.headers["authorization"]!.split(" ")[1];
 
         if (!accessToken) {
             return res.status(401).json({
@@ -25,7 +30,7 @@ export const authenticateJWT = (req: any, res: any, next: any) => {
         let decoded = jwt.verify(accessToken, secretKey);
 
         if (typeof decoded != "string") {
-            req.user = decoded;
+            req.user = decoded as UserJWTPayload;
         }
 
         next();

@@ -1,5 +1,7 @@
-export const restrict = (...role: any) => {
-    return (req: any, res: any, next: any) => {
+import { IRequest, IRequestHandler, IResponse, NextFunction } from "express";
+
+export const restrict: IRequestHandler = (...role: any) => {
+    return (req: IRequest, res: IResponse, next: NextFunction) => {
         const userRole = req.user.userRole;
 
         if (!role.includes(userRole)) {

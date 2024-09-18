@@ -1,16 +1,9 @@
-import { Request, RequestHandler, Response } from "express";
+import { IRequest, IRequestHandler, IResponse, NextFunction } from "express";
 import { ZodError } from "zod";
 import { JWT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
-
-declare module "jsonwebtoken" {
-    export interface UserNameJWTPayload extends JwtPayload {
-        Id: string;
-        userName: string;
-    }
-}
 
 @InjectionTarget()
 export class JWTController {
@@ -19,7 +12,11 @@ export class JWTController {
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
-    generate: RequestHandler = async (req: Request, res: Response, next) => {
+    generate: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
+        next: NextFunction
+    ) => {
         try {
             let { userName, password } = req.body;
             let result = await this.jwtService.generate(userName, password);
@@ -48,7 +45,11 @@ export class JWTController {
         }
     };
 
-    refresh: RequestHandler = async (req: Request, res: Response, next) => {
+    refresh: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
+        next: NextFunction
+    ) => {
         try {
             let refreshToken = req.headers["authorization"];
 

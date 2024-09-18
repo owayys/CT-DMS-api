@@ -1,12 +1,8 @@
-import { Request, Response, RequestHandler, NextFunction } from "express";
+import { NextFunction, IResponse, IRequest, IRequestHandler } from "express";
 import { ZodError } from "zod";
-// import { InjectionTarget } from "../lib/di/InjectionTarget";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
-// import { Inject } from "../lib/di/Inject";
 import { Inject } from "../../lib/di/Inject";
-// import { LOGGER, USER_SERVICE } from "../lib/di/di.tokens";
 import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
-// import { ILogger } from "../lib/logging/ILogger";
 import { ILogger } from "../../lib/logging/ILogger";
 
 @InjectionTarget()
@@ -16,9 +12,9 @@ export class UserController {
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
-    get: RequestHandler = async (
-        req: Request,
-        res: Response,
+    get: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ) => {
         try {
@@ -50,7 +46,7 @@ export class UserController {
         }
     };
 
-    getAll = async (req: Request, res: Response, next: NextFunction) => {
+    getAll = async (req: IRequest, res: IResponse, next: NextFunction) => {
         try {
             const { pageNumber, pageSize } = req.query;
 
@@ -83,9 +79,9 @@ export class UserController {
         }
     };
 
-    register: RequestHandler = async (
-        req: Request,
-        res: Response,
+    register: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ) => {
         try {
@@ -115,9 +111,9 @@ export class UserController {
         }
     };
 
-    update: RequestHandler = async (
-        req: any,
-        res: Response,
+    update: IRequestHandler = async (
+        req: IRequest,
+        res: IResponse,
         next: NextFunction
     ) => {
         try {
