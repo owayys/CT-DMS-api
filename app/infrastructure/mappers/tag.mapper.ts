@@ -18,7 +18,7 @@ export class TagMapper implements Mapper<TagEntity, TagModel, TagResponseDto> {
         };
         return Tag.parse(record);
     }
-    toDomain(record: any): TagEntity {
+    toDomain(record: TagModel): TagEntity {
         const entity = new TagEntity({
             createdAt: Timestamp.fromString(record.createdAt.toString()),
             updatedAt: Timestamp.fromString(record.updatedAt.toString()),
