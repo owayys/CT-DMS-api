@@ -24,7 +24,7 @@ export type CreateDocumentProps = {
         key: string;
         name: string;
     }[];
-    meta?: any;
+    meta?: DocumentMetadata;
 };
 
 export type MetadataTypes = string | number | boolean | UserDefinedMetadata;
