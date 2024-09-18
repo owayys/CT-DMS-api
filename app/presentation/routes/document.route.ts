@@ -14,6 +14,7 @@ import {
 } from "../../lib/validators/document.validators";
 import { authenticateJWT } from "../middleware/authenticate-jwt.middleware";
 import { DocumentController } from "../controllers/document.controller";
+import { errorHandler } from "../middleware/error-handler.middleware";
 
 const router = Router();
 const documentController = new DocumentController();
@@ -23,56 +24,65 @@ router.get(
     "/content/:id",
     authenticateJWT,
     validate(GetDocumentContent),
-    documentController.getContent
+    documentController.getContent,
+    errorHandler
 );
 router.post("/upload", authenticateJWT, documentController.upload);
 router.post(
     "/:id/tag",
     authenticateJWT,
     validate(AddTag),
-    documentController.addTag
+    documentController.addTag,
+    errorHandler
 );
 router.put(
     "/:id/tag",
     authenticateJWT,
     validate(UpdateTag),
-    documentController.updateTag
+    documentController.updateTag,
+    errorHandler
 );
 router.delete(
     "/:id/tag",
     authenticateJWT,
     validate(DeleteTag),
-    documentController.removeTag
+    documentController.removeTag,
+    errorHandler
 );
 router.get(
     "/:id",
     authenticateJWT,
     validate(GetDocument),
-    documentController.get
+    documentController.get,
+    errorHandler
 );
 router.put(
     "/:id",
     authenticateJWT,
     validate(UpdateDocument),
-    documentController.update
+    documentController.update,
+    errorHandler
 );
 router.delete(
     "/:id",
     authenticateJWT,
     validate(DeleteDocument),
-    documentController.remove
+    documentController.remove,
+    errorHandler
 );
 router.get(
     "/",
     authenticateJWT,
     validate(GetAllDocuments),
-    documentController.getAll
+    documentController.getAll,
+    errorHandler
 );
 router.post(
     "/",
     authenticateJWT,
     validate(SaveDocument),
-    documentController.save
+    documentController.save,
+    errorHandler
 );
 
 export default router;

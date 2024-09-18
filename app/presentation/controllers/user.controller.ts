@@ -1,5 +1,4 @@
 import { NextFunction, IResponse, IRequest, IRequestHandler } from "express";
-import { ZodError } from "zod";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
@@ -22,25 +21,9 @@ export class UserController {
 
             const result = await this.userService.get(userId);
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -55,25 +38,9 @@ export class UserController {
                 pageSize as unknown as number
             );
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -87,25 +54,9 @@ export class UserController {
         try {
             const { userName, password } = req.body;
             const result = await this.userService.register(userName, password);
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -131,25 +82,9 @@ export class UserController {
 
             const result = await this.userService.update(userId, password);
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }

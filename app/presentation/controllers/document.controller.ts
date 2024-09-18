@@ -1,11 +1,12 @@
 import { NextFunction, IResponse, IRequest, IRequestHandler } from "express";
 import { UploadedFile } from "express-fileupload";
 import path from "path";
-import { ZodError } from "zod";
 import { Inject } from "../../lib/di/Inject";
 import { DOCUMENT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
+import { Result } from "../../lib/util/result";
+import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
 
 @InjectionTarget()
 export class DocumentController {
@@ -24,25 +25,9 @@ export class DocumentController {
             const userId = req.user.Id;
             const result = await this.documentService.get(userId, id);
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -64,25 +49,9 @@ export class DocumentController {
                 tag
             );
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -98,25 +67,9 @@ export class DocumentController {
             const userId = req.user.Id;
             const result = await this.documentService.getContent(userId, id);
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -148,25 +101,9 @@ export class DocumentController {
                 meta || null
             );
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
-                console.log(err);
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            req.result = result;
+
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -179,7 +116,11 @@ export class DocumentController {
     ): Promise<void> => {
         try {
             if (!req.files || Object.keys(req.files).length === 0) {
-                res.status(400).send("No files were uploaded.");
+                req.result = new Result(
+                    null,
+                    new ArgumentNotProvidedException("No file uploaded")
+                );
+                next();
             } else {
                 const file = req.files.file as UploadedFile;
 
@@ -202,25 +143,9 @@ export class DocumentController {
                     tags
                 );
 
-                if (result.isErr()) {
-                    const err: Error = result.getErr();
+                req.result = result;
 
-                    if (err instanceof ZodError) {
-                        res.status(404).json({
-                            error: {
-                                message: JSON.parse(err.message),
-                            },
-                        });
-                    } else {
-                        res.status(404).json({
-                            error: {
-                                message: err.message,
-                            },
-                        });
-                    }
-                } else {
-                    res.status(200).json(result.unwrap());
-                }
+                next();
             }
         } catch (err) {
             this.logger.warn(err);
@@ -237,29 +162,9 @@ export class DocumentController {
 
             const result = await this.documentService.download(url as string);
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                const requestedFile = result.unwrap();
-                res.status(200).download(
-                    requestedFile.filePath,
-                    requestedFile.fileName
-                );
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -286,25 +191,9 @@ export class DocumentController {
                 content
             );
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -321,25 +210,9 @@ export class DocumentController {
 
             const result = await this.documentService.remove(user, id);
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -356,25 +229,9 @@ export class DocumentController {
 
             const result = await this.documentService.addTag(id, { key, name });
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -394,25 +251,9 @@ export class DocumentController {
                 name,
             });
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
@@ -431,25 +272,9 @@ export class DocumentController {
                 name,
             });
 
-            if (result.isErr()) {
-                const err: Error = result.getErr();
+            req.result = result;
 
-                if (err instanceof ZodError) {
-                    res.status(422).json({
-                        error: {
-                            message: JSON.parse(err.message),
-                        },
-                    });
-                } else {
-                    res.status(404).json({
-                        error: {
-                            message: err.message,
-                        },
-                    });
-                }
-            } else {
-                res.status(200).json(result.unwrap());
-            }
+            next();
         } catch (err) {
             this.logger.warn(err);
         }
