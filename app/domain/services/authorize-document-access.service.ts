@@ -1,3 +1,4 @@
+import { ArgumentInvalidException } from "../../lib/exceptions/exceptions";
 import { Result } from "../../lib/util/result";
 import { DocumentEntity } from "../entities/document.entity";
 import { AuthorizeDocumentAccessCommand } from "../types/document.types";
@@ -12,7 +13,7 @@ export class AuthorizeDocumentAccessService {
             ? new Result<DocumentEntity, Error>(command.document, null)
             : new Result<DocumentEntity, Error>(
                   null,
-                  new Error(
+                  new ArgumentInvalidException(
                       `User [${
                           command.userId
                       }] not authorized to access document [${command.document.id!.toString()}]`

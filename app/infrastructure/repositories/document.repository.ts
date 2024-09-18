@@ -14,6 +14,8 @@ import { DocumentTable, TagTable } from "../database/schema";
 import { TagEntity } from "../../domain/entities/tag.entity";
 import { TagResponseDto } from "../../application/dtos/tag.response.dto";
 import { TagModel } from "../mappers/tag.mapper";
+import { UserDefinedMetadata } from "../../domain/types/document.types";
+import { NotFoundException } from "../../lib/exceptions/exceptions";
 
 @InjectionTarget()
 export class DocumentRepository implements IDocumentRepository {
@@ -67,6 +69,7 @@ export class DocumentRepository implements IDocumentRepository {
                 const response = {
                     ...document,
                     tags: insertedTags,
+                    meta: (document.meta as UserDefinedMetadata) ?? null,
                 };
 
                 return new Result<DocumentEntity, Error>(
@@ -92,14 +95,18 @@ export class DocumentRepository implements IDocumentRepository {
             });
 
             if (document) {
+                const response = {
+                    ...document,
+                    meta: (document.meta as UserDefinedMetadata) ?? null,
+                };
                 return new Result<DocumentEntity, Error>(
-                    this.documentMapper.toDomain(document),
+                    this.documentMapper.toDomain(response),
                     null
                 );
             } else {
                 return new Result<DocumentEntity, Error>(
                     null,
-                    new Error("Document not found")
+                    new NotFoundException("Document not found")
                 );
             }
         } catch (err) {
@@ -118,15 +125,21 @@ export class DocumentRepository implements IDocumentRepository {
                 },
             });
 
-            if (document) {
+            if (documents) {
+                const response = documents.map((doc) => {
+                    return {
+                        ...doc,
+                        meta: (doc.meta as UserDefinedMetadata) ?? null,
+                    };
+                });
                 return new Result<DocumentEntity[], Error>(
-                    documents.map(this.documentMapper.toDomain),
+                    response.map(this.documentMapper.toDomain),
                     null
                 );
             } else {
                 return new Result<DocumentEntity[], Error>(
                     null,
-                    new Error("Document not found")
+                    new NotFoundException("Document not found")
                 );
             }
         } catch (err) {
@@ -150,10 +163,17 @@ export class DocumentRepository implements IDocumentRepository {
             let totalItems = documents.length;
             let totalPages = Math.ceil(documents.length / params.pageSize);
             let page = Math.min(totalPages, params.pageNumber);
-            let items = documents.slice(
-                (page - 1) * params.pageSize,
-                (page - 1) * params.pageSize + params.pageSize
-            );
+            let items = documents
+                .slice(
+                    (page - 1) * params.pageSize,
+                    (page - 1) * params.pageSize + params.pageSize
+                )
+                .map((item) => {
+                    return {
+                        ...item,
+                        meta: (item.meta as UserDefinedMetadata) ?? null,
+                    };
+                });
             let size = Math.min(items.length, params.pageSize);
 
             const response: Paginated<DocumentEntity> = {
@@ -175,12 +195,32 @@ export class DocumentRepository implements IDocumentRepository {
         try {
             const documents = await this._db.query.DocumentTable.findMany({
                 where: eq(DocumentTable.userId, owner),
+                with: {
+                    tags: {
+                        columns: {
+                            documentId: false,
+                        },
+                    },
+                },
             });
 
-            return new Result<DocumentEntity[], Error>(
-                documents.map(this.documentMapper.toDomain),
-                null
-            );
+            if (documents) {
+                const response = documents.map((doc) => {
+                    return {
+                        ...doc,
+                        meta: (doc.meta as UserDefinedMetadata) ?? null,
+                    };
+                });
+                return new Result<DocumentEntity[], Error>(
+                    response.map(this.documentMapper.toDomain),
+                    null
+                );
+            } else {
+                return new Result<DocumentEntity[], Error>(
+                    null,
+                    new NotFoundException("Document not found")
+                );
+            }
         } catch (err) {
             return new Result<DocumentEntity[], Error>(
                 null,

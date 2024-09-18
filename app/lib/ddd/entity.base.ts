@@ -1,5 +1,9 @@
 import { Timestamp } from "../../domain/value-objects/timestamp.value-object";
 import { UUID } from "../../domain/value-objects/uuid.value-object";
+import {
+    ArgumentInvalidException,
+    ArgumentNotProvidedException,
+} from "../exceptions/exceptions";
 
 export type BaseEntityProps = {
     id?: UUID;
@@ -32,6 +36,7 @@ export abstract class Entity<EntityProps> {
         if (id) {
             this._id = id;
         }
+        this.validateProps(props);
         this._createdAt = createdAt || new Timestamp();
         this._updatedAt = updatedAt || new Timestamp();
         this.props = props;
@@ -66,4 +71,17 @@ export abstract class Entity<EntityProps> {
     }
 
     public abstract validate(): void;
+
+    private validateProps(props: EntityProps): void {
+        if (props === undefined) {
+            throw new ArgumentNotProvidedException(
+                "Entity props should not be empty"
+            );
+        }
+        if (typeof props !== "object") {
+            throw new ArgumentInvalidException(
+                "Entity props should be an object"
+            );
+        }
+    }
 }

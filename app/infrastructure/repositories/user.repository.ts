@@ -11,6 +11,10 @@ import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserModel } from "../mappers/user.mapper";
 import { UserResponseDto } from "../../application/dtos/user.response.dto";
 import { Paginated, PaginatedQueryParams } from "../../lib/ddd/repository.port";
+import {
+    ConflictException,
+    NotFoundException,
+} from "../../lib/exceptions/exceptions";
 
 @InjectionTarget()
 export class UserRepository implements IUserRepository {
@@ -33,7 +37,7 @@ export class UserRepository implements IUserRepository {
             if (!user) {
                 return new Result<UserEntity, Error>(
                     null,
-                    new Error("Username already exists")
+                    new ConflictException("Username already exists")
                 );
             }
             return new Result<UserEntity, Error>(
@@ -55,7 +59,7 @@ export class UserRepository implements IUserRepository {
             if (user === undefined) {
                 return new Result<UserEntity, Error>(
                     null,
-                    new Error("User not found")
+                    new NotFoundException("User not found")
                 );
             }
 
@@ -78,7 +82,7 @@ export class UserRepository implements IUserRepository {
             if (user === undefined) {
                 return new Result<UserEntity, Error>(
                     null,
-                    new Error("User not found")
+                    new NotFoundException("User not found")
                 );
             }
 

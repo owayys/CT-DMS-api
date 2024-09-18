@@ -1,5 +1,6 @@
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
+import { UserInvalidError } from "../exceptions/user.exceptions";
 import { CreateUserProps, UserProps } from "../types/user.types";
 import { Timestamp } from "../value-objects/timestamp.value-object";
 import { UserPassword } from "../value-objects/user-password.value-object";
@@ -54,25 +55,25 @@ export class UserEntity extends AggregateRoot<UserProps> {
 
     validate(): void {
         if (!UUID.validate(this.id!.toString())) {
-            throw Error("User id invalid!");
+            throw new UserInvalidError("Id invalid!");
         }
         if (
             typeof this.props.userName !== "string" ||
             this.props.userName.length < 1
         ) {
-            throw Error("User name invalid!");
+            throw new UserInvalidError("Name invalid!");
         }
         if (!Timestamp.validate(this.createdAt.toString())) {
-            throw Error("User creation time invalid!");
+            throw new UserInvalidError("Creation time invalid!");
         }
         if (!Timestamp.validate(this.updatedAt.toString())) {
-            throw Error("User updation time invalid!");
+            throw new UserInvalidError("Updation time invalid!");
         }
         if (!UserPassword.validate(this.props.password.toString())) {
-            throw Error("User password invalid!");
+            throw new UserInvalidError("Password invalid!");
         }
         if (!UserRole.validate(this.role.toString())) {
-            throw Error("User role invalid!");
+            throw new UserInvalidError("Role invalid!");
         }
     }
 }

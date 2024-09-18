@@ -3,6 +3,10 @@ import { Result } from "../../lib/util/result";
 import { stat, unlink } from "fs/promises";
 import { FgCyan, FgWhite } from "../../lib/colors";
 import { UploadFileCommand } from "../../domain/types/document.types";
+import {
+    InternalServerError,
+    NotFoundException,
+} from "../../lib/exceptions/exceptions";
 
 export class FileHandlerService implements IFileHandler {
     async uploadFile(
@@ -16,7 +20,7 @@ export class FileHandlerService implements IFileHandler {
         } catch (err) {
             return new Result<boolean, Error>(
                 null,
-                new Error(`Error uploading file [${id}]`)
+                new InternalServerError(`Error uploading file [${id}]`)
             );
         }
     }
@@ -29,7 +33,7 @@ export class FileHandlerService implements IFileHandler {
         } catch (err) {
             return new Result<boolean, Error>(
                 null,
-                new Error(`Error deleting file [${id}]`)
+                new InternalServerError(`Error deleting file [${id}]`)
             );
         }
     }
@@ -42,13 +46,13 @@ export class FileHandlerService implements IFileHandler {
             } else {
                 return new Result<string, Error>(
                     null,
-                    new Error(`File [${id}] not found`)
+                    new NotFoundException(`File [${id}] not found`)
                 );
             }
         } catch (err) {
             return new Result<string, Error>(
                 null,
-                new Error(`File [${id}] not found`)
+                new NotFoundException(`File [${id}] not found`)
             );
         }
     }

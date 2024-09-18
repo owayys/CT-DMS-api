@@ -9,6 +9,7 @@ import { Timestamp } from "../value-objects/timestamp.value-object";
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
+import { DocumentInvalidError } from "../exceptions/document.exceptions";
 
 export class DocumentEntity extends AggregateRoot<DocumentProps> {
     static create(create: CreateDocumentProps) {
@@ -86,42 +87,42 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
 
     validate(): void {
         if (!UUID.validate(this.id!.toString())) {
-            throw Error("Document id invalid!");
+            throw new DocumentInvalidError("Id invalid!");
         }
         if (!UUID.validate(this.props.userId.toString())) {
-            throw Error("Document owner id invalid!");
+            throw new DocumentInvalidError("Owner id invalid!");
         }
         if (this.props.meta) {
             if (!DocumentMetadata.validate(this.props.meta.val)) {
-                throw Error("Invalid Document metadata");
+                throw new DocumentInvalidError("Metadata invalid");
             }
         }
         if (!Timestamp.validate(this.createdAt.toString())) {
-            throw Error("Document creation time invalid!");
+            throw new DocumentInvalidError("Creation time invalid!");
         }
         if (!Timestamp.validate(this.updatedAt.toString())) {
-            throw Error("Document updation time invalid!");
+            throw new DocumentInvalidError("Updation time invalid!");
         }
         if (
             typeof this.props.fileName !== "string" ||
             this.props.fileName.length < 1
         ) {
-            throw Error("Document file name invalid!");
+            throw new DocumentInvalidError("File name invalid!");
         }
         if (
             typeof this.props.fileExtension !== "string" ||
             this.props.fileExtension.length < 1
         ) {
-            throw Error("Document file extension invalid!");
+            throw new DocumentInvalidError("File extension invalid!");
         }
         if (
             typeof this.props.contentType !== "string" ||
             this.props.contentType.length < 1
         ) {
-            throw Error("Document content type invalid!");
+            throw new DocumentInvalidError("Content type invalid!");
         }
         if (typeof this.props.content !== "string") {
-            throw Error("Document content invalid!");
+            throw new DocumentInvalidError("Content invalid!");
         }
         this.tags.forEach((tag) => {
             tag.validate();

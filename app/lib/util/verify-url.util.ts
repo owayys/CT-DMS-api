@@ -1,5 +1,9 @@
 import jwt, { Secret, URLJWTPayload } from "jsonwebtoken";
 import { Result } from "./result";
+import {
+    ArgumentInvalidException,
+    InternalServerError,
+} from "../exceptions/exceptions";
 
 const urlSecret: Secret | undefined = process.env.URL_SECRET;
 
@@ -14,7 +18,7 @@ export function verifyUrl(url: string): Result<URLJWTPayload, Error> {
     if (urlSecret === undefined) {
         return new Result<URLJWTPayload, Error>(
             null,
-            new Error("SECRET_KEY missing")
+            new InternalServerError("SECRET_KEY missing")
         );
     }
 
@@ -26,7 +30,7 @@ export function verifyUrl(url: string): Result<URLJWTPayload, Error> {
     } catch (err) {
         return new Result<URLJWTPayload, Error>(
             null,
-            new Error("URL expired or invalid")
+            new ArgumentInvalidException("URL expired or invalid")
         );
     }
 }

@@ -10,6 +10,11 @@ import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_REPOSITORY } from "../../lib/di/di.tokens";
 import { parseResponse } from "../../lib/util/parse-response.util";
 import { ILogger } from "../../lib/logging/ILogger";
+import {
+    ArgumentInvalidException,
+    ArgumentNotProvidedException,
+    InternalServerError,
+} from "../../lib/exceptions/exceptions";
 
 const accessSecret: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 const refreshSecret: Secret | undefined = process.env.REFRESH_TOKEN_SECRET;
@@ -26,7 +31,7 @@ export class JWTService {
         if (accessSecret === undefined) {
             return new Result<any, Error>(
                 null,
-                new Error("SECRET_KEY missing")
+                new InternalServerError("SECRET_KEY missing")
             );
         }
 
@@ -41,14 +46,17 @@ export class JWTService {
         if (!user) {
             return new Result<any, Error>(
                 null,
-                new Error("User not registered")
+                new ArgumentInvalidException("User not registered")
             );
         }
 
         const isMatch = await user.validatePassword(password);
 
         if (!isMatch) {
-            return new Result<any, Error>(null, new Error("Password invalid"));
+            return new Result<any, Error>(
+                null,
+                new ArgumentInvalidException("Password invalid")
+            );
         }
 
         let accessToken = jwt.sign(
@@ -80,14 +88,14 @@ export class JWTService {
         if (refreshSecret === undefined) {
             return new Result<any, Error>(
                 null,
-                new Error("SECRET_KEY missing")
+                new InternalServerError("SECRET_KEY missing")
             );
         }
 
         if (!refreshToken) {
             return new Result<any, Error>(
                 null,
-                new Error("Refresh token not provided")
+                new ArgumentNotProvidedException("Refresh token not provided")
             );
         }
 
@@ -108,7 +116,7 @@ export class JWTService {
             if (!user) {
                 return new Result<any, Error>(
                     null,
-                    new Error("User not registered")
+                    new ArgumentInvalidException("User not registered")
                 );
             }
 
