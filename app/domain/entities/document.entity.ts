@@ -5,11 +5,9 @@ import {
     DocumentProps,
     UpdateDocumentProps,
 } from "../types/document.types";
-import { Timestamp } from "../value-objects/timestamp.value-object";
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
-import { DocumentInvalidError } from "../exceptions/document.exceptions";
 import { TagCollection } from "./tag-collection.entity";
 
 export class DocumentEntity extends AggregateRoot<DocumentProps> {

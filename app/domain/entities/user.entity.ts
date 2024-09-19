@@ -1,8 +1,6 @@
 import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
-import { UserInvalidError } from "../exceptions/user.exceptions";
 import { CreateUserProps, UserProps } from "../types/user.types";
-import { Timestamp } from "../value-objects/timestamp.value-object";
 import { UserPassword } from "../value-objects/user-password.value-object";
 import { UserRole } from "../value-objects/user-role.value-object";
 import { UUID } from "../value-objects/uuid.value-object";
