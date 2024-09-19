@@ -3,11 +3,12 @@ import { JWT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
+import { Services } from "../types";
 
 @InjectionTarget()
 export class JWTController {
     constructor(
-        @Inject(JWT_SERVICE) private jwtService: any,
+        @Inject(JWT_SERVICE) private jwtService: Services[typeof JWT_SERVICE],
         @Inject(LOGGER) private logger: ILogger
     ) {}
 

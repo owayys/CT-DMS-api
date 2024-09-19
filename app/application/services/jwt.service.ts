@@ -84,7 +84,7 @@ export class JWTService {
         return parseResponse(JwtResponse, result);
     }
 
-    async refresh(refreshToken: string) {
+    async refresh(refreshToken: string | undefined) {
         if (refreshSecret === undefined) {
             return new Result<any, Error>(
                 null,

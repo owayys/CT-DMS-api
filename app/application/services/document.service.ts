@@ -314,7 +314,7 @@ export class DocumentService {
         fileExtension: string,
         contentType: string,
         tags: { key: string; name: string }[],
-        meta: UserDefinedMetadata
+        meta?: UserDefinedMetadata
     ): Promise<Result<GetDocumentResponse, Error>> {
         const document = DocumentEntity.create({
             userId: UUID.fromString(userId),

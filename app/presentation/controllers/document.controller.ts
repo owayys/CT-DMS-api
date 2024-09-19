@@ -10,11 +10,13 @@ import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
 import { ZodError } from "zod";
 import { redisClient } from "../../infrastructure/database";
 import { readFileSync } from "fs";
+import { Services } from "../types";
 
 @InjectionTarget()
 export class DocumentController {
     constructor(
-        @Inject(DOCUMENT_SERVICE) private documentService: any,
+        @Inject(DOCUMENT_SERVICE)
+        private documentService: Services[typeof DOCUMENT_SERVICE],
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
@@ -42,9 +44,9 @@ export class DocumentController {
 
         const result = await this.documentService.getAll(
             // userId,
-            pageNumber,
-            pageSize,
-            tag
+            pageNumber as unknown as number,
+            pageSize as unknown as number,
+            tag as unknown as string | null
         );
 
         req.result = result;
@@ -213,7 +215,7 @@ export class DocumentController {
         const { id } = req.params;
         const user = req.user;
 
-        const result = await this.documentService.remove(user, id);
+        const result = await this.documentService.remove(user.Id, id);
 
         req.result = result;
 

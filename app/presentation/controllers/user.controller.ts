@@ -3,11 +3,13 @@ import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
 import { ILogger } from "../../lib/logging/ILogger";
+import { Services } from "../types";
 
 @InjectionTarget()
 export class UserController {
     constructor(
-        @Inject(USER_SERVICE) private userService: any,
+        @Inject(USER_SERVICE)
+        private userService: Services[typeof USER_SERVICE],
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
