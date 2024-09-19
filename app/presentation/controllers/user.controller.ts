@@ -3,7 +3,7 @@ import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
 import { ILogger } from "../../lib/logging/ILogger";
-import { Services } from "../types";
+import { Services } from "../../application/services/types";
 
 @InjectionTarget()
 export class UserController {

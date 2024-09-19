@@ -3,7 +3,7 @@ import { JWT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
-import { Services } from "../types";
+import { Services } from "../../application/services/types";
 
 @InjectionTarget()
 export class JWTController {

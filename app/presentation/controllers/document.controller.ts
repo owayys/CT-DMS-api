@@ -10,7 +10,7 @@ import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
 import { ZodError } from "zod";
 import { redisClient } from "../../infrastructure/database";
 import { readFileSync } from "fs";
-import { Services } from "../types";
+import { Services } from "../../application/services/types";
 
 @InjectionTarget()
 export class DocumentController {

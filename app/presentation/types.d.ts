@@ -1,13 +1,5 @@
 import QueryString from "qs";
 import { Result } from "../lib/util/result";
-import {
-    DOCUMENT_SERVICE,
-    JWT_SERVICE,
-    USER_SERVICE,
-} from "../lib/di/di.tokens";
-import { DocumentService } from "../application/services/document.service";
-import { UserService } from "../application/services/user.service";
-import { JWTService } from "../application/services/jwt.service";
 
 declare module "express" {
     export interface IRequest<
@@ -53,9 +45,3 @@ declare module "jsonwebtoken" {
         userRole: string;
     }
 }
-
-export type Services = {
-    [DOCUMENT_SERVICE]: DocumentService;
-    [USER_SERVICE]: UserService;
-    [JWT_SERVICE]: JWTService;
-};
