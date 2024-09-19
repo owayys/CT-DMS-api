@@ -21,7 +21,7 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
         });
         const metaData = create.meta
             ? DocumentMetadata.fromData(create.meta)
-            : create.meta;
+            : undefined;
         const props: DocumentProps = {
             ...create,
             tags: tagCollection,
@@ -91,7 +91,10 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
             throw new DocumentInvalidError("Owner id invalid!");
         }
         if (this.props.meta) {
-            if (!DocumentMetadata.validate(this.props.meta.val)) {
+            if (
+                this.props.meta !== undefined &&
+                !DocumentMetadata.validate(this.props.meta.val)
+            ) {
                 throw new DocumentInvalidError("Metadata invalid");
             }
         }

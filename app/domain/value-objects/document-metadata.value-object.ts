@@ -10,7 +10,7 @@ export class DocumentMetadata {
     }
 
     static fromData(data: any): DocumentMetadata {
-        return new DocumentMetadata(data);
+        return data === undefined ? data : new DocumentMetadata(data);
     }
 
     get val(): UserDefinedMetadata {

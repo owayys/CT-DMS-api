@@ -43,7 +43,9 @@ export class DocumentMapper
                 fileExtension: record.fileExtension,
                 contentType: record.contentType,
                 content: record.content,
-                meta: DocumentMetadata.fromData(record.meta),
+                meta: record.meta
+                    ? DocumentMetadata.fromData(record.meta)
+                    : undefined,
                 tags: TagCollection.create({ tags: record.tags }),
             },
         });
