@@ -41,7 +41,12 @@ export const reqSerializer = ({
             ? FgGreen
             : FgWhite;
 
-    return `${methodColor}${req.method}${FgMagenta} ${
-        req.originalUrl
-    } ${codeColor}${statusCode} ${FgWhite}${time.toFixed(3)} ms`;
+    return `${methodColor}${req.method}${FgMagenta} ${truncate(
+        req.originalUrl,
+        100
+    )} ${codeColor}${statusCode} ${FgWhite}${time.toFixed(3)} ms`;
 };
+
+function truncate(str: string, n: number) {
+    return str.length > n ? str.slice(0, n - 1) + "..." : str;
+}
