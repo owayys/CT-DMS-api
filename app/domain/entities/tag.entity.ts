@@ -1,4 +1,5 @@
 import { Entity } from "../../lib/ddd/entity.base";
+import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { CreateTagProps, TagProps } from "../types/tag.types";
 
 export class TagEntity extends Entity<TagProps> {
@@ -16,6 +17,7 @@ export class TagEntity extends Entity<TagProps> {
         return this.props.name;
     }
 
+    @AutoUpdate()
     public update(updatedName: string) {
         this.props.name = updatedName;
     }
