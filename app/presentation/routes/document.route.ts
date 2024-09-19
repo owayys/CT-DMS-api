@@ -27,7 +27,12 @@ router.get(
     documentController.getContent,
     errorHandler
 );
-router.post("/upload", authenticateJWT, documentController.upload);
+router.post(
+    "/upload",
+    authenticateJWT,
+    documentController.upload,
+    errorHandler
+);
 router.post(
     "/:id/tag",
     authenticateJWT,

@@ -7,6 +7,9 @@ import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
 import { Result } from "../../lib/util/result";
 import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
+import { ZodError } from "zod";
+import { redisClient } from "../../infrastructure/database";
+import { readFileSync } from "fs";
 
 @InjectionTarget()
 export class DocumentController {
@@ -137,7 +140,44 @@ export class DocumentController {
 
         req.result = result;
 
-        next();
+        if (result.isErr()) {
+            const err: Error = result.getErr();
+
+            if (err instanceof ZodError) {
+                res.status(422).json({
+                    error: {
+                        message: JSON.parse(err.message),
+                    },
+                });
+            } else {
+                res.status(404).json({
+                    error: {
+                        message: err.message,
+                    },
+                });
+            }
+        } else {
+            const requestedFile = result.unwrap();
+            let file = await redisClient.getBuffer(url);
+            if (file === null) {
+                file = readFileSync(`${requestedFile.filePath}`);
+                await redisClient.set(
+                    url,
+                    readFileSync(`${requestedFile.filePath}`),
+                    "EX",
+                    60
+                );
+                res.status(200).download(
+                    requestedFile.filePath,
+                    requestedFile.fileName
+                );
+            }
+            res.status(200);
+            res.set({
+                "Content-Disposition": `attachment; filename=${requestedFile.fileName}`,
+            });
+            res.end(file);
+        }
     };
 
     update: IRequestHandler = async (
