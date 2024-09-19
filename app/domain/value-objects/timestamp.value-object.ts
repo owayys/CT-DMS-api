@@ -3,6 +3,9 @@ export class Timestamp {
 
     constructor(value?: string) {
         if (value) {
+            if (!Timestamp.validate(value)) {
+                throw Error("Invalid Timestamp");
+            }
             this.value = value;
         } else {
             this.value = this.getCurrent();

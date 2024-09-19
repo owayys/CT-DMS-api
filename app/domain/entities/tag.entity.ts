@@ -29,12 +29,5 @@ export class TagEntity extends Entity<TagProps> {
         }`;
     }
 
-    validate(): void {
-        if (typeof this.props.key !== "string" || this.props.key.length < 1) {
-            throw Error("Tag key invalid!");
-        }
-        if (typeof this.props.name !== "string" || this.props.name.length < 1) {
-            throw Error("Tag name invalid!");
-        }
-    }
+    validate(): void {}
 }

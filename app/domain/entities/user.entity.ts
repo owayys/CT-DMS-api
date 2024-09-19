@@ -53,27 +53,5 @@ export class UserEntity extends AggregateRoot<UserProps> {
         this.props.password = UserPassword.fromPlain(plain);
     }
 
-    validate(): void {
-        if (!UUID.validate(this.id!.toString())) {
-            throw new UserInvalidError("Id invalid!");
-        }
-        if (
-            typeof this.props.userName !== "string" ||
-            this.props.userName.length < 1
-        ) {
-            throw new UserInvalidError("Name invalid!");
-        }
-        if (!Timestamp.validate(this.createdAt.toString())) {
-            throw new UserInvalidError("Creation time invalid!");
-        }
-        if (!Timestamp.validate(this.updatedAt.toString())) {
-            throw new UserInvalidError("Updation time invalid!");
-        }
-        if (!UserPassword.validate(this.props.password.toString())) {
-            throw new UserInvalidError("Password invalid!");
-        }
-        if (!UserRole.validate(this.role.toString())) {
-            throw new UserInvalidError("Role invalid!");
-        }
-    }
+    validate(): void {}
 }

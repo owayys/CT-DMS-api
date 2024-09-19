@@ -83,50 +83,5 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
         this.props.content = update.content;
     }
 
-    validate(): void {
-        if (!UUID.validate(this.id!.toString())) {
-            throw new DocumentInvalidError("Id invalid!");
-        }
-        if (!UUID.validate(this.props.userId.toString())) {
-            throw new DocumentInvalidError("Owner id invalid!");
-        }
-        if (this.props.meta) {
-            if (
-                this.props.meta !== undefined &&
-                !DocumentMetadata.validate(this.props.meta.val)
-            ) {
-                throw new DocumentInvalidError("Metadata invalid");
-            }
-        }
-        if (!Timestamp.validate(this.createdAt.toString())) {
-            throw new DocumentInvalidError("Creation time invalid!");
-        }
-        if (!Timestamp.validate(this.updatedAt.toString())) {
-            throw new DocumentInvalidError("Updation time invalid!");
-        }
-        if (
-            typeof this.props.fileName !== "string" ||
-            this.props.fileName.length < 1
-        ) {
-            throw new DocumentInvalidError("File name invalid!");
-        }
-        if (
-            typeof this.props.fileExtension !== "string" ||
-            this.props.fileExtension.length < 1
-        ) {
-            throw new DocumentInvalidError("File extension invalid!");
-        }
-        if (
-            typeof this.props.contentType !== "string" ||
-            this.props.contentType.length < 1
-        ) {
-            throw new DocumentInvalidError("Content type invalid!");
-        }
-        if (typeof this.props.content !== "string") {
-            throw new DocumentInvalidError("Content invalid!");
-        }
-        this.tags.forEach((tag) => {
-            tag.validate();
-        });
-    }
+    validate(): void {}
 }
