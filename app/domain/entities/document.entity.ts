@@ -9,6 +9,18 @@ import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
 import { TagCollection } from "./tag-collection.entity";
+import { EntityInvalidError } from "../../lib/exceptions/exceptions";
+
+const CONTENT_TYPES = [
+    "image/png",
+    "image/gif",
+    "application/pdf",
+    "audio/mpeg",
+    "video/mp4",
+    "text/plain",
+];
+
+const FILE_EXTENSIONS = [".png", ".gif", ".pdf", ".mp3", ".mp4", ".txt"];
 
 export class DocumentEntity extends AggregateRoot<DocumentProps> {
     static create(create: CreateDocumentProps) {
@@ -81,5 +93,12 @@ export class DocumentEntity extends AggregateRoot<DocumentProps> {
         this.props.content = update.content;
     }
 
-    validate(): void {}
+    validate(): void {
+        if (!CONTENT_TYPES.includes(this.contentType)) {
+            throw new EntityInvalidError("Invalid Document content type");
+        }
+        if (!FILE_EXTENSIONS.includes(this.extension)) {
+            throw new EntityInvalidError("Invalid Document extension");
+        }
+    }
 }
