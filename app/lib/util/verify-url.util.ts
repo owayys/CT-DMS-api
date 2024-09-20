@@ -1,9 +1,10 @@
 import jwt, { Secret, URLJWTPayload } from "jsonwebtoken";
-import { Result } from "./result";
+// import { Result } from "./result";
 import {
     ArgumentInvalidException,
     InternalServerError,
 } from "../exceptions/exceptions";
+import { AppResult } from "@carbonteq/hexapp";
 
 const urlSecret: Secret | undefined = process.env.URL_SECRET;
 
@@ -14,22 +15,15 @@ declare module "jsonwebtoken" {
     }
 }
 
-export function verifyUrl(url: string): Result<URLJWTPayload, Error> {
+export function verifyUrl(url: string): AppResult<URLJWTPayload> {
     if (urlSecret === undefined) {
-        return new Result<URLJWTPayload, Error>(
-            null,
-            new InternalServerError("SECRET_KEY missing")
-        );
+        return AppResult.Err(new InternalServerError("SECRET_KEY missing"));
     }
 
     try {
-        return new Result<URLJWTPayload, Error>(
-            jwt.verify(url, urlSecret) as URLJWTPayload,
-            null
-        );
+        return AppResult.Ok(jwt.verify(url, urlSecret) as URLJWTPayload);
     } catch (err) {
-        return new Result<URLJWTPayload, Error>(
-            null,
+        return AppResult.Err(
             new ArgumentInvalidException("URL expired or invalid")
         );
     }

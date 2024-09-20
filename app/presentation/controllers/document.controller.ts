@@ -5,12 +5,12 @@ import { Inject } from "../../lib/di/Inject";
 import { DOCUMENT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
-import { Result } from "../../lib/util/result";
 import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
 import { ZodError } from "zod";
 import { redisClient } from "../../infrastructure/database";
 import { readFileSync } from "fs";
 import { Services } from "../../application/services/types";
+import { AppResult } from "@carbonteq/hexapp";
 
 @InjectionTarget()
 export class DocumentController {
@@ -98,8 +98,7 @@ export class DocumentController {
         next: NextFunction
     ): Promise<void> => {
         if (!req.files || Object.keys(req.files).length === 0) {
-            req.result = new Result(
-                null,
+            req.result = AppResult.Err(
                 new ArgumentNotProvidedException("No file uploaded")
             );
             next();
@@ -143,7 +142,7 @@ export class DocumentController {
         req.result = result;
 
         if (result.isErr()) {
-            const err: Error = result.getErr();
+            const err: Error = result.unwrapErr();
 
             if (err instanceof ZodError) {
                 res.status(422).json({

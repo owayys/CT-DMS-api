@@ -4,7 +4,6 @@ import {
     JwtRefreshResponse,
     JwtResponse,
 } from "../../lib/validators/jwt.validators";
-import { Result } from "../../lib/util/result";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_REPOSITORY } from "../../lib/di/di.tokens";
@@ -15,6 +14,7 @@ import {
     ArgumentNotProvidedException,
     InternalServerError,
 } from "../../lib/exceptions/exceptions";
+import { AppResult } from "@carbonteq/hexapp";
 
 const accessSecret: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 const refreshSecret: Secret | undefined = process.env.REFRESH_TOKEN_SECRET;
@@ -29,23 +29,19 @@ export class JWTService {
 
     async generate(userName: string, password: string) {
         if (accessSecret === undefined) {
-            return new Result<any, Error>(
-                null,
-                new InternalServerError("SECRET_KEY missing")
-            );
+            return AppResult.Err(new InternalServerError("SECRET_KEY missing"));
         }
 
         let response = await this.repository.findOneByName(userName);
 
         if (response.isErr()) {
-            return new Result<any, Error>(null, response.getErr());
+            return response;
         }
 
         const user = response.unwrap();
 
         if (!user) {
-            return new Result<any, Error>(
-                null,
+            return AppResult.Err(
                 new ArgumentInvalidException("User not registered")
             );
         }
@@ -53,8 +49,7 @@ export class JWTService {
         const isMatch = await user.validatePassword(password);
 
         if (!isMatch) {
-            return new Result<any, Error>(
-                null,
+            return AppResult.Err(
                 new ArgumentInvalidException("Password invalid")
             );
         }
@@ -86,15 +81,11 @@ export class JWTService {
 
     async refresh(refreshToken: string | undefined) {
         if (refreshSecret === undefined) {
-            return new Result<any, Error>(
-                null,
-                new InternalServerError("SECRET_KEY missing")
-            );
+            return AppResult.Err(new InternalServerError("SECRET_KEY missing"));
         }
 
         if (!refreshToken) {
-            return new Result<any, Error>(
-                null,
+            return AppResult.Err(
                 new ArgumentNotProvidedException("Refresh token not provided")
             );
         }
@@ -108,14 +99,13 @@ export class JWTService {
             let response = await this.repository.findOneById(decoded.Id);
 
             if (response.isErr()) {
-                return new Result<any, Error>(null, response.getErr());
+                return response;
             }
 
             const user = response.unwrap();
 
             if (!user) {
-                return new Result<any, Error>(
-                    null,
+                return AppResult.Err(
                     new ArgumentInvalidException("User not registered")
                 );
             }

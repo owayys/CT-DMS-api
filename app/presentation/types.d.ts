@@ -1,5 +1,5 @@
+import { AppResult } from "@carbonteq/hexapp";
 import QueryString from "qs";
-import { Result } from "../lib/util/result";
 
 declare module "express" {
     export interface IRequest<
@@ -10,7 +10,7 @@ declare module "express" {
         Locals extends Record<string, any> = Record<string, any>
     > extends Request {
         user: { Id: string; userName: string; userRole: string };
-        result?: Result<any, Error>;
+        result?: AppResult<any>;
     }
 
     export interface IResponse extends Response {}

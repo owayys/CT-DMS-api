@@ -1,7 +1,6 @@
 // import { IUserRepository } from "../repositories/IUserRepository";
 import { IUserRepository } from "../../domain/repositories/user.repository.port";
 
-import { Result } from "../../lib/util/result";
 import { LOGGER, USER_MAPPER, USER_REPOSITORY } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
@@ -19,6 +18,7 @@ import { UserEntity } from "../../domain/entities/user.entity";
 import { UserModel } from "../../infrastructure/mappers/user.mapper";
 import { UserResponseDto } from "../dtos/user.response.dto";
 import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
+import { AppResult } from "@carbonteq/hexapp";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
@@ -36,20 +36,37 @@ export class UserService {
     async register(
         userName: string,
         password: string
-    ): Promise<Result<UserResponse, Error>> {
+    ): Promise<AppResult<UserResponseDto>> {
         const user = UserEntity.create({ userName, password });
-        return (await this.repository.insert(user)).bind((response) =>
-            parseResponse(UserResponse, this.mapper.toResponse(response))
-        );
+        const result = await this.repository.insert(user);
+
+        if (result.isOk()) {
+            return parseResponse(
+                UserResponse,
+                this.mapper.toResponse(result.unwrap())
+            );
+        } else {
+            return result;
+        }
     }
 
-    async get(userId: string): Promise<Result<UserResponse, Error>> {
-        return (await this.repository.findOneById(userId)).bind((response) =>
-            parseResponse(UserResponse, this.mapper.toResponse(response))
-        );
+    async get(userId: string): Promise<AppResult<UserResponseDto>> {
+        const result = await this.repository.findOneById(userId);
+
+        if (result.isOk()) {
+            return parseResponse(
+                UserResponse,
+                this.mapper.toResponse(result.unwrap())
+            );
+        } else {
+            return result;
+        }
     }
 
-    async getAll(pageNumber: number, pageSize: number): Promise<any> {
+    async getAll(
+        pageNumber: number,
+        pageSize: number
+    ): Promise<AppResult<any>> {
         const params: PaginatedQueryParams = {
             pageSize,
             pageNumber,
@@ -58,28 +75,38 @@ export class UserService {
                 param: "asc",
             },
         };
-        return (await this.repository.findAllPaginated(params)).bind(
-            (response) => {
-                const mappedResponse = {
-                    ...response,
-                    items: response.items.map(this.mapper.toResponse),
-                };
-                return parseResponse(AllUsersResponse, mappedResponse);
-            }
-        );
+
+        const result = await this.repository.findAllPaginated(params);
+
+        if (result.isOk()) {
+            const response = result.unwrap();
+            const mappedResponse = {
+                ...response,
+                items: response.items.map(this.mapper.toResponse),
+            };
+            return parseResponse(AllUsersResponse, mappedResponse);
+        } else {
+            return result;
+        }
     }
 
     async update(userId: string, password: string): Promise<any> {
-        const response = await this.repository.findOneById(userId);
+        const result = await this.repository.findOneById(userId);
 
-        if (response.isOk()) {
-            const user = response.unwrap();
+        if (result.isOk()) {
+            const user = result.unwrap();
             user.changePassword(password);
-            return (await this.repository.update(user)).bind((response) =>
-                parseResponse(UpdateResponse, { success: response })
-            );
+            const updateResult = await this.repository.update(user);
+
+            if (updateResult.isOk()) {
+                return parseResponse(UpdateResponse, {
+                    success: updateResult.unwrap(),
+                });
+            } else {
+                return updateResult;
+            }
         } else {
-            return response;
+            return result;
         }
     }
 }

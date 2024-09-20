@@ -1,18 +1,17 @@
+import { AppResult } from "@carbonteq/hexapp";
 import { ArgumentInvalidException } from "../../lib/exceptions/exceptions";
-import { Result } from "../../lib/util/result";
 import { DocumentEntity } from "../entities/document.entity";
 import { AuthorizeDocumentAccessCommand } from "../types/document.types";
 
 export class AuthorizeDocumentAccessService {
     async execute(
         command: AuthorizeDocumentAccessCommand
-    ): Promise<Result<DocumentEntity, Error>> {
+    ): Promise<AppResult<DocumentEntity>> {
         const authorized = command.document.owner.equals(command.userId);
 
         return authorized
-            ? new Result<DocumentEntity, Error>(command.document, null)
-            : new Result<DocumentEntity, Error>(
-                  null,
+            ? AppResult.Ok(command.document)
+            : AppResult.Err(
                   new ArgumentInvalidException(
                       `User [${
                           command.userId

@@ -7,7 +7,6 @@ import { Paginated, PaginatedQueryParams } from "../../lib/ddd/repository.port";
 import { DATABASE, DOCUMENT_MAPPER, TAG_MAPPER } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
-import { Result } from "../../lib/util/result";
 import { DocumentModel } from "../mappers/document.mapper";
 import { IDrizzleConnection } from "../database/types";
 import { DocumentTable, TagTable } from "../database/schema";
@@ -16,6 +15,7 @@ import { TagResponseDto } from "../../application/dtos/tag.response.dto";
 import { TagModel } from "../mappers/tag.mapper";
 import { UserDefinedMetadata } from "../../domain/types/document.types";
 import { NotFoundException } from "../../lib/exceptions/exceptions";
+import { AppResult } from "@carbonteq/hexapp";
 
 @InjectionTarget()
 export class DocumentRepository implements IDocumentRepository {
@@ -30,9 +30,7 @@ export class DocumentRepository implements IDocumentRepository {
         @Inject(TAG_MAPPER)
         private tagMapper: Mapper<TagEntity, TagModel, TagResponseDto>
     ) {}
-    async insert(
-        entity: DocumentEntity
-    ): Promise<Result<DocumentEntity, Error>> {
+    async insert(entity: DocumentEntity): Promise<AppResult<DocumentEntity>> {
         try {
             return await this._db.transaction(async (tx) => {
                 const [document] = await tx
@@ -72,16 +70,13 @@ export class DocumentRepository implements IDocumentRepository {
                     meta: (document.meta as UserDefinedMetadata) ?? null,
                 };
 
-                return new Result<DocumentEntity, Error>(
-                    this.documentMapper.toDomain(response),
-                    null
-                );
+                return AppResult.Ok(this.documentMapper.toDomain(response));
             });
         } catch (err) {
-            return new Result<DocumentEntity, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
-    async findOneById(id: string): Promise<Result<DocumentEntity, Error>> {
+    async findOneById(id: string): Promise<AppResult<DocumentEntity>> {
         try {
             const document = await this._db.query.DocumentTable.findFirst({
                 where: eq(DocumentTable.Id, id),
@@ -99,21 +94,17 @@ export class DocumentRepository implements IDocumentRepository {
                     ...document,
                     meta: (document.meta as UserDefinedMetadata) ?? null,
                 };
-                return new Result<DocumentEntity, Error>(
-                    this.documentMapper.toDomain(response),
-                    null
-                );
+                return AppResult.Ok(this.documentMapper.toDomain(response));
             } else {
-                return new Result<DocumentEntity, Error>(
-                    null,
+                return AppResult.Err(
                     new NotFoundException("Document not found")
                 );
             }
         } catch (err) {
-            return new Result<DocumentEntity, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
-    async findAll(): Promise<Result<DocumentEntity[], Error>> {
+    async findAll(): Promise<AppResult<DocumentEntity[]>> {
         try {
             const documents = await this._db.query.DocumentTable.findMany({
                 with: {
@@ -132,23 +123,19 @@ export class DocumentRepository implements IDocumentRepository {
                         meta: (doc.meta as UserDefinedMetadata) ?? null,
                     };
                 });
-                return new Result<DocumentEntity[], Error>(
-                    response.map(this.documentMapper.toDomain),
-                    null
-                );
+                return AppResult.Ok(response.map(this.documentMapper.toDomain));
             } else {
-                return new Result<DocumentEntity[], Error>(
-                    null,
+                return AppResult.Err(
                     new NotFoundException("Document not found")
                 );
             }
         } catch (err) {
-            return new Result<DocumentEntity[], Error>(null, err);
+            return AppResult.Err(err);
         }
     }
     async findAllPaginated(
         params: PaginatedQueryParams
-    ): Promise<Result<Paginated<DocumentEntity>, Error>> {
+    ): Promise<AppResult<Paginated<DocumentEntity>>> {
         try {
             let documents = await this._db.query.DocumentTable.findMany({
                 with: {
@@ -184,14 +171,14 @@ export class DocumentRepository implements IDocumentRepository {
                 items: items.map(this.documentMapper.toDomain),
             };
 
-            return new Result<Paginated<DocumentEntity>, Error>(response, null);
+            return AppResult.Ok(response);
         } catch (err) {
             console.log(err);
-            return new Result<Paginated<DocumentEntity>, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async findByOwner(owner: string): Promise<Result<DocumentEntity[], Error>> {
+    async findByOwner(owner: string): Promise<AppResult<DocumentEntity[]>> {
         try {
             const documents = await this._db.query.DocumentTable.findMany({
                 where: eq(DocumentTable.userId, owner),
@@ -211,25 +198,18 @@ export class DocumentRepository implements IDocumentRepository {
                         meta: (doc.meta as UserDefinedMetadata) ?? null,
                     };
                 });
-                return new Result<DocumentEntity[], Error>(
-                    response.map(this.documentMapper.toDomain),
-                    null
-                );
+                return AppResult.Ok(response.map(this.documentMapper.toDomain));
             } else {
-                return new Result<DocumentEntity[], Error>(
-                    null,
+                return AppResult.Err(
                     new NotFoundException("Document not found")
                 );
             }
         } catch (err) {
-            return new Result<DocumentEntity[], Error>(
-                null,
-                new Error("Error finding documents")
-            );
+            return AppResult.Err(err);
         }
     }
 
-    async update(entity: DocumentEntity): Promise<Result<boolean, Error>> {
+    async update(entity: DocumentEntity): Promise<AppResult<boolean>> {
         try {
             return await this._db.transaction(async (tx) => {
                 const documentId = entity.id!.toString();
@@ -239,7 +219,7 @@ export class DocumentRepository implements IDocumentRepository {
                     .where(eq(DocumentTable.Id, documentId));
 
                 if (!document) {
-                    return new Result<boolean, Error>(false, null);
+                    return AppResult.Ok(false);
                 }
 
                 await tx
@@ -269,15 +249,14 @@ export class DocumentRepository implements IDocumentRepository {
                         target: [TagTable.documentId, TagTable.key],
                     });
 
-                return new Result<boolean, Error>(true, null);
+                return AppResult.Ok(true);
             });
         } catch (err) {
-            console.log(err);
-            return new Result<boolean, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async delete(entity: DocumentEntity): Promise<Result<boolean, Error>> {
+    async delete(entity: DocumentEntity): Promise<AppResult<boolean>> {
         try {
             return await this._db.transaction(async (tx) => {
                 let doc = await tx.query.DocumentTable.findFirst({
@@ -285,7 +264,7 @@ export class DocumentRepository implements IDocumentRepository {
                 });
 
                 if (!doc) {
-                    return new Result<boolean, Error>(false, null);
+                    return AppResult.Ok(false);
                 }
 
                 await tx
@@ -295,20 +274,17 @@ export class DocumentRepository implements IDocumentRepository {
                     .delete(DocumentTable)
                     .where(eq(DocumentTable.Id, entity.id!.toString()));
 
-                return new Result<boolean, Error>(true, null);
+                return AppResult.Ok(true);
             });
         } catch (err) {
-            return new Result<boolean, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async addTag(
-        id: string,
-        entity: TagEntity
-    ): Promise<Result<TagEntity, Error>> {
+    async addTag(id: string, entity: TagEntity): Promise<AppResult<boolean>> {
         try {
             return await this._db.transaction(async (tx) => {
-                const [tagResult] = await tx
+                await tx
                     .insert(TagTable)
                     .values({
                         documentId: id,
@@ -320,22 +296,17 @@ export class DocumentRepository implements IDocumentRepository {
                         target: [TagTable.documentId, TagTable.key],
                     });
 
-                return tagResult
-                    ? new Result<TagEntity, Error>(
-                          this.tagMapper.toDomain(tagResult),
-                          null
-                      )
-                    : new Result<TagEntity, Error>(entity, null);
+                return AppResult.Ok(true);
             });
         } catch (err) {
-            return new Result<TagEntity, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
     async updateTag(
         id: string,
         entity: TagEntity
-    ): Promise<Result<boolean, Error>> {
+    ): Promise<AppResult<boolean>> {
         try {
             const [tag] = await this._db
                 .update(TagTable)
@@ -350,16 +321,16 @@ export class DocumentRepository implements IDocumentRepository {
                 )
                 .returning();
 
-            return new Result<boolean, Error>(true, null);
+            return AppResult.Ok(true);
         } catch (err) {
-            return new Result<boolean, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
     async removeTag(
         id: string,
         entity: TagEntity
-    ): Promise<Result<boolean, Error>> {
+    ): Promise<AppResult<boolean>> {
         try {
             const [tag] = await this._db
                 .delete(TagTable)
@@ -371,12 +342,9 @@ export class DocumentRepository implements IDocumentRepository {
                 )
                 .returning();
 
-            return tag
-                ? new Result<boolean, Error>(true, null)
-                : new Result<boolean, Error>(false, null);
+            return tag ? AppResult.Ok(true) : AppResult.Ok(false);
         } catch (err) {
-            console.log("ERROR", err);
-            return new Result<boolean, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 }

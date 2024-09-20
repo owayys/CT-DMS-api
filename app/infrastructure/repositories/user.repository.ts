@@ -3,7 +3,6 @@ import { IUserRepository } from "../../domain/repositories/user.repository.port"
 import { DATABASE, USER_MAPPER } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
-import { Result } from "../../lib/util/result";
 import { IDrizzleConnection } from "../database/types";
 import { UserTable } from "../database/schema";
 import { UserEntity } from "../../domain/entities/user.entity";
@@ -15,6 +14,7 @@ import {
     ConflictException,
     NotFoundException,
 } from "../../lib/exceptions/exceptions";
+import { AppResult } from "@carbonteq/hexapp";
 
 @InjectionTarget()
 export class UserRepository implements IUserRepository {
@@ -24,7 +24,7 @@ export class UserRepository implements IUserRepository {
         private mapper: Mapper<UserEntity, UserModel, UserResponseDto>
     ) {}
 
-    async insert(entity: UserEntity): Promise<Result<UserEntity, Error>> {
+    async insert(entity: UserEntity): Promise<AppResult<UserEntity>> {
         try {
             const [user] = await this._db
                 .insert(UserTable)
@@ -35,44 +35,32 @@ export class UserRepository implements IUserRepository {
                 .onConflictDoNothing()
                 .returning();
             if (!user) {
-                return new Result<UserEntity, Error>(
-                    null,
+                return AppResult.Err(
                     new ConflictException("Username already exists")
                 );
             }
-            return new Result<UserEntity, Error>(
-                this.mapper.toDomain(user),
-                null
-            );
+            return AppResult.Ok(this.mapper.toDomain(user));
         } catch (err) {
-            return new Result<UserEntity, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async findOneById(id: string): Promise<Result<UserEntity, Error>> {
+    async findOneById(id: string): Promise<AppResult<UserEntity>> {
         try {
             const [user] = await this._db
                 .select()
                 .from(UserTable)
                 .where(eq(UserTable.Id, id));
-
             if (user === undefined) {
-                return new Result<UserEntity, Error>(
-                    null,
-                    new NotFoundException("User not found")
-                );
+                return AppResult.Err(new NotFoundException("User not found"));
             }
-
-            return new Result<UserEntity, Error>(
-                this.mapper.toDomain(user),
-                null
-            );
+            return AppResult.Ok(this.mapper.toDomain(user));
         } catch (err) {
-            return new Result<UserEntity, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async findOneByName(name: string): Promise<Result<UserEntity, Error>> {
+    async findOneByName(name: string): Promise<AppResult<UserEntity>> {
         try {
             const [user] = await this._db
                 .select()
@@ -80,37 +68,28 @@ export class UserRepository implements IUserRepository {
                 .where(eq(UserTable.userName, name));
 
             if (user === undefined) {
-                return new Result<UserEntity, Error>(
-                    null,
-                    new NotFoundException("User not found")
-                );
+                return AppResult.Err(new NotFoundException("User not found"));
             }
 
-            return new Result<UserEntity, Error>(
-                this.mapper.toDomain(user),
-                null
-            );
+            return AppResult.Ok(this.mapper.toDomain(user));
         } catch (err) {
-            return new Result<UserEntity, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async findAll(): Promise<Result<UserEntity[], Error>> {
+    async findAll(): Promise<AppResult<UserEntity[]>> {
         try {
             const users = await this._db.query.UserTable.findMany();
 
-            return new Result<UserEntity[], Error>(
-                users.map(this.mapper.toDomain),
-                null
-            );
+            return AppResult.Ok(users.map(this.mapper.toDomain));
         } catch (err) {
-            return new Result<UserEntity[], Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
     async findAllPaginated(
         params: PaginatedQueryParams
-    ): Promise<Result<Paginated<UserEntity>, Error>> {
+    ): Promise<AppResult<Paginated<UserEntity>>> {
         try {
             let users = await this._db.query.UserTable.findMany();
 
@@ -131,13 +110,13 @@ export class UserRepository implements IUserRepository {
                 items: items.map(this.mapper.toDomain),
             };
 
-            return new Result<Paginated<UserEntity>, Error>(response, null);
+            return AppResult.Ok(response);
         } catch (err) {
-            return new Result<Paginated<UserEntity>, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async update(entity: UserEntity): Promise<Result<boolean, Error>> {
+    async update(entity: UserEntity): Promise<AppResult<boolean>> {
         try {
             const [Id] = await this._db
                 .update(UserTable)
@@ -149,23 +128,23 @@ export class UserRepository implements IUserRepository {
                     Id: UserTable.Id,
                 });
             if (!Id) {
-                return new Result<boolean, Error>(false, null);
+                return AppResult.Ok(false);
             }
-            return new Result<boolean, Error>(true, null);
+            return AppResult.Ok(true);
         } catch (err) {
-            return new Result<boolean, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 
-    async delete(entity: UserEntity): Promise<Result<boolean, Error>> {
+    async delete(entity: UserEntity): Promise<AppResult<boolean>> {
         try {
             this._db
                 .delete(UserTable)
                 .where(eq(UserTable.Id, entity.id!.toString()));
 
-            return new Result<boolean, Error>(true, null);
+            return AppResult.Ok(true);
         } catch (err) {
-            return new Result<boolean, Error>(null, err);
+            return AppResult.Err(err);
         }
     }
 }

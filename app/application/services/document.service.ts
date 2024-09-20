@@ -17,7 +17,6 @@ import {
 } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { parseResponse } from "../../lib/util/parse-response.util";
-import { Result } from "../../lib/util/result";
 import { z } from "zod";
 import { ILogger } from "../../lib/logging/ILogger";
 import {
@@ -38,6 +37,7 @@ import { IFileHandler } from "../../domain/ports/file-handler.port";
 import { signUrl } from "../../lib/util/sign-url.util";
 import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
+import { AppResult } from "@carbonteq/hexapp";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -65,15 +65,13 @@ export class DocumentService {
             DocumentEntity,
             DocumentModel,
             DocumentResponseDto
-        >,
-        @Inject(TAG_MAPPER)
-        private tagMapper: Mapper<TagEntity, TagModel, TagResponseDto>
+        > // @Inject(TAG_MAPPER) // private tagMapper: Mapper<TagEntity, TagModel, TagResponseDto>
     ) {}
 
     async get(
         userId: string,
         documentId: string
-    ): Promise<Result<GetDocumentResponse, Error>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -82,20 +80,26 @@ export class DocumentService {
 
         const document = documentResponse.unwrap();
 
-        return (await this.authService.execute({ userId, document })).bind(
-            (response) =>
-                parseResponse(
-                    GetDocumentResponse,
-                    this.documentMapper.toResponse(response)
-                )
-        );
+        const commandResponse = await this.authService.execute({
+            userId,
+            document,
+        });
+
+        if (commandResponse.isOk()) {
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(commandResponse.unwrap())
+            );
+        } else {
+            return commandResponse;
+        }
     }
 
     async getAll(
         pageNumber: number,
         pageSize: number,
         tag: string | null
-    ): Promise<Result<DocumentResponse, Error>> {
+    ): Promise<AppResult<DocumentResponse>> {
         const params: PaginatedQueryParams = {
             pageSize,
             pageNumber,
@@ -104,19 +108,24 @@ export class DocumentService {
                 param: "asc",
             },
         };
-        return (await this.repository.findAllPaginated(params)).bind(
-            (response) =>
-                parseResponse(DocumentResponse, {
-                    ...response,
-                    items: response.items.map(this.documentMapper.toResponse),
-                })
-        );
+
+        const result = await this.repository.findAllPaginated(params);
+
+        if (result.isOk()) {
+            const response = result.unwrap();
+            return parseResponse(DocumentResponse, {
+                ...response,
+                items: response.items.map(this.documentMapper.toResponse),
+            });
+        } else {
+            return result;
+        }
     }
 
     async getContent(
         userId: string,
         documentId: string
-    ): Promise<Result<DocumentContentResponse, Error>> {
+    ): Promise<AppResult<DocumentContentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -141,21 +150,32 @@ export class DocumentService {
                 fileExtension: document.extension,
             });
 
-            return (await this.authService.execute({ userId, document }))
-                .bind(() => signedUrl)
-                .bind((url) =>
-                    parseResponse(DocumentContentResponse, {
-                        downloadUrl: `/api/v1/document/download/${url}`,
-                        isBase64: false,
-                    })
-                );
+            const commandResponse = await this.authService.execute({
+                userId,
+                document,
+            });
+
+            if (commandResponse.isOk()) {
+                return parseResponse(DocumentContentResponse, {
+                    downloadUrl: `/api/v1/document/download/${signedUrl}`,
+                    isBase64: false,
+                });
+            } else {
+                return commandResponse;
+            }
         } else {
-            return (await this.authService.execute({ userId, document })).bind(
-                (document) =>
-                    parseResponse(DocumentContentResponse, {
-                        content: document.content,
-                    })
-            );
+            const commandResponse = await this.authService.execute({
+                userId,
+                document,
+            });
+
+            if (commandResponse.isOk()) {
+                return parseResponse(DocumentContentResponse, {
+                    content: document.content,
+                });
+            } else {
+                return commandResponse;
+            }
         }
     }
 
@@ -167,7 +187,7 @@ export class DocumentService {
         tags: { key: string; name: string }[],
         content: string,
         meta: UserDefinedMetadata
-    ): Promise<Result<SaveDocumentResponse, Error>> {
+    ): Promise<AppResult<SaveDocumentResponse>> {
         const document = DocumentEntity.create({
             userId: UUID.fromString(userId),
             fileName,
@@ -177,12 +197,17 @@ export class DocumentService {
             content,
             meta,
         });
-        return (await this.repository.insert(document)).bind((response) =>
-            parseResponse(
+
+        const result = await this.repository.insert(document);
+
+        if (result.isOk()) {
+            return parseResponse(
                 SaveDocumentResponse,
-                this.documentMapper.toResponse(response)
-            )
-        );
+                this.documentMapper.toResponse(result.unwrap())
+            );
+        } else {
+            return result;
+        }
     }
 
     async update(
@@ -193,7 +218,7 @@ export class DocumentService {
         contentType: string,
         tags: { key: string; name: string }[],
         content: string
-    ): Promise<Result<UpdateResponse, Error>> {
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -219,15 +244,19 @@ export class DocumentService {
             tags,
         });
 
-        return (await this.repository.update(document)).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
-        );
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            return parseResponse(UpdateResponse, { success: result.unwrap() });
+        } else {
+            return result;
+        }
     }
 
     async addTag(
         documentId: string,
         tag: { key: string; name: string }
-    ): Promise<Result<UpdateResponse, Error>> {
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -238,9 +267,13 @@ export class DocumentService {
 
         document.addTag(tag);
 
-        return (await this.repository.update(document)).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
-        );
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            return parseResponse(UpdateResponse, { success: result.unwrap() });
+        } else {
+            return result;
+        }
     }
 
     async updateTag(
@@ -249,7 +282,7 @@ export class DocumentService {
             key: string;
             name: string;
         }
-    ): Promise<Result<UpdateResponse, Error>> {
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -258,18 +291,25 @@ export class DocumentService {
 
         const document = documentResponse.unwrap();
         const tagToUpdate = TagEntity.create(tag);
+
         document.updateTag(tagToUpdate);
-        return (
-            await this.repository.updateTag(
-                document.id!.toString(),
-                tagToUpdate
-            )
-        ).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
+
+        const result = await this.repository.updateTag(
+            document.id!.toString(),
+            tagToUpdate
         );
+
+        if (result.isOk()) {
+            return parseResponse(UpdateResponse, { success: result.unwrap() });
+        } else {
+            return result;
+        }
     }
 
-    async removeTag(documentId: string, tag: { key: string; name: string }) {
+    async removeTag(
+        documentId: string,
+        tag: { key: string; name: string }
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -279,17 +319,20 @@ export class DocumentService {
         const document = documentResponse.unwrap();
         const tagToDelete = TagEntity.create(tag);
         document.updateTag(tagToDelete);
-        return (
-            await this.repository.removeTag(
-                document.id!.toString(),
-                tagToDelete
-            )
-        ).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
+
+        const result = await this.repository.removeTag(
+            document.id!.toString(),
+            tagToDelete
         );
+
+        if (result.isOk()) {
+            return parseResponse(UpdateResponse, { success: result.unwrap() });
+        } else {
+            return result;
+        }
     }
 
-    async download(link: string): Promise<Result<any, Error>> {
+    async download(link: string): Promise<AppResult<any>> {
         const decodedResponse = verifyUrl(link);
 
         if (decodedResponse.isErr()) {
@@ -298,13 +341,10 @@ export class DocumentService {
 
         const { path, params } = decodedResponse.unwrap();
 
-        return new Result<any, Error>(
-            {
-                filePath: path,
-                fileName: `${params.fileName}${params.fileExtension}`,
-            },
-            null
-        );
+        return AppResult.Ok({
+            filePath: path,
+            fileName: `${params.fileName}${params.fileExtension}`,
+        });
     }
 
     async upload(
@@ -315,7 +355,7 @@ export class DocumentService {
         contentType: string,
         tags: { key: string; name: string }[],
         meta?: UserDefinedMetadata
-    ): Promise<Result<GetDocumentResponse, Error>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const document = DocumentEntity.create({
             userId: UUID.fromString(userId),
             fileName,
@@ -342,18 +382,16 @@ export class DocumentService {
             return uploadFileResult;
         }
 
-        return insertDocumentResponse.bind((response) =>
-            parseResponse(
-                GetDocumentResponse,
-                this.documentMapper.toResponse(response)
-            )
+        return parseResponse(
+            GetDocumentResponse,
+            this.documentMapper.toResponse(insertedDocument)
         );
     }
 
     async remove(
         userId: string,
         documentId: string
-    ): Promise<Result<DocumentEntity, Error>> {
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -372,8 +410,12 @@ export class DocumentService {
             }
         }
 
-        return (await this.repository.delete(document)).bind((response) =>
-            parseResponse(DeleteResponse, { success: response })
-        );
+        const result = await this.repository.delete(document);
+
+        if (result.isOk()) {
+            return parseResponse(DeleteResponse, { success: result.unwrap() });
+        } else {
+            return result;
+        }
     }
 }

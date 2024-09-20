@@ -7,15 +7,16 @@ import {
     InternalServerError,
     NotFoundException,
 } from "../../lib/exceptions/exceptions";
+import { AppResult } from "@carbonteq/hexapp";
 
 export const errorHandler: IRequestHandler = (
     req: IRequest,
     res: IResponse,
     next: NextFunction
 ) => {
-    const result = req.result!;
+    const result = req.result! as AppResult<any>;
     if (result.isErr()) {
-        const err: Error = result.getErr();
+        const err: Error = result.unwrapErr();
         if (err instanceof ArgumentNotProvidedException) {
             res.status(400).json({
                 error: {
