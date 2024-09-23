@@ -1,21 +1,21 @@
-import { AppResult } from "@carbonteq/hexapp";
+import { AppResult, Paginated } from "@carbonteq/hexapp";
 // import { Result } from "../util/result";
 
-export class Paginated<T> {
-    readonly page: number;
-    readonly size: number;
-    readonly totalPages: number;
-    readonly totalItems: number;
-    items: T[];
+// export class Paginated<T> {
+//     readonly page: number;
+//     readonly size: number;
+//     readonly totalPages: number;
+//     readonly totalItems: number;
+//     items: T[];
 
-    constructor(props: Paginated<T>) {
-        this.page = props.page;
-        this.size = props.size;
-        this.totalPages = props.totalPages;
-        this.totalItems = props.totalItems;
-        this.items = props.items;
-    }
-}
+//     constructor(props: Paginated<T>) {
+//         this.page = props.page;
+//         this.size = props.size;
+//         this.totalPages = props.totalPages;
+//         this.totalItems = props.totalItems;
+//         this.items = props.items;
+//     }
+// }
 
 export type OrderBy = { field: string | true; param: "asc" | "desc" };
 

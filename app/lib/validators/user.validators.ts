@@ -86,9 +86,8 @@ export const UserResponse = z.object({
 });
 
 export const AllUsersResponse = z.object({
-    page: z.number(),
-    size: z.number(),
+    pageNum: z.number(),
+    pageSize: z.number(),
     totalPages: z.number(),
-    totalItems: z.number(),
-    items: UserResponse.array(),
+    data: UserResponse.array(),
 });

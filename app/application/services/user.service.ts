@@ -82,7 +82,7 @@ export class UserService {
             const response = result.unwrap();
             const mappedResponse = {
                 ...response,
-                items: response.items.map(this.mapper.toResponse),
+                data: response.data.map(this.mapper.toResponse),
             };
             return parseResponse(AllUsersResponse, mappedResponse);
         } else {
@@ -100,10 +100,12 @@ export class UserService {
 
             if (updateResult.isOk()) {
                 return parseResponse(UpdateResponse, {
-                    success: updateResult.unwrap(),
+                    success: true,
                 });
             } else {
-                return updateResult;
+                return parseResponse(UpdateResponse, {
+                    success: false,
+                });
             }
         } else {
             return result;

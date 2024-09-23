@@ -100,7 +100,7 @@ export class DocumentService {
         pageNumber: number,
         pageSize: number,
         tag: string | null
-    ): Promise<AppResult<DocumentResponse>> {
+    ): Promise<AppResult<any>> {
         const params: PaginatedQueryParams = {
             pageSize,
             pageNumber,
@@ -114,10 +114,11 @@ export class DocumentService {
 
         if (result.isOk()) {
             const response = result.unwrap();
-            return parseResponse(DocumentResponse, {
+            const mappedResponse = {
                 ...response,
-                items: response.items.map(this.documentMapper.toResponse),
-            });
+                data: response.data.map(this.documentMapper.toResponse),
+            };
+            return parseResponse(DocumentResponse, mappedResponse);
         } else {
             return result;
         }

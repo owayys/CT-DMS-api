@@ -129,9 +129,8 @@ export const UpdateTag = AddTag;
 export const DeleteTag = AddTag;
 
 export const DocumentResponse = z.object({
-    page: z.number(),
-    size: z.number(),
+    pageNum: z.number(),
+    pageSize: z.number(),
     totalPages: z.number(),
-    totalItems: z.number(),
-    items: Document.array(),
+    data: Document.array(),
 });

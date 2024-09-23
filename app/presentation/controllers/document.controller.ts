@@ -44,7 +44,7 @@ export class DocumentController {
 
         const result = await this.documentService.getAll(
             // userId,
-            pageNumber as unknown as number,
+            (pageNumber as unknown as number) - 1,
             pageSize as unknown as number,
             tag as unknown as string | null
         );
