@@ -1,5 +1,6 @@
 {
     "dependencies": {
+        "@carbonteq/hexapp": "^0.18.3",
         "@types/jsonwebtoken": "^9.0.6",
         "bcrypt": "^5.1.1",
         "bunyan": "^1.8.15",
