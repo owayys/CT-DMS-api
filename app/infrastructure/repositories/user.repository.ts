@@ -8,23 +8,19 @@ import { UserEntity } from "../../domain/entities/user.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserModel } from "../mappers/user.mapper";
 import { UserResponseDto } from "../../application/dtos/user.response.dto";
-import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
-import {
-    ConflictException,
-    NotFoundException,
-} from "../../lib/exceptions/exceptions";
 import {
     AlreadyExistsError,
-    BaseRepository,
     NotFoundError,
     RepositoryResult,
     Paginated,
     PaginationOptions,
+    AppError,
 } from "@carbonteq/hexapp";
 import { Result } from "@carbonteq/fp";
+import { IUserRepository } from "../../domain/repositories/user.repository.port";
 
 @InjectionTarget()
-export class UserRepository implements BaseRepository<UserEntity> {
+export class UserRepository implements IUserRepository {
     constructor(
         @Inject(DATABASE) private _db: IDrizzleConnection,
         @Inject(USER_MAPPER)
@@ -43,12 +39,13 @@ export class UserRepository implements BaseRepository<UserEntity> {
                 })
                 .onConflictDoNothing()
                 .returning();
-            if (!user) {
+            if (user === undefined) {
                 return Result.Err(
-                    new ConflictException("Username already exists")
+                    AppError.AlreadyExists("Username already exists")
                 );
+            } else {
+                return Result.Ok(this.mapper.toDomain(user));
             }
-            return Result.Ok(this.mapper.toDomain(user));
         } catch (err) {
             return Result.Err(err);
         }
@@ -61,7 +58,7 @@ export class UserRepository implements BaseRepository<UserEntity> {
                 .from(UserTable)
                 .where(eq(UserTable.Id, id));
             if (user === undefined) {
-                return Result.Err(new NotFoundException("User not found"));
+                return Result.Err(AppError.NotFound("User not found"));
             }
             return Result.Ok(this.mapper.toDomain(user));
         } catch (err) {
@@ -77,7 +74,7 @@ export class UserRepository implements BaseRepository<UserEntity> {
                 .where(eq(UserTable.userName, name));
 
             if (user === undefined) {
-                return Result.Err(new NotFoundException("User not found"));
+                return Result.Err(AppError.NotFound("User not found"));
             }
             return Result.Ok(this.mapper.toDomain(user));
         } catch (err) {
@@ -96,21 +93,21 @@ export class UserRepository implements BaseRepository<UserEntity> {
     }
 
     async findAllPaginated(
-        params: PaginatedQueryParams
+        params: PaginationOptions
     ): Promise<RepositoryResult<Paginated<UserEntity>>> {
         try {
             let users = await this._db.query.UserTable.findMany();
 
             let totalPages = Math.ceil(users.length / params.pageSize);
-            let page = Math.min(totalPages - 1, params.pageNumber);
+            let page = Math.min(totalPages, params.pageNum);
             let items = users.slice(
-                page * params.pageSize,
-                page * params.pageSize + params.pageSize
+                (page - 1) * params.pageSize,
+                (page - 1) * params.pageSize + params.pageSize
             );
             let size = Math.min(items.length, params.pageSize);
 
             const response: Paginated<UserEntity> = {
-                pageNum: page + 1,
+                pageNum: page,
                 pageSize: size,
                 totalPages: totalPages,
                 data: items.map(this.mapper.toDomain),
@@ -134,7 +131,7 @@ export class UserRepository implements BaseRepository<UserEntity> {
                 .where(eq(UserTable.Id, entity.id!.toString()))
                 .returning();
             if (!user) {
-                return Result.Err(new NotFoundException("User not found"));
+                return Result.Err(AppError.NotFound("User not found"));
             }
             return Result.Ok(this.mapper.toDomain(user));
         } catch (err) {

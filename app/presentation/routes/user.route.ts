@@ -22,7 +22,7 @@ router.get(
     userController.getAll,
     errorHandler
 );
-router.post("/", validate(CreateUser), userController.register);
+router.post("/", validate(CreateUser), userController.register, errorHandler);
 router.get(
     "/:id",
     authenticateJWT,

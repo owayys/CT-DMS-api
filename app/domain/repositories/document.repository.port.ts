@@ -1,14 +1,31 @@
-import { AppResult } from "@carbonteq/hexapp";
-import { RepositoryPort } from "../../lib/ddd/repository.port";
+import {
+    AppResult,
+    BaseRepository,
+    NotFoundError,
+    Paginated,
+    PaginationOptions,
+    RepositoryResult,
+} from "@carbonteq/hexapp";
 import { DocumentEntity } from "../entities/document.entity";
 import { TagEntity } from "../entities/tag.entity";
 
-export interface IDocumentRepository extends RepositoryPort<DocumentEntity> {
+export interface IDocumentRepository extends BaseRepository<DocumentEntity> {
     findByOwner(owner: string): Promise<AppResult<DocumentEntity[]>>;
-
-    addTag(id: string, entity: TagEntity): Promise<AppResult<boolean>>;
-
-    updateTag(id: string, entity: TagEntity): Promise<AppResult<boolean>>;
-
-    removeTag(id: string, entity: TagEntity): Promise<AppResult<boolean>>;
+    findOneById(
+        id: string
+    ): Promise<RepositoryResult<DocumentEntity, NotFoundError>>;
+    findAll(): Promise<RepositoryResult<DocumentEntity[]>>;
+    findAllPaginated(
+        params: PaginationOptions
+    ): Promise<RepositoryResult<Paginated<DocumentEntity>>>;
+    delete(entity: DocumentEntity): Promise<RepositoryResult<boolean>>;
+    addTag(id: string, entity: TagEntity): Promise<RepositoryResult<boolean>>;
+    updateTag(
+        id: string,
+        entity: TagEntity
+    ): Promise<RepositoryResult<boolean>>;
+    removeTag(
+        id: string,
+        entity: TagEntity
+    ): Promise<RepositoryResult<boolean>>;
 }

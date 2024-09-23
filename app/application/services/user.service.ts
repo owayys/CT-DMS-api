@@ -1,4 +1,3 @@
-// import { IUserRepository } from "../repositories/IUserRepository";
 import { IUserRepository } from "../../domain/repositories/user.repository.port";
 
 import { LOGGER, USER_MAPPER, USER_REPOSITORY } from "../../lib/di/di.tokens";
@@ -17,8 +16,7 @@ import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserEntity } from "../../domain/entities/user.entity";
 import { UserModel } from "../../infrastructure/mappers/user.mapper";
 import { UserResponseDto } from "../dtos/user.response.dto";
-import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
-import { AppResult } from "@carbonteq/hexapp";
+import { AppResult, PaginationOptions } from "@carbonteq/hexapp";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
@@ -46,7 +44,7 @@ export class UserService {
                 this.mapper.toResponse(result.unwrap())
             );
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -59,7 +57,7 @@ export class UserService {
                 this.mapper.toResponse(result.unwrap())
             );
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -67,16 +65,16 @@ export class UserService {
         pageNumber: number,
         pageSize: number
     ): Promise<AppResult<any>> {
-        const params: PaginatedQueryParams = {
+        const params = PaginationOptions.create({
+            pageNum: pageNumber,
             pageSize,
-            pageNumber,
-            orderBy: {
-                field: "id",
-                param: "asc",
-            },
-        };
+        });
 
-        const result = await this.repository.findAllPaginated(params);
+        if (params.isErr()) {
+            return AppResult.Err(params.unwrapErr());
+        }
+
+        const result = await this.repository.findAllPaginated(params.unwrap());
 
         if (result.isOk()) {
             const response = result.unwrap();
@@ -86,7 +84,7 @@ export class UserService {
             };
             return parseResponse(AllUsersResponse, mappedResponse);
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 

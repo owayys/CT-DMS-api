@@ -13,7 +13,6 @@ import {
     DOCUMENT_REPOSITORY,
     FILE_HANDLER,
     LOGGER,
-    TAG_MAPPER,
 } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { parseResponse } from "../../lib/util/parse-response.util";
@@ -24,21 +23,16 @@ import {
     UserDefinedMetadata,
 } from "../../domain/types/document.types";
 import { DocumentEntity } from "../../domain/entities/document.entity";
-import { UUID } from "../../domain/value-objects/uuid.value-object";
 import { TagEntity } from "../../domain/entities/tag.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
 import { DocumentResponseDto } from "../dtos/document.response.dto";
-import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
-import { TagModel } from "../../infrastructure/mappers/tag.mapper";
-import { TagResponseDto } from "../dtos/tag.response.dto";
 import { IDomainService } from "../../lib/ddd/domain-service.interface";
 import { IFileHandler } from "../../domain/ports/file-handler.port";
 import { signUrl } from "../../lib/util/sign-url.util";
 import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
-import { AppResult } from "@carbonteq/hexapp";
-import { DocumentMetadata } from "../../domain/value-objects/document-metadata.value-object";
+import { AppError, AppResult, PaginationOptions } from "@carbonteq/hexapp";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -66,7 +60,7 @@ export class DocumentService {
             DocumentEntity,
             DocumentModel,
             DocumentResponseDto
-        > // @Inject(TAG_MAPPER) // private tagMapper: Mapper<TagEntity, TagModel, TagResponseDto>
+        >
     ) {}
 
     async get(
@@ -76,7 +70,7 @@ export class DocumentService {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -101,16 +95,16 @@ export class DocumentService {
         pageSize: number,
         tag: string | null
     ): Promise<AppResult<any>> {
-        const params: PaginatedQueryParams = {
+        const params = PaginationOptions.create({
+            pageNum: pageNumber,
             pageSize,
-            pageNumber,
-            orderBy: {
-                field: "id",
-                param: "asc",
-            },
-        };
+        });
 
-        const result = await this.repository.findAllPaginated(params);
+        if (params.isErr()) {
+            return AppResult.Err(params.unwrapErr());
+        }
+
+        const result = await this.repository.findAllPaginated(params.unwrap());
 
         if (result.isOk()) {
             const response = result.unwrap();
@@ -120,7 +114,7 @@ export class DocumentService {
             };
             return parseResponse(DocumentResponse, mappedResponse);
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -131,7 +125,7 @@ export class DocumentService {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -147,10 +141,16 @@ export class DocumentService {
             }
 
             const file = fileResponse.unwrap();
-            const signedUrl = signUrl(file, {
+            const signedUrlResponse = signUrl(file, {
                 fileName: document.fileName,
                 fileExtension: document.fileExtension,
             });
+
+            if (signedUrlResponse.isErr()) {
+                return AppResult.Err(AppError.InvalidData("Error signing url"));
+            }
+
+            const signedUrl = signedUrlResponse.unwrap();
 
             const commandResponse = await this.authService.execute({
                 userId,
@@ -208,7 +208,7 @@ export class DocumentService {
                 this.documentMapper.toResponse(result.unwrap())
             );
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -224,7 +224,7 @@ export class DocumentService {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -249,9 +249,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            return parseResponse(UpdateResponse, { success: result.unwrap() });
+            return parseResponse(UpdateResponse, { success: true });
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -262,7 +262,7 @@ export class DocumentService {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -272,9 +272,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            return parseResponse(UpdateResponse, { success: result.unwrap() });
+            return parseResponse(UpdateResponse, { success: true });
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -288,7 +288,7 @@ export class DocumentService {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -304,7 +304,7 @@ export class DocumentService {
         if (result.isOk()) {
             return parseResponse(UpdateResponse, { success: result.unwrap() });
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -315,7 +315,7 @@ export class DocumentService {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -330,7 +330,7 @@ export class DocumentService {
         if (result.isOk()) {
             return parseResponse(UpdateResponse, { success: result.unwrap() });
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 
@@ -370,7 +370,7 @@ export class DocumentService {
         const insertDocumentResponse = await this.repository.insert(document);
 
         if (insertDocumentResponse.isErr()) {
-            return insertDocumentResponse;
+            return AppResult.Err(insertDocumentResponse.unwrapErr());
         }
 
         const insertedDocument = insertDocumentResponse.unwrap();
@@ -395,9 +395,10 @@ export class DocumentService {
         documentId: string
     ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
+        console.log(documentResponse);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -417,7 +418,7 @@ export class DocumentService {
         if (result.isOk()) {
             return parseResponse(DeleteResponse, { success: result.unwrap() });
         } else {
-            return result;
+            return AppResult.Err(result.unwrapErr());
         }
     }
 }

@@ -2,11 +2,13 @@ import { ILogger } from "./ILogger";
 import bunyan from "bunyan";
 import { reqSerializer } from "./reqSerializer";
 import { FgCyan, FgGreen, FgWhite, FgYellow } from "../colors";
-import { Logger } from "drizzle-orm";
+// import { Logger } from "drizzle-orm";
+import { Logger, LogLevel } from "@carbonteq/hexapp";
 
-export class BunyanLogger implements ILogger, Logger {
+export class BunyanLogger extends Logger implements Logger {
     private logger: bunyan;
     constructor() {
+        super();
         this.logger = bunyan.createLogger({
             name: "BUNYAN",
             serializers: {
@@ -15,11 +17,15 @@ export class BunyanLogger implements ILogger, Logger {
         });
     }
 
-    log(...args: [any]): void {
+    log(...args: [unknown]): void {
         this.logger.info(...args);
     }
 
-    warn(...args: [any]): void {
+    info(...args: [unknown]): void {
+        this.logger.info(...args);
+    }
+
+    warn(...args: [unknown]): void {
         this.logger.warn(...args);
     }
 
@@ -32,4 +38,15 @@ export class BunyanLogger implements ILogger, Logger {
             `${FgGreen} ]${FgWhite}`
         );
     }
+
+    error(...args: unknown[]): void {
+        this.logger.warn(args);
+    }
+
+    debug(...args: unknown[]): void {
+        this.logger.debug(args);
+    }
+
+    setContext(ctx: string): void {}
+    setLevel(lvl: LogLevel): void {}
 }

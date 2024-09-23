@@ -4,11 +4,12 @@ import { ILogger } from "../../lib/logging/ILogger";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
+import { Logger } from "@carbonteq/hexapp";
 
 @InjectionTarget()
 export class RequestLogger {
-    private logger: ILogger;
-    constructor(@Inject(LOGGER) logger?: ILogger) {
+    private logger: Logger;
+    constructor(@Inject(LOGGER) logger?: Logger) {
         if (!logger) {
             throw Error("No Logger provided");
         }
@@ -18,7 +19,7 @@ export class RequestLogger {
         const startTime = performance.now();
         next();
         const endTime = performance.now();
-        this.logger.log(
+        this.logger.info(
             reqSerializer({ req: req, res: res, time: endTime - startTime })
         );
     };

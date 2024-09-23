@@ -20,6 +20,8 @@ import {
     NotFoundError,
     RepositoryResult,
     Paginated,
+    PaginationOptions,
+    AppError,
 } from "@carbonteq/hexapp";
 import { Result } from "@carbonteq/fp";
 
@@ -104,7 +106,7 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
                 };
                 return Result.Ok(this.documentMapper.toDomain(response));
             } else {
-                return Result.Err(new NotFoundException("Document not found"));
+                return Result.Err(AppError.NotFound("Document not found"));
             }
         } catch (err) {
             return Result.Err(err);
@@ -131,14 +133,14 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
                 });
                 return Result.Ok(response.map(this.documentMapper.toDomain));
             } else {
-                return Result.Err(new NotFoundException("Document not found"));
+                return Result.Err(AppError.NotFound("Document not found"));
             }
         } catch (err) {
             return Result.Err(err);
         }
     }
     async findAllPaginated(
-        params: PaginatedQueryParams
+        params: PaginationOptions
     ): Promise<RepositoryResult<Paginated<DocumentEntity>>> {
         try {
             let documents = await this._db.query.DocumentTable.findMany({
@@ -152,11 +154,11 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
             });
 
             let totalPages = Math.ceil(documents.length / params.pageSize);
-            let page = Math.min(totalPages - 1, params.pageNumber);
+            let page = Math.min(totalPages, params.pageNum);
             let items = documents
                 .slice(
-                    page * params.pageSize,
-                    page * params.pageSize + params.pageSize
+                    (page - 1) * params.pageSize,
+                    (page - 1) * params.pageSize + params.pageSize
                 )
                 .map((item) => {
                     return {
@@ -167,7 +169,7 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
             let size = Math.min(items.length, params.pageSize);
 
             const response: Paginated<DocumentEntity> = {
-                pageNum: page + 1,
+                pageNum: page,
                 pageSize: size,
                 totalPages: totalPages,
                 data: items.map(this.documentMapper.toDomain),
@@ -204,7 +206,7 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
                 });
                 return Result.Ok(response.map(this.documentMapper.toDomain));
             } else {
-                return Result.Err(new NotFoundException("Document not found"));
+                return Result.Err(AppError.NotFound("Document not found"));
             }
         } catch (err) {
             return Result.Err(err);
@@ -223,9 +225,7 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
                     .where(eq(DocumentTable.Id, documentId));
 
                 if (!document) {
-                    return Result.Err(
-                        new NotFoundException("Document not found")
-                    );
+                    return Result.Err(AppError.NotFound("Document not found"));
                 }
 
                 await tx
@@ -268,9 +268,7 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
                         })
                     );
                 } else {
-                    return Result.Err(
-                        new NotFoundException("Document not found")
-                    );
+                    return Result.Err(AppError.NotFound("Document not found"));
                 }
             });
         } catch (err) {

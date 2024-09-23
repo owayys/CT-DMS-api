@@ -31,7 +31,7 @@ export class UserController {
         const { pageNumber, pageSize } = req.query;
 
         const result = await this.userService.getAll(
-            (pageNumber as unknown as number) - 1,
+            pageNumber as unknown as number,
             pageSize as unknown as number
         );
 
@@ -48,7 +48,6 @@ export class UserController {
         const { userName, password } = req.body;
         const result = await this.userService.register(userName, password);
         req.result = result;
-
         next();
     };
 

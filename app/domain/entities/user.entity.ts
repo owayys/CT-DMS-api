@@ -20,7 +20,9 @@ export class UserEntity extends AggregateRoot implements IUser {
         super();
         this._userName = userName;
         this._role = new UserRole(role);
-        this._password = UserPassword.fromHash(password);
+        this._password = UserPassword.validate(password)
+            ? UserPassword.fromHash(password)
+            : UserPassword.fromPlain(password);
     }
 
     static create(create: CreateUserProps): UserEntity {

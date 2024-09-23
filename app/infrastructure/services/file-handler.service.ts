@@ -6,7 +6,7 @@ import {
     InternalServerError,
     NotFoundException,
 } from "../../lib/exceptions/exceptions";
-import { AppResult } from "@carbonteq/hexapp";
+import { AppError, AppResult } from "@carbonteq/hexapp";
 
 export class FileHandlerService implements IFileHandler {
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
@@ -41,13 +41,11 @@ export class FileHandlerService implements IFileHandler {
                 return AppResult.Ok(`./app/uploads/${id}`);
             } else {
                 return AppResult.Err(
-                    new NotFoundException(`File [${id}] not found`)
+                    AppError.NotFound(`File [${id}] not found`)
                 );
             }
         } catch (err) {
-            return AppResult.Err(
-                new NotFoundException(`File [${id}] not found`)
-            );
+            return AppResult.Err(AppError.NotFound(`File [${id}] not found`));
         }
     }
 }

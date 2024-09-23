@@ -1,4 +1,9 @@
-import { AppResult, Paginated } from "@carbonteq/hexapp";
+import {
+    AppResult,
+    BaseRepository,
+    Paginated,
+    PaginationOptions,
+} from "@carbonteq/hexapp";
 // import { Result } from "../util/result";
 
 // export class Paginated<T> {
@@ -30,7 +35,7 @@ export interface RepositoryPort<Entity> {
     findOneById(id: string): Promise<AppResult<Entity>>;
     findAll(): Promise<AppResult<Entity[]>>;
     findAllPaginated(
-        params: PaginatedQueryParams
+        params: PaginationOptions
     ): Promise<AppResult<Paginated<Entity>>>;
     update(entity: Entity): Promise<AppResult<boolean>>;
     delete(entity: Entity): Promise<AppResult<boolean>>;
