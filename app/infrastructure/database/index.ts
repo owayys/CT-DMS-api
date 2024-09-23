@@ -5,9 +5,6 @@ import { Logger } from "drizzle-orm";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
-import Redis from "ioredis";
-
-export const redisClient = new Redis();
 
 @InjectionTarget()
 export class DrizzleClientWrapper {

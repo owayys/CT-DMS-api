@@ -7,7 +7,7 @@ import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
 import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
 import { ZodError } from "zod";
-import { redisClient } from "../../infrastructure/database";
+// import { redisClient } from "../../infrastructure/database";
 import { readFileSync } from "fs";
 import { Services } from "../../application/services/types";
 import { AppResult } from "@carbonteq/hexapp";
@@ -159,25 +159,10 @@ export class DocumentController {
             }
         } else {
             const requestedFile = result.unwrap();
-            let file = await redisClient.getBuffer(url);
-            if (file === null) {
-                file = readFileSync(`${requestedFile.filePath}`);
-                await redisClient.set(
-                    url,
-                    readFileSync(`${requestedFile.filePath}`),
-                    "EX",
-                    60
-                );
-                res.status(200).download(
-                    requestedFile.filePath,
-                    requestedFile.fileName
-                );
-            }
-            res.status(200);
-            res.set({
-                "Content-Disposition": `attachment; filename=${requestedFile.fileName}`,
-            });
-            res.end(file);
+            res.status(200).download(
+                requestedFile.filePath,
+                requestedFile.fileName
+            );
         }
     };
 
