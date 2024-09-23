@@ -1,55 +1,89 @@
-import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
+// import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
+import { AggregateRoot, SerializedEntity } from "@carbonteq/hexapp";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
 import { CreateUserProps, UserProps } from "../types/user.types";
 import { UserPassword } from "../value-objects/user-password.value-object";
 import { UserRole } from "../value-objects/user-role.value-object";
-import { UUID } from "../value-objects/uuid.value-object";
 
-export class UserEntity extends AggregateRoot<UserProps> {
+export interface IUser {
+    userName: string;
+    role: UserRole;
+    password: UserPassword;
+}
+
+export class UserEntity extends AggregateRoot implements IUser {
+    private _userName: string;
+    private _role: UserRole;
+    private _password: UserPassword;
+
+    constructor(userName: string, role: string, password: string) {
+        super();
+        this._userName = userName;
+        this._role = new UserRole(role);
+        this._password = UserPassword.fromHash(password);
+    }
+
     static create(create: CreateUserProps): UserEntity {
-        const id = UUID.generate();
-        const password = UserPassword.fromPlain(create.password);
-        const userRole = new UserRole("USER" as string);
-        const props: UserProps = {
-            ...create,
-            role: userRole,
-            password: password,
-        };
-        const user = new UserEntity({
-            id,
-            props,
-        });
-        return user;
+        const userName = create.userName;
+        const password = create.password;
+        return new UserEntity(userName, "USER", password);
+    }
+
+    static fromSerialized(other: Readonly<SerializedEntity & IUser>) {
+        const ent = new UserEntity(
+            other.userName,
+            other.role.toString(),
+            other.password.toString()
+        );
+
+        ent._fromSerialized(other);
+        return ent;
+    }
+
+    get userId(): string {
+        return this.id;
     }
 
     get userName(): string {
-        return this.props.userName;
+        return this._userName;
     }
 
     get role(): UserRole {
-        return this.props.role;
+        return this._role;
     }
 
-    get password(): string {
-        return this.props.password.toString();
+    get password(): UserPassword {
+        return this._password;
     }
 
     public isAdmin(): boolean {
-        return this.props.role.isAdmin();
+        return this._role.isAdmin();
     }
 
     public isUser(): boolean {
-        return this.props.role.isUser();
+        return this._role.isUser();
     }
 
     public async validatePassword(plain: string): Promise<boolean> {
-        return await this.props.password.compare(plain);
+        return await this._password.compare(plain);
     }
 
     @AutoUpdate()
     public changePassword(plain: string): void {
-        this.props.password = UserPassword.fromPlain(plain);
+        this._password = UserPassword.fromPlain(plain);
     }
 
     validate(): void {}
+
+    serialize(): IUser & SerializedEntity {
+        const { id, createdAt, updatedAt, userName, role, password } = this;
+        return {
+            id,
+            createdAt,
+            updatedAt,
+            userName,
+            role,
+            password,
+        };
+    }
 }

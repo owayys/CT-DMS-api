@@ -6,7 +6,7 @@ import { DocumentMetadata } from "../value-objects/document-metadata.value-objec
 import { TagCollection } from "../entities/tag-collection.entity";
 
 export type DocumentProps = {
-    userId: UUID;
+    userId: string;
     fileName: string;
     fileExtension: string;
     content: string;
@@ -16,7 +16,7 @@ export type DocumentProps = {
 };
 
 export type CreateDocumentProps = {
-    userId: UUID;
+    userId: string;
     fileName: string;
     fileExtension: string;
     content: string;

@@ -36,10 +36,10 @@ export class DocumentRepository implements IDocumentRepository {
                 const [document] = await tx
                     .insert(DocumentTable)
                     .values({
-                        Id: entity.id!.toString(),
-                        userId: entity.owner.toString(),
-                        fileName: entity.name,
-                        fileExtension: entity.extension,
+                        Id: entity.id,
+                        userId: entity.ownerId,
+                        fileName: entity.fileName,
+                        fileExtension: entity.fileExtension,
                         contentType: entity.contentType,
                         content: entity.content,
                         meta: entity.meta,
@@ -225,8 +225,8 @@ export class DocumentRepository implements IDocumentRepository {
                 await tx
                     .update(DocumentTable)
                     .set({
-                        fileName: entity.name,
-                        fileExtension: entity.extension,
+                        fileName: entity.fileName,
+                        fileExtension: entity.fileExtension,
                         contentType: entity.contentType,
                         content: entity.content,
                     })

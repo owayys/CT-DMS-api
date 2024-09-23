@@ -1,4 +1,5 @@
-import { Entity } from "../../lib/ddd/entity.base";
+// import { Entity } from "../../lib/ddd/entity.base";
+import { BaseEntity } from "@carbonteq/hexapp";
 import { AutoUpdate } from "../../lib/util/auto-update.util";
 import {
     CreateTagCollectionProps,
@@ -6,45 +7,55 @@ import {
 } from "../types/tag-collection.types";
 import { TagEntity } from "./tag.entity";
 
-export class TagCollection extends Entity<TagCollectionProps> {
-    static create(create: CreateTagCollectionProps) {
-        const collection: Map<string, TagEntity> = new Map();
-        create.tags.forEach((tag) => {
-            let tagEntity = TagEntity.create(tag);
-            collection.set(tag.key, tagEntity);
+export interface ITagCollection {
+    tags: {
+        key: string;
+        name: string;
+    }[];
+}
+
+export class TagCollection extends BaseEntity implements ITagCollection {
+    private _tags: Map<string, TagEntity>;
+    constructor(tags: TagEntity[]) {
+        super();
+        this._tags = new Map();
+        tags.forEach((tag) => {
+            this._tags.set(tag.key, TagEntity.create(tag));
         });
-        const props: TagCollectionProps = { ...create, tags: collection };
-        return new TagCollection({ props });
+    }
+    static create(create: CreateTagCollectionProps) {
+        const tags = create.tags.map(TagEntity.create);
+        return new TagCollection(tags);
     }
 
     public includes(key: string): boolean {
-        return this.props.tags.has(key);
+        return this._tags.has(key);
     }
 
     @AutoUpdate()
     public addTag(tag: { key: string; name: string }): void {
         let newTag = TagEntity.create(tag);
-        this.includes(newTag.key)
-            ? null
-            : this.props.tags.set(newTag.key, newTag);
+        this.includes(newTag.key) ? null : this._tags.set(newTag.key, newTag);
     }
 
     @AutoUpdate()
     public updateTag(tag: { key: string; name: string }): void {
         if (this.includes(tag.key)) {
-            const entity = this.props.tags.get(tag.key);
+            const entity = this._tags.get(tag.key);
             entity!.update(tag.name);
         }
     }
 
     @AutoUpdate()
     public deleteTag(key: string): void {
-        this.props.tags.delete(key);
+        this._tags.delete(key);
     }
 
-    get values(): TagEntity[] {
-        return Array.from(this.props.tags.values());
+    get tags(): TagEntity[] {
+        return Array.from(this._tags.values());
     }
 
     validate(): void {}
+
+    serialize() {}
 }

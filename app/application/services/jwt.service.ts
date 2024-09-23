@@ -56,7 +56,7 @@ export class JWTService {
 
         let accessToken = jwt.sign(
             {
-                Id: user.id!.toString(),
+                Id: user.userId,
                 userName: user.userName,
                 userRole: user.role.toString(),
             },
@@ -64,7 +64,7 @@ export class JWTService {
             { expiresIn: "1h" }
         );
         let refreshToken = jwt.sign(
-            { Id: user.id!.toString(), userName: user.userName },
+            { Id: user.userId, userName: user.userName },
             refreshSecret as string,
             {
                 expiresIn: "2h",

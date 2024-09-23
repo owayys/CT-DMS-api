@@ -7,7 +7,7 @@ export class AuthorizeDocumentAccessService {
     async execute(
         command: AuthorizeDocumentAccessCommand
     ): Promise<AppResult<DocumentEntity>> {
-        const authorized = command.document.owner.equals(command.userId);
+        const authorized = command.document.ownerId === command.userId;
 
         return authorized
             ? AppResult.Ok(command.document)

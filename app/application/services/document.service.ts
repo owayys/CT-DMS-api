@@ -38,6 +38,7 @@ import { signUrl } from "../../lib/util/sign-url.util";
 import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
 import { AppResult } from "@carbonteq/hexapp";
+import { DocumentMetadata } from "../../domain/value-objects/document-metadata.value-object";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -146,8 +147,8 @@ export class DocumentService {
 
             const file = fileResponse.unwrap();
             const signedUrl = signUrl(file, {
-                fileName: document.name,
-                fileExtension: document.extension,
+                fileName: document.fileName,
+                fileExtension: document.fileExtension,
             });
 
             const commandResponse = await this.authService.execute({
@@ -189,7 +190,7 @@ export class DocumentService {
         meta: UserDefinedMetadata
     ): Promise<AppResult<SaveDocumentResponse>> {
         const document = DocumentEntity.create({
-            userId: UUID.fromString(userId),
+            userId,
             fileName,
             fileExtension,
             contentType,
@@ -357,7 +358,7 @@ export class DocumentService {
         meta?: UserDefinedMetadata
     ): Promise<AppResult<GetDocumentResponse>> {
         const document = DocumentEntity.create({
-            userId: UUID.fromString(userId),
+            userId,
             fileName,
             fileExtension,
             contentType,

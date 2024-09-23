@@ -1,20 +1,23 @@
+import { BaseValueObject } from "@carbonteq/hexapp";
 import { UserDefinedMetadata } from "../types/document.types";
 
-export class DocumentMetadata {
-    private value: any;
+export class DocumentMetadata extends BaseValueObject<UserDefinedMetadata> {
+    private _value: any;
     private constructor(value: any) {
         if (!DocumentMetadata.isMetadata(value)) {
+            console.log(value, value instanceof DocumentMetadata);
             throw Error("Invalid Metadata");
         }
-        this.value = value;
+        super();
+        this._value = value;
     }
 
     static fromData(data: any): DocumentMetadata {
         return data === undefined ? data : new DocumentMetadata(data);
     }
 
-    get val(): UserDefinedMetadata {
-        return this.value;
+    get value(): UserDefinedMetadata {
+        return this._value;
     }
 
     private static isMetadata(data: any): boolean {
@@ -58,5 +61,10 @@ export class DocumentMetadata {
 
     static validate(value: any): boolean {
         return DocumentMetadata.isMetadata(value);
+    }
+
+    serialize(): UserDefinedMetadata {
+        const { value } = this;
+        return { value };
     }
 }

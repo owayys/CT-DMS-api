@@ -1,7 +1,6 @@
-import { Entity } from "./entity.base";
-
+import { BaseEntity } from "@carbonteq/hexapp";
 export interface Mapper<
-    DomainEntity extends Entity<any>,
+    DomainEntity extends BaseEntity,
     DbRecord,
     Response = any
 > {

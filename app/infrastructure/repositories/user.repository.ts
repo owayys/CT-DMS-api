@@ -30,7 +30,7 @@ export class UserRepository implements IUserRepository {
                 .insert(UserTable)
                 .values({
                     userName: entity.userName,
-                    password: entity.password,
+                    password: entity.password.toString(),
                 })
                 .onConflictDoNothing()
                 .returning();
@@ -70,7 +70,6 @@ export class UserRepository implements IUserRepository {
             if (user === undefined) {
                 return AppResult.Err(new NotFoundException("User not found"));
             }
-
             return AppResult.Ok(this.mapper.toDomain(user));
         } catch (err) {
             return AppResult.Err(err);
@@ -121,7 +120,7 @@ export class UserRepository implements IUserRepository {
             const [Id] = await this._db
                 .update(UserTable)
                 .set({
-                    password: entity.password,
+                    password: entity.password.toString(),
                 })
                 .where(eq(UserTable.Id, entity.id!.toString()))
                 .returning({
