@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { Document } from "../../lib/validators/document.validators";
-import { DocumentEntity } from "../../domain/entities/document.entity";
+import { DocumentEntity } from "../../domain/entities/document/document.entity";
 import { DocumentResponseDto } from "../../application/dtos/document.response.dto";
 import { DocumentMetadata } from "../../domain/value-objects/document-metadata.value-object";
 import { DateTime } from "@carbonteq/hexapp";
@@ -16,8 +16,8 @@ export class DocumentMapper
         const record: DocumentModel = {
             userId: copy.ownerId,
             Id: copy.id,
-            createdAt: copy.createdAt.toString(),
-            updatedAt: copy.updatedAt.toString(),
+            createdAt: copy.createdAt.toISOString(),
+            updatedAt: copy.updatedAt.toISOString(),
             fileName: copy.fileName,
             fileExtension: copy.fileExtension,
             contentType: copy.contentType,
@@ -51,8 +51,8 @@ export class DocumentMapper
         const props = entity.serialize();
         const response = new DocumentResponseDto({
             Id: props.id!.toString(),
-            createdAt: new Date(props.createdAt.toString()),
-            updatedAt: new Date(props.updatedAt.toString()),
+            createdAt: new Date(props.createdAt.toISOString()),
+            updatedAt: new Date(props.updatedAt.toISOString()),
         });
         response.userId = props.ownerId.toString();
         response.fileName = props.fileName;
