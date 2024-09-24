@@ -1,10 +1,6 @@
-// import { Entity } from "../../lib/ddd/entity.base";
 import { BaseEntity } from "@carbonteq/hexapp";
-import { AutoUpdate } from "../../lib/util/auto-update.util";
-import {
-    CreateTagCollectionProps,
-    TagCollectionProps,
-} from "../types/tag-collection.types";
+import { AutoUpdate } from "../../../lib/util/auto-update.util";
+import { CreateTagCollectionProps } from "../../types/tag-collection.types";
 import { TagEntity } from "./tag.entity";
 
 export interface ITagCollection {

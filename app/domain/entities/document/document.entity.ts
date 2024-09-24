@@ -1,26 +1,23 @@
 import { TagEntity } from "./tag.entity";
 import {
     CreateDocumentProps,
-    DocumentProps,
     UpdateDocumentProps,
-} from "../types/document.types";
-// import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
-import { AutoUpdate } from "../../lib/util/auto-update.util";
-import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
+} from "../../types/document.types";
+import { AutoUpdate } from "../../../lib/util/auto-update.util";
+import { DocumentMetadata } from "../../value-objects/document-metadata.value-object";
 import { TagCollection } from "./tag-collection.entity";
-import { EntityInvalidError } from "../../lib/exceptions/exceptions";
-import { AggregateRoot, SerializedEntity } from "@carbonteq/hexapp";
-
-const CONTENT_TYPES = [
-    "image/png",
-    "image/gif",
-    "application/pdf",
-    "audio/mpeg",
-    "video/mp4",
-    "text/plain",
-];
-
-const FILE_EXTENSIONS = [".png", ".gif", ".pdf", ".mp3", ".mp4", ".txt"];
+import { EntityInvalidError } from "../../../lib/exceptions/exceptions";
+import {
+    AggregateRoot,
+    handleZodErr,
+    SerializedEntity,
+    ZodUtils,
+} from "@carbonteq/hexapp";
+import {
+    CONTENT_TYPES,
+    DocumentEntitySchema,
+    FILE_EXTENSIONS,
+} from "./document.schema";
 
 export interface IDocument {
     ownerId: string;
@@ -73,15 +70,34 @@ export class DocumentEntity extends AggregateRoot implements IDocument {
             tags,
             meta,
         } = create;
-        return new DocumentEntity(
-            userId,
-            fileName,
-            fileExtension,
-            content,
-            contentType,
-            tags,
-            DocumentMetadata.fromData(meta)
+
+        const guard = ZodUtils.safeParseResult(
+            DocumentEntitySchema,
+            {
+                ownerId: userId,
+                fileName,
+                fileExtension,
+                content,
+                contentType,
+                tags,
+                meta,
+            },
+            handleZodErr
         );
+
+        if (guard.isOk()) {
+            return new DocumentEntity(
+                userId,
+                fileName,
+                fileExtension,
+                content,
+                contentType,
+                tags,
+                DocumentMetadata.fromData(meta)
+            );
+        } else {
+            throw guard.unwrapErr();
+        }
     }
 
     static fromSerialized(other: Readonly<SerializedEntity & IDocument>) {

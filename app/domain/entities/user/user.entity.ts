@@ -1,9 +1,14 @@
-// import { AggregateRoot } from "../../lib/ddd/aggregate-root.base";
-import { AggregateRoot, SerializedEntity } from "@carbonteq/hexapp";
-import { AutoUpdate } from "../../lib/util/auto-update.util";
-import { CreateUserProps, UserProps } from "../types/user.types";
-import { UserPassword } from "../value-objects/user-password.value-object";
-import { UserRole } from "../value-objects/user-role.value-object";
+import {
+    AggregateRoot,
+    handleZodErr,
+    SerializedEntity,
+    ZodUtils,
+} from "@carbonteq/hexapp";
+import { AutoUpdate } from "../../../lib/util/auto-update.util";
+import { CreateUserProps } from "../../types/user.types";
+import { UserPassword } from "../../value-objects/user-password.value-object";
+import { UserRole } from "../../value-objects/user-role.value-object";
+import { UserEntitySchema } from "./user.schema";
 
 export interface IUser {
     userName: string;
@@ -28,7 +33,23 @@ export class UserEntity extends AggregateRoot implements IUser {
     static create(create: CreateUserProps): UserEntity {
         const userName = create.userName;
         const password = create.password;
-        return new UserEntity(userName, "USER", password);
+        const userRole = "USER";
+
+        const guard = ZodUtils.safeParseResult(
+            UserEntitySchema,
+            {
+                userName,
+                password: password.toString(),
+                role: userRole,
+            },
+            handleZodErr
+        );
+
+        if (guard.isOk()) {
+            return new UserEntity(userName, userRole, password);
+        } else {
+            throw guard.unwrapErr();
+        }
     }
 
     static fromSerialized(other: Readonly<SerializedEntity & IUser>) {

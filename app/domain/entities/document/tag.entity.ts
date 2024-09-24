@@ -1,7 +1,6 @@
-// import { Entity } from "../../lib/ddd/entity.base";
 import { BaseEntity, SerializedEntity } from "@carbonteq/hexapp";
-import { AutoUpdate } from "../../lib/util/auto-update.util";
-import { CreateTagProps, TagProps } from "../types/tag.types";
+import { AutoUpdate } from "../../../lib/util/auto-update.util";
+import { CreateTagProps } from "../../types/tag.types";
 
 export interface ITag {
     key: string;
