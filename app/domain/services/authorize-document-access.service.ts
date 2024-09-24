@@ -1,6 +1,5 @@
-import { AppResult } from "@carbonteq/hexapp";
-import { ArgumentInvalidException } from "../../lib/exceptions/exceptions";
-import { DocumentEntity } from "../entities/document.entity";
+import { AppError, AppResult } from "@carbonteq/hexapp";
+import { DocumentEntity } from "../entities/document/document.entity";
 import { AuthorizeDocumentAccessCommand } from "../types/document.types";
 
 export class AuthorizeDocumentAccessService {
@@ -12,7 +11,7 @@ export class AuthorizeDocumentAccessService {
         return authorized
             ? AppResult.Ok(command.document)
             : AppResult.Err(
-                  new ArgumentInvalidException(
+                  AppError.Unauthorized(
                       `User [${
                           command.userId
                       }] not authorized to access document [${command.document.id!.toString()}]`
