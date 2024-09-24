@@ -22,8 +22,8 @@ import {
     AuthorizeDocumentAccessCommand,
     UserDefinedMetadata,
 } from "../../domain/types/document.types";
-import { DocumentEntity } from "../../domain/entities/document.entity";
-import { TagEntity } from "../../domain/entities/tag.entity";
+import { DocumentEntity } from "../../domain/entities/document/document.entity";
+import { TagEntity } from "../../domain/entities/document/tag.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
 import { DocumentResponseDto } from "../dtos/document.response.dto";

@@ -1,4 +1,4 @@
-import { TagEntity } from "../entities/tag.entity";
+import { TagEntity } from "../entities/document/tag.entity";
 
 export type TagCollectionProps = {
     tags: Map<string, TagEntity>;

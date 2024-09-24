@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { DocumentEntity } from "../../domain/entities/document.entity";
+import { DocumentEntity } from "../../domain/entities/document/document.entity";
 import { DocumentResponseDto } from "../../application/dtos/document.response.dto";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
@@ -9,11 +9,10 @@ import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { DocumentModel } from "../mappers/document.mapper";
 import { IDrizzleConnection } from "../database/types";
 import { DocumentTable, TagTable } from "../database/schema";
-import { TagEntity } from "../../domain/entities/tag.entity";
+import { TagEntity } from "../../domain/entities/document/tag.entity";
 import { TagResponseDto } from "../../application/dtos/tag.response.dto";
 import { TagModel } from "../mappers/tag.mapper";
 import { UserDefinedMetadata } from "../../domain/types/document.types";
-import { NotFoundException } from "../../lib/exceptions/exceptions";
 import {
     AlreadyExistsError,
     BaseRepository,

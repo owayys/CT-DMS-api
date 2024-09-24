@@ -5,7 +5,7 @@ import {
     PaginationOptions,
     RepositoryResult,
 } from "@carbonteq/hexapp";
-import { UserEntity } from "../entities/user.entity";
+import { UserEntity } from "../entities/user/user.entity";
 
 export interface IUserRepository extends BaseRepository<UserEntity> {
     findOneByName(

@@ -6,8 +6,8 @@ import {
     PaginationOptions,
     RepositoryResult,
 } from "@carbonteq/hexapp";
-import { DocumentEntity } from "../entities/document.entity";
-import { TagEntity } from "../entities/tag.entity";
+import { DocumentEntity } from "../entities/document/document.entity";
+import { TagEntity } from "../entities/document/tag.entity";
 
 export interface IDocumentRepository extends BaseRepository<DocumentEntity> {
     findByOwner(owner: string): Promise<AppResult<DocumentEntity[]>>;
