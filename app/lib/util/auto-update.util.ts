@@ -8,8 +8,8 @@ export function AutoUpdate() {
 
         descriptor.value = function (...args: any[]) {
             const result = method.apply(this, args);
-            if (typeof this.onUpdate === "function") {
-                this.onUpdate();
+            if (typeof this.markUpdated === "function") {
+                this.markUpdated();
             }
             return result;
         };
