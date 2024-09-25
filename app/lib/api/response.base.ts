@@ -1,11 +1,14 @@
+import { BaseDto } from "@carbonteq/hexapp";
+
 export interface BaseResponseProps {
     Id?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
-export class ResponseBase {
+export class ResponseBase extends BaseDto {
     constructor(props: BaseResponseProps) {
+        super();
         if (props.Id) {
             this.Id = props.Id;
         }
