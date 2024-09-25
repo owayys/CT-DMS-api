@@ -2,16 +2,16 @@ import { z } from "zod";
 import { UserDefinedMetadata } from "../../types/document.types";
 import { TagEntitySchema } from "./tag.schema";
 
-export const CONTENT_TYPES = [
-    "image/png",
-    "image/gif",
-    "application/pdf",
-    "audio/mpeg",
-    "video/mp4",
-    "text/plain",
-];
+// export const CONTENT_TYPES = [
+//     "image/png",
+//     "image/gif",
+//     "application/pdf",
+//     "audio/mpeg",
+//     "video/mp4",
+//     "text/plain",
+// ];
 
-export const FILE_EXTENSIONS = [".png", ".gif", ".pdf", ".mp3", ".mp4", ".txt"];
+// export const FILE_EXTENSIONS = [".png", ".gif", ".pdf", ".mp3", ".mp4", ".txt"];
 
 const PrimitiveSchema = z.union([z.string(), z.number(), z.boolean()]);
 
@@ -40,9 +40,12 @@ const RecursiveNestedArray: any = z.lazy(() =>
 export const DocumentEntitySchema = z.object({
     ownerId: z.string().uuid(),
     fileName: z.string(),
-    fileExtension: z.enum(FILE_EXTENSIONS as [string]),
+    fileExtension: z.string(),
     content: z.string(),
-    contentType: z.enum(CONTENT_TYPES as [string]),
+    contentType: z.string(),
     tags: TagEntitySchema.array(),
     meta: UserDefinedMetadataSchema.optional(),
 });
+
+// fileExtension: z.enum(FILE_EXTENSIONS as [string]),
+// contentType: z.enum(CONTENT_TYPES as [string]),

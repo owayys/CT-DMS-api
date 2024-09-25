@@ -6,18 +6,13 @@ import {
 import { AutoUpdate } from "../../../lib/util/auto-update.util";
 import { DocumentMetadata } from "../../value-objects/document-metadata.value-object";
 import { TagCollection } from "./tag-collection.entity";
-import { EntityInvalidError } from "../../../lib/exceptions/exceptions";
 import {
     AggregateRoot,
     handleZodErr,
     SerializedEntity,
     ZodUtils,
 } from "@carbonteq/hexapp";
-import {
-    CONTENT_TYPES,
-    DocumentEntitySchema,
-    FILE_EXTENSIONS,
-} from "./document.schema";
+import { DocumentEntitySchema } from "./document.schema";
 
 export interface IDocument {
     ownerId: string;
@@ -164,18 +159,15 @@ export class DocumentEntity extends AggregateRoot implements IDocument {
         this._fileName = update.fileName;
         this._fileExtension = update.fileExtension;
         this._contentType = update.contentType;
-        update.tags.map(this._tags.updateTag);
+        update.tags.forEach((tag) => {
+            {
+                this._tags.updateTag(tag);
+            }
+        });
         this._content = update.content;
     }
 
-    validate(): void {
-        if (!CONTENT_TYPES.includes(this.contentType)) {
-            throw new EntityInvalidError("Invalid Document content type");
-        }
-        if (!FILE_EXTENSIONS.includes(this.fileExtension)) {
-            throw new EntityInvalidError("Invalid Document extension");
-        }
-    }
+    validate(): void {}
 
     serialize(): IDocument & SerializedEntity {
         const {
