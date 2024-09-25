@@ -1,93 +1,91 @@
-import { Router } from "express";
-// import * as documentController from "../controllers/document.controller";
+import { RequestHandler, Router } from "express";
 import { validate } from "../middleware/validate.middleware";
-import {
-    AddTag,
-    DeleteDocument,
-    DeleteTag,
-    GetAllDocuments,
-    GetDocument,
-    GetDocumentContent,
-    SaveDocument,
-    UpdateDocument,
-    UpdateTag,
-} from "../../lib/validators/document.validators";
 import { authenticateJWT } from "../middleware/authenticate-jwt.middleware";
 import { DocumentController } from "../controllers/document.controller";
 import { errorHandler } from "../middleware/error-handler.middleware";
+import { CreateDocumentRequestDto } from "../../application/dtos/document/create-document.request.dto";
+import { GetAllRequestDto } from "../../application/dtos/shared/get-all.request.dto";
+import { GetDocumentRequestDto } from "../../application/dtos/document/get-document.request.dto";
+import { GetDocumentContentRequestDto } from "../../application/dtos/document/get-document-content.request.dto";
+import { UpdateDocumentRequestDto } from "../../application/dtos/document/update-document.request.dto";
+import { DeleteDocumentRequestDto } from "../../application/dtos/document/delete-document.request.dto";
+import { AddTagRequestDto } from "../../application/dtos/document/add-tag.request.dto";
+import { UpdateTagRequestDto } from "../../application/dtos/document/update-tag.request.dto";
+import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.request.dto";
 
 const router = Router();
+// @ts-ignore
 const documentController = new DocumentController();
 
-router.get("/download/:url", documentController.download);
+router.get("/download/:url", documentController.download as RequestHandler);
 router.get(
     "/content/:id",
-    authenticateJWT,
-    validate(GetDocumentContent),
-    documentController.getContent,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(GetDocumentContentRequestDto),
+    documentController.getContent as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.post(
     "/upload",
-    authenticateJWT,
-    documentController.upload,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    documentController.upload as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.post(
     "/:id/tag",
-    authenticateJWT,
-    validate(AddTag),
-    documentController.addTag,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(AddTagRequestDto),
+    documentController.addTag as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.put(
     "/:id/tag",
-    authenticateJWT,
-    validate(UpdateTag),
-    documentController.updateTag,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(UpdateTagRequestDto),
+    documentController.updateTag as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.delete(
     "/:id/tag",
-    authenticateJWT,
-    validate(DeleteTag),
-    documentController.removeTag,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(DeleteTagRequestDto),
+    documentController.removeTag as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.get(
     "/:id",
-    authenticateJWT,
-    validate(GetDocument),
-    documentController.get,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(GetDocumentRequestDto),
+    documentController.get as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.put(
     "/:id",
-    authenticateJWT,
-    validate(UpdateDocument),
-    documentController.update,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(UpdateDocumentRequestDto),
+    documentController.update as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.delete(
     "/:id",
-    authenticateJWT,
-    validate(DeleteDocument),
-    documentController.remove,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(DeleteDocumentRequestDto),
+    documentController.remove as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.get(
     "/",
-    authenticateJWT,
-    validate(GetAllDocuments),
-    documentController.getAll,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(GetAllRequestDto),
+    documentController.getAll as RequestHandler,
+    errorHandler as RequestHandler
 );
 router.post(
     "/",
-    authenticateJWT,
-    validate(SaveDocument),
-    documentController.save,
-    errorHandler
+    authenticateJWT as RequestHandler,
+    validate(CreateDocumentRequestDto),
+    documentController.save as RequestHandler,
+    errorHandler as RequestHandler
 );
 
 export default router;

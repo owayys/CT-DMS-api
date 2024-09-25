@@ -1,19 +1,19 @@
 import { NextFunction, Request, Response } from "express";
-import { z, ZodError } from "zod";
+import { ZodError } from "zod";
+import { RequestDTOBase } from "../../lib/api/request.base";
+import { DtoValidationError } from "@carbonteq/hexapp";
 
-export const validate = (schema: z.ZodObject<any, any>) => {
+export const validate = (requestDTO: RequestDTOBase) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const response = schema.parse({
-                body: req.body,
-                query: req.query,
-                params: req.params,
-            });
-            req.body = response.body;
-            req.query = response.query;
-            req.params = response.params;
+        const dto = requestDTO.fromBody(req.body, req.query, req.params);
+        console.log(dto);
+        const validation = dto.validate();
+
+        if (validation.isOk()) {
+            req.body = dto;
             next();
-        } catch (err) {
+        } else {
+            const err: DtoValidationError = validation.unwrapErr();
             console.log(err);
             if (err instanceof ZodError) {
                 const errorMessages = err.errors.map((issue: any) => ({

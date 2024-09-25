@@ -4,6 +4,7 @@ import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
 import { Services } from "../../application/services/types";
+import { LoginRequestDto } from "../../application/dtos/auth/login.request.dto";
 
 @InjectionTarget()
 export class JWTController {
@@ -14,10 +15,11 @@ export class JWTController {
 
     generate: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ) => {
-        let { userName, password } = req.body;
+        const command: LoginRequestDto = req.body;
+        let { userName, password } = command;
         let result = await this.jwtService.generate(userName, password);
 
         req.result = result;
@@ -27,7 +29,7 @@ export class JWTController {
 
     refresh: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ) => {
         let refreshToken = req.headers["authorization"];

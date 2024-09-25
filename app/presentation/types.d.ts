@@ -1,11 +1,12 @@
 import { AppResult } from "@carbonteq/hexapp";
 import QueryString from "qs";
+import { RequestBase } from "../lib/api/request.base";
 
 declare module "express" {
     export interface IRequest<
         P = ParamsDictionary,
         ResBody = any,
-        ReqBody = any,
+        ReqBody = RequestBase,
         ReqQuery = QueryString.ParsedQs,
         Locals extends Record<string, any> = Record<string, any>
     > extends Request {
