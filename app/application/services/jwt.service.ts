@@ -27,7 +27,15 @@ export class JWTService {
         private logger: ILogger
     ) {}
 
-    async generate(userName: string, password: string) {
+    async generate(
+        userName: string,
+        password: string
+    ): Promise<
+        AppResult<{
+            accessToken: string;
+            refreshToken: string;
+        }>
+    > {
         if (accessSecret === undefined) {
             return AppResult.Err(new InternalServerError("SECRET_KEY missing"));
         }
@@ -35,7 +43,7 @@ export class JWTService {
         let response = await this.repository.findOneByName(userName);
 
         if (response.isErr()) {
-            return response;
+            return AppResult.fromResult(response);
         }
 
         const user = response.unwrap();
@@ -79,7 +87,14 @@ export class JWTService {
         return parseResponse(JwtResponse, result);
     }
 
-    async refresh(refreshToken: string | undefined) {
+    async refresh(refreshToken: string | undefined): Promise<
+        AppResult<
+            | {
+                  accessToken: string;
+              }
+            | undefined
+        >
+    > {
         if (refreshSecret === undefined) {
             return AppResult.Err(new InternalServerError("SECRET_KEY missing"));
         }
@@ -99,7 +114,7 @@ export class JWTService {
             let response = await this.repository.findOneById(decoded.Id);
 
             if (response.isErr()) {
-                return response;
+                return AppResult.fromResult(response);
             }
 
             const user = response.unwrap();

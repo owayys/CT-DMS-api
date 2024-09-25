@@ -7,7 +7,7 @@ import { UserTable } from "../database/schema";
 import { UserEntity } from "../../domain/entities/user/user.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserModel } from "../mappers/user.mapper";
-import { UserResponseDto } from "../../application/dtos/user.response.dto";
+import { UserResponseDto } from "../../application/dtos/user/user.response.dto";
 import {
     AlreadyExistsError,
     NotFoundError,

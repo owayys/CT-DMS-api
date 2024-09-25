@@ -15,7 +15,7 @@ import { ILogger } from "../../lib/logging/ILogger";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserEntity } from "../../domain/entities/user/user.entity";
 import { UserModel } from "../../infrastructure/mappers/user.mapper";
-import { UserResponseDto } from "../dtos/user.response.dto";
+import { UserResponseDto } from "../dtos/user/user.response.dto";
 import { AppResult, PaginationOptions } from "@carbonteq/hexapp";
 
 type UserResponse = z.infer<typeof UserResponse>;

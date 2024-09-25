@@ -1,8 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { DocumentEntity } from "../../domain/entities/document/document.entity";
-import { DocumentResponseDto } from "../../application/dtos/document.response.dto";
+import { DocumentResponseDto } from "../../application/dtos/document/document.response.dto";
 import { Mapper } from "../../lib/ddd/mapper.interface";
-import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
 import { DATABASE, DOCUMENT_MAPPER, TAG_MAPPER } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
@@ -10,7 +9,7 @@ import { DocumentModel } from "../mappers/document.mapper";
 import { IDrizzleConnection } from "../database/types";
 import { DocumentTable, TagTable } from "../database/schema";
 import { TagEntity } from "../../domain/entities/document/tag.entity";
-import { TagResponseDto } from "../../application/dtos/tag.response.dto";
+import { TagResponseDto } from "../../application/dtos/document/tag.response.dto";
 import { TagModel } from "../mappers/tag.mapper";
 import { UserDefinedMetadata } from "../../domain/types/document.types";
 import {

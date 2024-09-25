@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { Document } from "../../lib/validators/document.validators";
 import { DocumentEntity } from "../../domain/entities/document/document.entity";
-import { DocumentResponseDto } from "../../application/dtos/document.response.dto";
+import { DocumentResponseDto } from "../../application/dtos/document/document.response.dto";
 import { DocumentMetadata } from "../../domain/value-objects/document-metadata.value-object";
 import { DateTime } from "@carbonteq/hexapp";
 

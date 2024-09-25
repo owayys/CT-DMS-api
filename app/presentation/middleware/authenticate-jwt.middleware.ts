@@ -1,9 +1,9 @@
-import { IRequest, IRequestHandler, IResponse, NextFunction } from "express";
+import { IRequest, IResponse, NextFunction } from "express";
 import jwt, { Secret, UserJWTPayload } from "jsonwebtoken";
 
 const secretKey: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 
-export const authenticateJWT: IRequestHandler = (
+export const authenticateJWT = (
     req: IRequest,
     res: IResponse,
     next: NextFunction

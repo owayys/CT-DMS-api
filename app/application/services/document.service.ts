@@ -26,7 +26,7 @@ import { DocumentEntity } from "../../domain/entities/document/document.entity";
 import { TagEntity } from "../../domain/entities/document/tag.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
-import { DocumentResponseDto } from "../dtos/document.response.dto";
+import { DocumentResponseDto } from "../dtos/document/document.response.dto";
 import { IDomainService } from "../../lib/ddd/domain-service.interface";
 import { IFileHandler } from "../../domain/ports/file-handler.port";
 import { signUrl } from "../../lib/util/sign-url.util";
@@ -92,8 +92,7 @@ export class DocumentService {
 
     async getAll(
         pageNumber: number,
-        pageSize: number,
-        tag: string | null
+        pageSize: number
     ): Promise<AppResult<any>> {
         const params = PaginationOptions.create({
             pageNum: pageNumber,

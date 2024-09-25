@@ -1,6 +1,6 @@
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { UserEntity } from "../../domain/entities/user/user.entity";
-import { UserResponseDto } from "../../application/dtos/user.response.dto";
+import { UserResponseDto } from "../../application/dtos/user/user.response.dto";
 import { User } from "../../lib/validators/user.validators";
 import { z } from "zod";
 import { UserRole } from "../../domain/value-objects/user-role.value-object";
