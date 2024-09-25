@@ -3,16 +3,15 @@ import { ResponseBase } from "../../../lib/api/response.base";
 import { DocumentResponseSchema } from "./schemas/document.response.schema";
 
 export class DocumentResponseDto extends ResponseBase {
-    readonly userId: string;
-    readonly fileName: string;
-    readonly fileExtension: string;
-    readonly contentType: string;
-    readonly content: string;
-    readonly meta?: UserDefinedMetadata;
-    readonly tags: {
-        readonly key: string;
-
-        readonly name: string;
+    userId: string;
+    fileName: string;
+    fileExtension: string;
+    contentType: string;
+    content: string;
+    meta?: UserDefinedMetadata;
+    tags: {
+        key: string;
+        name: string;
     }[];
 
     validate() {

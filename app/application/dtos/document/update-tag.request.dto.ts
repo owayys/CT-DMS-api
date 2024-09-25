@@ -13,6 +13,13 @@ export class UpdateTagRequestDto extends RequestBase {
         super();
     }
 
+    static override fromBody(body: any, _query: any, params: any): RequestBase {
+        return new UpdateTagRequestDto(params.id, {
+            key: body.key,
+            name: body.key,
+        });
+    }
+
     validate(): DtoValidationResult<any> {
         return UpdateTagRequestDto.validate(UpdateTagRequestSchema, {
             id: this.id,
