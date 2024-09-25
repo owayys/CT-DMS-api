@@ -136,130 +136,6 @@ describe("Document Entity", () => {
             expect(testNonUUIDString).throw(ValidationError);
             expect(testUUIDString).to.not.throw(ValidationError);
         });
-        it("should only accept valid strings for `fileExtension`", () => {
-            const testNumber = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension: 1,
-                    contentType,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testBoolean = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension: true,
-                    contentType,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testNull = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension: null,
-                    contentType,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testInvalidString = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension: ".deb",
-                    contentType,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testValidString = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension: ".png",
-                    contentType,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            expect(testNumber).throw(ValidationError);
-            expect(testBoolean).throw(ValidationError);
-            expect(testNull).throw(ValidationError);
-            expect(testInvalidString).throw(ValidationError);
-            expect(testValidString).to.not.throw(ValidationError);
-        });
-        it("should only accept valid strings for `contentType`", () => {
-            const testNumber = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension,
-                    contentType: 1,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testBoolean = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension,
-                    contentType: true,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testNull = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension,
-                    contentType: null,
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testInvalidString = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension,
-                    contentType: "text/calendar",
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            const testValidString = () => {
-                DocumentEntity.create({
-                    userId,
-                    fileName,
-                    fileExtension,
-                    contentType: "text/plain",
-                    content,
-                    tags,
-                    meta,
-                });
-            };
-            expect(testNumber).throw(ValidationError);
-            expect(testBoolean).throw(ValidationError);
-            expect(testNull).throw(ValidationError);
-            expect(testInvalidString).throw(ValidationError);
-            expect(testValidString).to.not.throw(ValidationError);
-        });
         it("should only accept valid inputs for `meta`", () => {
             const testNumber = () => {
                 DocumentEntity.create({
@@ -384,13 +260,13 @@ describe("Document Entity", () => {
             expect(testInvalidObject).throw(ValidationError);
             expect(testValidObject).to.not.throw(ValidationError);
         });
-        it("should only accept strings for `fileName`, `content`", () => {
+        it("should only accept strings for `fileName`, `fileExtension`, `content`, `contentType`", () => {
             let testNumber = () => {
                 DocumentEntity.create({
                     userId,
                     fileName: 1,
-                    fileExtension,
-                    contentType,
+                    fileExtension: 1,
+                    contentType: 1,
                     content: 1,
                     tags,
                     meta,
@@ -400,8 +276,8 @@ describe("Document Entity", () => {
                 DocumentEntity.create({
                     userId,
                     fileName: true,
-                    fileExtension,
-                    contentType,
+                    fileExtension: true,
+                    contentType: true,
                     content: true,
                     tags,
                     meta,
@@ -411,8 +287,8 @@ describe("Document Entity", () => {
                 DocumentEntity.create({
                     userId,
                     fileName: null,
-                    fileExtension,
-                    contentType,
+                    fileExtension: null,
+                    contentType: null,
                     content: null,
                     tags,
                     meta,
@@ -422,8 +298,8 @@ describe("Document Entity", () => {
                 DocumentEntity.create({
                     userId,
                     fileName: "fileName",
-                    fileExtension,
-                    contentType,
+                    fileExtension: "fileExtension",
+                    contentType: "contentType",
                     content: "content",
                     tags,
                     meta,
