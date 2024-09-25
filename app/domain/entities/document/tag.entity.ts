@@ -1,6 +1,12 @@
-import { BaseEntity, SerializedEntity } from "@carbonteq/hexapp";
+import {
+    BaseEntity,
+    handleZodErr,
+    SerializedEntity,
+    ZodUtils,
+} from "@carbonteq/hexapp";
 import { AutoUpdate } from "../../../lib/util/auto-update.util";
 import { CreateTagProps } from "../../types/tag.types";
+import { TagEntitySchema } from "./tag.schema";
 
 export interface ITag {
     key: string;
@@ -18,9 +24,21 @@ export class TagEntity extends BaseEntity implements ITag {
     }
 
     static create(create: CreateTagProps) {
-        const key = create.key;
-        const name = create.name;
-        return new TagEntity(key, name);
+        const { key, name } = create;
+        const guard = ZodUtils.safeParseResult(
+            TagEntitySchema,
+            {
+                key,
+                name,
+            },
+            handleZodErr
+        );
+
+        if (guard.isOk()) {
+            return new TagEntity(key, name);
+        } else {
+            throw guard.unwrapErr();
+        }
     }
 
     static fromSerialized(other: Readonly<SerializedEntity & ITag>) {

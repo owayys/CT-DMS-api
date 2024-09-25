@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { UserDefinedMetadata } from "../../types/document.types";
+import { TagEntitySchema } from "./tag.schema";
 
 export const CONTENT_TYPES = [
     "image/png",
@@ -42,11 +43,6 @@ export const DocumentEntitySchema = z.object({
     fileExtension: z.enum(FILE_EXTENSIONS as [string]),
     content: z.string(),
     contentType: z.enum(CONTENT_TYPES as [string]),
-    tags: z
-        .object({
-            key: z.string(),
-            name: z.string(),
-        })
-        .array(),
+    tags: TagEntitySchema.array(),
     meta: UserDefinedMetadataSchema.optional(),
 });
