@@ -1,7 +1,7 @@
 import { UserController } from "../controllers/user.controller";
 import { RequestHandler, Router } from "express";
 import { authenticateJWT } from "../middleware/authenticate-jwt.middleware";
-import { restrict } from "../middleware/restrict.middleware";
+import { restrict, UserRoles } from "../middleware/restrict.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { errorHandler } from "../middleware/error-handler.middleware";
 import { GetUserRequestDto } from "../../application/dtos/user/get-user.request.dto";
@@ -17,7 +17,7 @@ router.get(
     "/",
     authenticateJWT as RequestHandler,
     validate(GetAllUsersRequestDto),
-    restrict("ADMIN") as RequestHandler,
+    restrict(UserRoles.ADMIN) as RequestHandler,
     userController.getAll as RequestHandler,
     errorHandler as RequestHandler
 );

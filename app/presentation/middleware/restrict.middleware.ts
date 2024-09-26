@@ -1,10 +1,15 @@
 import { IRequest, IResponse, NextFunction } from "express";
 
-export const restrict = (...role: any) => {
-    return (req: IRequest, res: IResponse, next: NextFunction) => {
-        const userRole = req.user.userRole;
+export enum UserRoles {
+    ADMIN = "ADMIN",
+    USER = "USER",
+}
 
-        if (!role.includes(userRole)) {
+export const restrict = (...roles: UserRoles[]) => {
+    return (req: IRequest, res: IResponse, next: NextFunction) => {
+        const userRole = req.user.userRole as UserRoles;
+
+        if (!roles.includes(userRole)) {
             res.status(403).json({
                 error: {
                     message: "Permission denied",

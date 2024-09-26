@@ -12,6 +12,7 @@ import { DeleteDocumentRequestDto } from "../../application/dtos/document/delete
 import { AddTagRequestDto } from "../../application/dtos/document/add-tag.request.dto";
 import { UpdateTagRequestDto } from "../../application/dtos/document/update-tag.request.dto";
 import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.request.dto";
+import { restrict, UserRoles } from "../middleware/restrict.middleware";
 
 const router = Router();
 // @ts-ignore
@@ -77,6 +78,7 @@ router.get(
     "/",
     authenticateJWT as RequestHandler,
     validate(GetAllDocumentsRequestDto),
+    restrict(UserRoles.ADMIN) as RequestHandler,
     documentController.getAll as RequestHandler,
     errorHandler as RequestHandler
 );
