@@ -1,8 +1,8 @@
 import { DtoValidationResult } from "@carbonteq/hexapp";
 import { RequestBase } from "../../../lib/api/request.base";
-import { GetAllRequestSchema } from "./schemas/get-all.request.schema";
+import { GetAllUsersRequestSchema } from "./schemas/get-all-users.request.schema";
 
-export class GetAllRequestDto extends RequestBase {
+export class GetAllUsersRequestDto extends RequestBase {
     protected constructor(
         readonly pageNumber: number,
         readonly pageSize: number
@@ -15,14 +15,14 @@ export class GetAllRequestDto extends RequestBase {
         query: any,
         _params: any
     ): RequestBase {
-        return new GetAllRequestDto(
+        return new GetAllUsersRequestDto(
             parseInt(query.pageNumber),
             parseInt(query.pageSize)
         );
     }
 
     validate(): DtoValidationResult<any> {
-        return GetAllRequestDto.validate(GetAllRequestSchema, {
+        return GetAllUsersRequestDto.validate(GetAllUsersRequestSchema, {
             pageNumber: this.pageNumber,
             pageSize: this.pageSize,
         });

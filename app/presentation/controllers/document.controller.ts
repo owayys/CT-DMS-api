@@ -10,7 +10,7 @@ import { ZodError } from "zod";
 import { Services } from "../../application/services/types";
 import { AppResult } from "@carbonteq/hexapp";
 import { GetDocumentRequestDto } from "../../application/dtos/document/get-document.request.dto";
-import { GetAllRequestDto } from "../../application/dtos/shared/get-all.request.dto";
+import { GetAllDocumentsRequestDto } from "../../application/dtos/document/get-all-documents.request.dto";
 import { CreateDocumentRequestDto } from "../../application/dtos/document/create-document.request.dto";
 import { UserDefinedMetadata } from "../../domain/types/document.types";
 import { UpdateDocumentRequestDto } from "../../application/dtos/document/update-document.request.dto";
@@ -48,10 +48,14 @@ export class DocumentController {
         _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const command: GetAllRequestDto = req.body;
-        const { pageNumber, pageSize } = command;
+        const command: GetAllDocumentsRequestDto = req.body;
+        const { pageNumber, pageSize, filterBy } = command;
 
-        const result = await this.documentService.getAll(pageNumber, pageSize);
+        const result = await this.documentService.getAll(
+            pageNumber,
+            pageSize,
+            filterBy
+        );
 
         req.result = result;
 

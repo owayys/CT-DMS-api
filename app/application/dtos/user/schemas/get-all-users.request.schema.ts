@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const GetAllRequestSchema = z.object({
+export const GetAllUsersRequestSchema = z.object({
     pageNumber: z.number().positive(),
     pageSize: z.number().positive(),
 });

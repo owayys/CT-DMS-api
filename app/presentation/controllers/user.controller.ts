@@ -5,7 +5,7 @@ import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
 import { ILogger } from "../../lib/logging/ILogger";
 import { Services } from "../../application/services/types";
 import { GetUserRequestDto } from "../../application/dtos/user/get-user.request.dto";
-import { GetAllRequestDto } from "../../application/dtos/shared/get-all.request.dto";
+import { GetAllUsersRequestDto } from "../../application/dtos/user/get-all-users.request.dto";
 import { CreateUserRequestDto } from "../../application/dtos/user/create-user.request.dto";
 
 @InjectionTarget()
@@ -37,7 +37,7 @@ export class UserController {
         _res: IResponse,
         next: NextFunction
     ) => {
-        const command: GetAllRequestDto = req.body;
+        const command: GetAllUsersRequestDto = req.body;
         const { pageNumber, pageSize } = command;
 
         const result = await this.userService.getAll(pageNumber, pageSize);

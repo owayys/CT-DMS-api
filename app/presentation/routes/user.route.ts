@@ -6,7 +6,7 @@ import { validate } from "../middleware/validate.middleware";
 import { errorHandler } from "../middleware/error-handler.middleware";
 import { GetUserRequestDto } from "../../application/dtos/user/get-user.request.dto";
 import { CreateUserRequestDto } from "../../application/dtos/user/create-user.request.dto";
-import { GetAllRequestDto } from "../../application/dtos/shared/get-all.request.dto";
+import { GetAllUsersRequestDto } from "../../application/dtos/user/get-all-users.request.dto";
 import { UpdateUserRequestDto } from "../../application/dtos/user/update-user.request.dto";
 
 const router = Router();
@@ -16,7 +16,7 @@ const userController = new UserController();
 router.get(
     "/",
     authenticateJWT as RequestHandler,
-    validate(GetAllRequestDto),
+    validate(GetAllUsersRequestDto),
     restrict("ADMIN") as RequestHandler,
     userController.getAll as RequestHandler,
     errorHandler as RequestHandler

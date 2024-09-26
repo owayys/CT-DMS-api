@@ -4,7 +4,7 @@ import { authenticateJWT } from "../middleware/authenticate-jwt.middleware";
 import { DocumentController } from "../controllers/document.controller";
 import { errorHandler } from "../middleware/error-handler.middleware";
 import { CreateDocumentRequestDto } from "../../application/dtos/document/create-document.request.dto";
-import { GetAllRequestDto } from "../../application/dtos/shared/get-all.request.dto";
+import { GetAllDocumentsRequestDto } from "../../application/dtos/document/get-all-documents.request.dto";
 import { GetDocumentRequestDto } from "../../application/dtos/document/get-document.request.dto";
 import { GetDocumentContentRequestDto } from "../../application/dtos/document/get-document-content.request.dto";
 import { UpdateDocumentRequestDto } from "../../application/dtos/document/update-document.request.dto";
@@ -76,7 +76,7 @@ router.delete(
 router.get(
     "/",
     authenticateJWT as RequestHandler,
-    validate(GetAllRequestDto),
+    validate(GetAllDocumentsRequestDto),
     documentController.getAll as RequestHandler,
     errorHandler as RequestHandler
 );
