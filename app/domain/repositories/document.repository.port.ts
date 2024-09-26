@@ -10,13 +10,14 @@ import { DocumentEntity } from "../entities/document/document.entity";
 import { TagEntity } from "../entities/document/tag.entity";
 
 export interface IDocumentRepository extends BaseRepository<DocumentEntity> {
-    findByOwner(owner: string): Promise<AppResult<DocumentEntity[]>>;
+    findByOwner(owner: string): Promise<RepositoryResult<DocumentEntity[]>>;
     findOneById(
         id: string
     ): Promise<RepositoryResult<DocumentEntity, NotFoundError>>;
     findAll(): Promise<RepositoryResult<DocumentEntity[]>>;
     findAllPaginated(
-        params: PaginationOptions
+        params: PaginationOptions,
+        filterBy?: any
     ): Promise<RepositoryResult<Paginated<DocumentEntity>>>;
     delete(entity: DocumentEntity): Promise<RepositoryResult<boolean>>;
     addTag(id: string, entity: TagEntity): Promise<RepositoryResult<boolean>>;

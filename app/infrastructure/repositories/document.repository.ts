@@ -22,9 +22,11 @@ import {
     AppError,
 } from "@carbonteq/hexapp";
 import { Result } from "@carbonteq/fp";
+import { IDocumentRepository } from "../../domain/repositories/document.repository.port";
+import { filterByCriteria } from "../../lib/util/filter-by.util";
 
 @InjectionTarget()
-export class DocumentRepository implements BaseRepository<DocumentEntity> {
+export class DocumentRepository implements IDocumentRepository {
     constructor(
         @Inject(DATABASE) private _db: IDrizzleConnection,
         @Inject(DOCUMENT_MAPPER)
@@ -138,7 +140,8 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
         }
     }
     async findAllPaginated(
-        params: PaginationOptions
+        params: PaginationOptions,
+        filterBy?: any
     ): Promise<RepositoryResult<Paginated<DocumentEntity>>> {
         try {
             let documents = await this._db.query.DocumentTable.findMany({
@@ -150,6 +153,10 @@ export class DocumentRepository implements BaseRepository<DocumentEntity> {
                     },
                 },
             });
+
+            if (filterBy !== undefined) {
+                documents = filterByCriteria(documents, filterBy);
+            }
 
             let totalPages = Math.ceil(documents.length / params.pageSize);
             let page = Math.min(totalPages, params.pageNum);
