@@ -14,7 +14,6 @@ describe("User Entity", () => {
         password,
     });
 
-    // TODO
     describe("Input guarding", () => {
         it("should only accept string as `userName`", () => {
             let testNumber = () => {

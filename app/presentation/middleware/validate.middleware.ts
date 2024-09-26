@@ -6,7 +6,6 @@ import { DtoValidationError } from "@carbonteq/hexapp";
 export const validate = (requestDTO: RequestDTOBase) => {
     return (req: Request, res: Response, next: NextFunction) => {
         const dto = requestDTO.fromBody(req.body, req.query, req.params);
-        console.log(dto);
         const validation = dto.validate();
 
         if (validation.isOk()) {
