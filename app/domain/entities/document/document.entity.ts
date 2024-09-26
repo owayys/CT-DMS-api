@@ -12,7 +12,7 @@ import {
     SerializedEntity,
     ZodUtils,
 } from "@carbonteq/hexapp";
-import { DocumentEntitySchema } from "./document.schema";
+import { DocumentEntitySchema } from "./schemas/document.schema";
 
 export interface IDocument {
     ownerId: string;

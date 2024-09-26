@@ -6,7 +6,7 @@ import {
 } from "@carbonteq/hexapp";
 import { AutoUpdate } from "../../../lib/util/auto-update.util";
 import { CreateTagProps } from "../../types/tag.types";
-import { TagEntitySchema } from "./tag.schema";
+import { TagEntitySchema } from "./schemas/tag.schema";
 
 export interface ITag {
     key: string;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserDefinedMetadata } from "../../types/document.types";
+import { UserDefinedMetadata } from "../../../types/document.types";
 import { TagEntitySchema } from "./tag.schema";
 
 // export const CONTENT_TYPES = [

@@ -1,7 +1,8 @@
-import { BaseEntity } from "@carbonteq/hexapp";
+import { BaseEntity, handleZodErr, ZodUtils } from "@carbonteq/hexapp";
 import { AutoUpdate } from "../../../lib/util/auto-update.util";
 import { CreateTagCollectionProps } from "../../types/tag-collection.types";
 import { TagEntity } from "./tag.entity";
+import { TagCollectionSchema } from "./schemas/tag-collection.schema";
 
 export interface ITagCollection {
     tags: {
@@ -20,8 +21,19 @@ export class TagCollection extends BaseEntity implements ITagCollection {
         });
     }
     static create(create: CreateTagCollectionProps) {
-        const tags = create.tags.map(TagEntity.create);
-        return new TagCollection(tags);
+        const { tags } = create;
+
+        const guard = ZodUtils.safeParseResult(
+            TagCollectionSchema,
+            tags,
+            handleZodErr
+        );
+
+        if (guard.isOk()) {
+            return new TagCollection(tags.map(TagEntity.create));
+        } else {
+            throw guard.unwrapErr();
+        }
     }
 
     public includes(key: string): boolean {
