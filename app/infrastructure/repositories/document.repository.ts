@@ -24,6 +24,7 @@ import {
 import { Result } from "@carbonteq/fp";
 import { IDocumentRepository } from "../../domain/repositories/document.repository.port";
 import { filterByCriteria } from "../../lib/util/filter-by.util";
+import { paginate } from "../../lib/util/paginate.util";
 
 @InjectionTarget()
 export class DocumentRepository implements IDocumentRepository {
@@ -158,27 +159,19 @@ export class DocumentRepository implements IDocumentRepository {
                 documents = filterByCriteria(documents, filterBy);
             }
 
-            let totalPages = Math.ceil(documents.length / params.pageSize);
-            let page = Math.min(totalPages, params.pageNum);
-            let items = documents
-                .slice(
-                    (page - 1) * params.pageSize,
-                    (page - 1) * params.pageSize + params.pageSize
-                )
+            let documentsMapped = documents
                 .map((item) => {
                     return {
                         ...item,
                         meta: (item.meta as UserDefinedMetadata) ?? null,
                     };
-                });
-            let size = Math.min(items.length, params.pageSize);
+                })
+                .map(this.documentMapper.toDomain);
 
-            const response: Paginated<DocumentEntity> = {
-                pageNum: page,
-                pageSize: size,
-                totalPages: totalPages,
-                data: items.map(this.documentMapper.toDomain),
-            };
+            const response: Paginated<DocumentEntity> = paginate(
+                documentsMapped,
+                params
+            );
 
             return Result.Ok(response);
         } catch (err) {

@@ -18,6 +18,7 @@ import {
 } from "@carbonteq/hexapp";
 import { Result } from "@carbonteq/fp";
 import { IUserRepository } from "../../domain/repositories/user.repository.port";
+import { paginate } from "../../lib/util/paginate.util";
 
 @InjectionTarget()
 export class UserRepository implements IUserRepository {
@@ -98,20 +99,12 @@ export class UserRepository implements IUserRepository {
         try {
             let users = await this._db.query.UserTable.findMany();
 
-            let totalPages = Math.ceil(users.length / params.pageSize);
-            let page = Math.min(totalPages, params.pageNum);
-            let items = users.slice(
-                (page - 1) * params.pageSize,
-                (page - 1) * params.pageSize + params.pageSize
-            );
-            let size = Math.min(items.length, params.pageSize);
+            let usersMapped = users.map(this.mapper.toDomain);
 
-            const response: Paginated<UserEntity> = {
-                pageNum: page,
-                pageSize: size,
-                totalPages: totalPages,
-                data: items.map(this.mapper.toDomain),
-            };
+            const response: Paginated<UserEntity> = paginate(
+                usersMapped,
+                params
+            );
 
             return Result.Ok(response);
         } catch (err) {
