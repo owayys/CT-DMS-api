@@ -1,5 +1,5 @@
 import { z } from "zod";
 
 export const GetDocumentContentRequestSchema = z.object({
-    id: z.string(),
+    id: z.string().uuid(),
 });
