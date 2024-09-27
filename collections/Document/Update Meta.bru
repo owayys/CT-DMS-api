@@ -1,0 +1,53 @@
+meta {
+  name: Update Meta
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{baseUrl}}/api/v1/document/:id/meta
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 5f31d773-bc5c-4397-90ef-e87bfe94e6f2
+}
+
+body:json {
+  {
+    "meta": {
+      "item1": "h",
+      "item2": 4953952293521149,
+      "item3": false,
+      "item4": {
+        "item5": [
+          8544131700845257,
+          5570144997728958
+        ]
+      },
+      "item6": [
+        "K",
+        "Y",
+        [
+          {
+            "item7": "2"
+          },
+          "G",
+          [
+            {
+              "item7": "2",
+              "item8": [
+                {
+                  "item7": "2"
+                },
+                "G"
+              ]
+            },
+            "G"
+          ]
+        ]
+      ]
+    }
+  }
+}

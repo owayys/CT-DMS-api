@@ -1,0 +1,15 @@
+meta {
+  name: Delete Meta
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/document/:id/meta
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 5f31d773-bc5c-4397-90ef-e87bfe94e6f2
+}
