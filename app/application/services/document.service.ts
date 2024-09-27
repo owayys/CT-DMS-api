@@ -92,7 +92,8 @@ export class DocumentService {
 
     async getAll(
         pageNumber: number,
-        pageSize: number
+        pageSize: number,
+        filterBy?: any
     ): Promise<AppResult<any>> {
         const params = PaginationOptions.create({
             pageNum: pageNumber,
@@ -103,11 +104,14 @@ export class DocumentService {
             return AppResult.Err(params.unwrapErr());
         }
 
-        const result = await this.repository.findAllPaginated(params.unwrap());
+        const result = await this.repository.findAllPaginated(
+            params.unwrap(),
+            filterBy
+        );
 
         if (result.isOk()) {
             const response = result.unwrap();
-            const mappedResponse = {
+            let mappedResponse = {
                 ...response,
                 data: response.data.map(this.documentMapper.toResponse),
             };
