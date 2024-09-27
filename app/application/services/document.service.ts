@@ -287,7 +287,7 @@ export class DocumentService {
             key: string;
             name: string;
         }
-    ): Promise<AppResult<UpdateResponse>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -295,17 +295,16 @@ export class DocumentService {
         }
 
         const document = documentResponse.unwrap();
-        const tagToUpdate = TagEntity.create(tag);
 
-        document.updateTag(tagToUpdate);
+        document.updateTag(tag);
 
-        const result = await this.repository.updateTag(
-            document.id!.toString(),
-            tagToUpdate
-        );
+        const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            return parseResponse(UpdateResponse, { success: result.unwrap() });
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(document)
+            );
         } else {
             return AppResult.Err(result.unwrapErr());
         }
@@ -314,7 +313,7 @@ export class DocumentService {
     async removeTag(
         documentId: string,
         tag: { key: string; name: string }
-    ): Promise<AppResult<UpdateResponse>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
@@ -322,16 +321,64 @@ export class DocumentService {
         }
 
         const document = documentResponse.unwrap();
-        const tagToDelete = TagEntity.create(tag);
-        document.updateTag(tagToDelete);
+        document.deleteTag(tag.key);
 
-        const result = await this.repository.removeTag(
-            document.id!.toString(),
-            tagToDelete
-        );
+        const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            return parseResponse(UpdateResponse, { success: result.unwrap() });
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(document)
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
+    }
+
+    async updateMeta(
+        documentId: string,
+        meta: UserDefinedMetadata
+    ): Promise<AppResult<GetDocumentResponse>> {
+        const documentResponse = await this.repository.findOneById(documentId);
+
+        if (documentResponse.isErr()) {
+            return AppResult.Err(documentResponse.unwrapErr());
+        }
+
+        const document = documentResponse.unwrap();
+        document.updateMeta(meta);
+
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(result.unwrap())
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
+    }
+
+    async deleteMeta(
+        documentId: string
+    ): Promise<AppResult<GetDocumentResponse>> {
+        const documentResponse = await this.repository.findOneById(documentId);
+
+        if (documentResponse.isErr()) {
+            return AppResult.Err(documentResponse.unwrapErr());
+        }
+
+        const document = documentResponse.unwrap();
+        document.deleteMeta();
+
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(result.unwrap())
+            );
         } else {
             return AppResult.Err(result.unwrapErr());
         }
@@ -393,10 +440,7 @@ export class DocumentService {
         );
     }
 
-    async remove(
-        userId: string,
-        documentId: string
-    ): Promise<AppResult<UpdateResponse>> {
+    async remove(documentId: string): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
         console.log(documentResponse);
 
