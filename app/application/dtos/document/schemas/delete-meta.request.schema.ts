@@ -1,5 +1,5 @@
 import { z } from "zod";
 
-export const DeleteDocumentRequestSchema = z.object({
+export const DeleteMetaRequestSchema = z.object({
     id: z.string().uuid(),
 });

@@ -2,6 +2,7 @@ import { TagEntity } from "./tag.entity";
 import {
     CreateDocumentProps,
     UpdateDocumentProps,
+    UserDefinedMetadata,
 } from "../../types/document.types";
 import { AutoUpdate } from "../../../lib/util/auto-update.util";
 import { DocumentMetadata } from "../../value-objects/document-metadata.value-object";
@@ -136,7 +137,7 @@ export class DocumentEntity extends AggregateRoot implements IDocument {
     }
 
     get meta(): DocumentMetadata | undefined {
-        return this._meta ?? undefined;
+        return this._meta;
     }
 
     @AutoUpdate()
@@ -152,6 +153,16 @@ export class DocumentEntity extends AggregateRoot implements IDocument {
     @AutoUpdate()
     public deleteTag(key: string): void {
         this._tags.deleteTag(key);
+    }
+
+    @AutoUpdate()
+    public updateMeta(meta: UserDefinedMetadata): void {
+        this._meta = DocumentMetadata.fromData(meta);
+    }
+
+    @AutoUpdate()
+    public deleteMeta(): void {
+        this._meta = undefined;
     }
 
     @AutoUpdate()

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { DocumentEntity } from "../../domain/entities/document/document.entity";
 import { DocumentResponseDto } from "../../application/dtos/document/document.response.dto";
 import { Mapper } from "../../lib/ddd/mapper.interface";
@@ -14,7 +14,6 @@ import { TagModel } from "../mappers/tag.mapper";
 import { UserDefinedMetadata } from "../../domain/types/document.types";
 import {
     AlreadyExistsError,
-    BaseRepository,
     NotFoundError,
     RepositoryResult,
     Paginated,
@@ -233,6 +232,7 @@ export class DocumentRepository implements IDocumentRepository {
                         fileExtension: entity.fileExtension,
                         contentType: entity.contentType,
                         content: entity.content,
+                        meta: entity.meta ?? null,
                     })
                     .where(eq(DocumentTable.Id, documentId));
 
@@ -245,6 +245,10 @@ export class DocumentRepository implements IDocumentRepository {
                         name: tag.name,
                     })
                 );
+
+                await tx
+                    .delete(TagTable)
+                    .where(eq(TagTable.documentId, documentId));
 
                 await tx
                     .insert(TagTable)

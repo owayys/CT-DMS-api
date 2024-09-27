@@ -13,6 +13,8 @@ import { AddTagRequestDto } from "../../application/dtos/document/add-tag.reques
 import { UpdateTagRequestDto } from "../../application/dtos/document/update-tag.request.dto";
 import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.request.dto";
 import { restrict, UserRoles } from "../middleware/restrict.middleware";
+import { UpdateMetaRequestDto } from "../../application/dtos/document/update-meta.request.dto";
+import { DeleteMetaRequestDto } from "../../application/dtos/document/delete-meta.request.dto";
 
 const router = Router();
 // @ts-ignore
@@ -53,6 +55,20 @@ router.delete(
     documentController.removeTag as RequestHandler,
     errorHandler as RequestHandler
 );
+router.put(
+    "/:id/meta",
+    authenticateJWT as RequestHandler,
+    validate(UpdateMetaRequestDto),
+    documentController.updateMeta as RequestHandler,
+    errorHandler as RequestHandler
+);
+router.delete(
+    "/:id/meta",
+    authenticateJWT as RequestHandler,
+    validate(DeleteMetaRequestDto),
+    documentController.deleteMeta as RequestHandler,
+    errorHandler as RequestHandler
+);
 router.get(
     "/:id",
     authenticateJWT as RequestHandler,
@@ -71,6 +87,7 @@ router.delete(
     "/:id",
     authenticateJWT as RequestHandler,
     validate(DeleteDocumentRequestDto),
+    restrict(UserRoles.ADMIN) as RequestHandler,
     documentController.remove as RequestHandler,
     errorHandler as RequestHandler
 );

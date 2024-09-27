@@ -19,6 +19,8 @@ import { DeleteDocumentRequestDto } from "../../application/dtos/document/delete
 import { AddTagRequestDto } from "../../application/dtos/document/add-tag.request.dto";
 import { UpdateTagRequestDto } from "../../application/dtos/document/update-tag.request.dto";
 import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.request.dto";
+import { UpdateMetaRequestDto } from "../../application/dtos/document/update-meta.request.dto";
+import { DeleteMetaRequestDto } from "../../application/dtos/document/delete-meta.request.dto";
 
 @InjectionTarget()
 export class DocumentController {
@@ -208,9 +210,8 @@ export class DocumentController {
     ): Promise<void> => {
         const command: DeleteDocumentRequestDto = req.body;
         const { id } = command;
-        const userId = req.user.Id;
 
-        const result = await this.documentService.remove(userId, id);
+        const result = await this.documentService.remove(id);
 
         req.result = result;
 
@@ -256,6 +257,36 @@ export class DocumentController {
         const { id, tag } = command;
 
         const result = await this.documentService.removeTag(id, tag);
+
+        req.result = result;
+
+        next();
+    };
+
+    updateMeta: IRequestHandler = async (
+        req: IRequest,
+        _res: IResponse,
+        next: NextFunction
+    ): Promise<void> => {
+        const command: UpdateMetaRequestDto = req.body;
+        const { id, meta } = command;
+
+        const result = await this.documentService.updateMeta(id, meta);
+
+        req.result = result;
+
+        next();
+    };
+
+    deleteMeta: IRequestHandler = async (
+        req: IRequest,
+        _res: IResponse,
+        next: NextFunction
+    ): Promise<void> => {
+        const command: DeleteMetaRequestDto = req.body;
+        const { id } = command;
+
+        const result = await this.documentService.deleteMeta(id);
 
         req.result = result;
 
