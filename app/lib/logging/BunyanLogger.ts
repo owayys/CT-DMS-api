@@ -5,7 +5,7 @@ import { FgCyan, FgGreen, FgWhite, FgYellow } from "../colors";
 // import { Logger } from "drizzle-orm";
 import { Logger, LogLevel } from "@carbonteq/hexapp";
 
-export class BunyanLogger extends Logger implements Logger {
+export class BunyanLogger extends Logger implements ILogger {
     private logger: bunyan;
     constructor() {
         super();
