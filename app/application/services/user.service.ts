@@ -107,7 +107,7 @@ export class UserService {
 
             if (updateResult.isOk()) {
                 this.notifications.sendMessage(
-                    `[!] UPDATE PASSWORD FOR USER: ${user.userName}`
+                    `[!] UPDATE PASSWORD FOR USER: ${user.id}`
                 );
                 return parseResponse(UpdateResponse, {
                     success: true,
