@@ -21,6 +21,7 @@ export const AUTHORIZE_DOCUMENT_ACCESS_SERVICE = Symbol(
 );
 
 export const FILE_HANDLER = Symbol("FILE_HANDLER");
+export const SLACK_NOTIFICATION_SERVICE = Symbol("SLACK_NOTIFICATION_SERVICE");
 
 export const JWT_SERVICE = Symbol("JWT_SERVICE");
 export const JWT_CONTROLLER = Symbol("JWT_CONTROLLER");

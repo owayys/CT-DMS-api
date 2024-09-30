@@ -20,6 +20,7 @@ import {
     LOGGER,
     LOGIN_USER_SERVICE,
     REGISTER_USER_SERVICE,
+    SLACK_NOTIFICATION_SERVICE,
     TAG_MAPPER,
     USER_MAPPER,
     // USER_CONTROLLER,
@@ -38,6 +39,7 @@ import { FileHandlerService } from "../../infrastructure/services/file-handler.s
 import { RegisterUserService } from "../../domain/services/register-user.service";
 import { LoginUserService } from "../../domain/services/login-user.service";
 import { AuthorizeDocumentAccessService } from "../../domain/services/authorize-document-access.service";
+import { SlackNotificationService } from "../../infrastructure/services/slack-notifications.service";
 // import { JWTController } from "../../controllers/jwt.controller";
 Container.register(LOGGER, BunyanLogger);
 
@@ -65,6 +67,7 @@ Container.register(
 );
 
 Container.register(FILE_HANDLER, FileHandlerService);
+Container.register(SLACK_NOTIFICATION_SERVICE, SlackNotificationService);
 
 Container.register(JWT_SERVICE, JWTService);
 // Container.register(JWT_CONTROLLER, JWTController)

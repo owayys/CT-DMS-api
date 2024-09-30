@@ -13,6 +13,7 @@ import {
     DOCUMENT_REPOSITORY,
     FILE_HANDLER,
     LOGGER,
+    SLACK_NOTIFICATION_SERVICE,
 } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { parseResponse } from "../../lib/util/parse-response.util";
@@ -23,7 +24,6 @@ import {
     UserDefinedMetadata,
 } from "../../domain/types/document.types";
 import { DocumentEntity } from "../../domain/entities/document/document.entity";
-import { TagEntity } from "../../domain/entities/document/tag.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
 import { DocumentResponseDto } from "../dtos/document/document.response.dto";
@@ -33,6 +33,7 @@ import { signUrl } from "../../lib/util/sign-url.util";
 import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
 import { AppError, AppResult, PaginationOptions } from "@carbonteq/hexapp";
+import { Services } from "./types";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -60,7 +61,9 @@ export class DocumentService {
             DocumentEntity,
             DocumentModel,
             DocumentResponseDto
-        >
+        >,
+        @Inject(SLACK_NOTIFICATION_SERVICE)
+        private notifications: Services[typeof SLACK_NOTIFICATION_SERVICE]
     ) {}
 
     async get(
@@ -206,6 +209,9 @@ export class DocumentService {
         const result = await this.repository.insert(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] SAVED DOCUMENT: ${document.id}`
+            );
             return parseResponse(
                 SaveDocumentResponse,
                 this.documentMapper.toResponse(result.unwrap())
@@ -252,6 +258,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] UPDATED DOCUMENT: ${document.id}`
+            );
             return parseResponse(UpdateResponse, { success: true });
         } else {
             return AppResult.Err(result.unwrapErr());
@@ -275,6 +284,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] ADDED TAG FOR DOCUMENT: ${document.id}`
+            );
             return parseResponse(UpdateResponse, { success: true });
         } else {
             return AppResult.Err(result.unwrapErr());
@@ -301,6 +313,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] UPDATED TAGS FOR DOCUMENT: ${document.id}`
+            );
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(document)
@@ -326,6 +341,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] DELETED TAG: { ${tag.key}: ${tag.name} }, FOR DOCUMENT: ${document.id}`
+            );
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(document)
@@ -351,6 +369,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] UPDATED META FOR DOCUMENT: ${document.id}`
+            );
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(result.unwrap())
@@ -375,6 +396,9 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] DELETED META FOR DOCUMENT: ${document.id}`
+            );
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(result.unwrap())
@@ -463,6 +487,9 @@ export class DocumentService {
         const result = await this.repository.delete(document);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] DELETED DOCUMENT: ${document.id}`
+            );
             return parseResponse(DeleteResponse, { success: result.unwrap() });
         } else {
             return AppResult.Err(result.unwrapErr());

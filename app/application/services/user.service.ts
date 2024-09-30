@@ -1,6 +1,11 @@
 import { IUserRepository } from "../../domain/repositories/user.repository.port";
 
-import { LOGGER, USER_MAPPER, USER_REPOSITORY } from "../../lib/di/di.tokens";
+import {
+    LOGGER,
+    SLACK_NOTIFICATION_SERVICE,
+    USER_MAPPER,
+    USER_REPOSITORY,
+} from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 
@@ -17,6 +22,7 @@ import { UserEntity } from "../../domain/entities/user/user.entity";
 import { UserModel } from "../../infrastructure/mappers/user.mapper";
 import { UserResponseDto } from "../dtos/user/user.response.dto";
 import { AppResult, PaginationOptions } from "@carbonteq/hexapp";
+import { Services } from "./types";
 
 type UserResponse = z.infer<typeof UserResponse>;
 
@@ -28,7 +34,9 @@ export class UserService {
         @Inject(LOGGER)
         private logger: ILogger,
         @Inject(USER_MAPPER)
-        private mapper: Mapper<UserEntity, UserModel, UserResponseDto>
+        private mapper: Mapper<UserEntity, UserModel, UserResponseDto>,
+        @Inject(SLACK_NOTIFICATION_SERVICE)
+        private notifications: Services[typeof SLACK_NOTIFICATION_SERVICE]
     ) {}
 
     async register(
@@ -39,6 +47,7 @@ export class UserService {
         const result = await this.repository.insert(user);
 
         if (result.isOk()) {
+            this.notifications.sendMessage(`[!] REGISTERED USER: ${user.id}`);
             return parseResponse(
                 UserResponse,
                 this.mapper.toResponse(result.unwrap())
@@ -97,6 +106,9 @@ export class UserService {
             const updateResult = await this.repository.update(user);
 
             if (updateResult.isOk()) {
+                this.notifications.sendMessage(
+                    `[!] UPDATE PASSWORD FOR USER: ${user.userName}`
+                );
                 return parseResponse(UpdateResponse, {
                     success: true,
                 });
