@@ -34,6 +34,7 @@ import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
 import { AppError, AppResult, PaginationOptions } from "@carbonteq/hexapp";
 import { Services } from "./types";
+import { unlink } from "fs/promises";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -147,16 +148,27 @@ export class DocumentService {
             }
 
             const file = fileResponse.unwrap();
-            const signedUrlResponse = signUrl(file, {
-                fileName: document.fileName,
-                fileExtension: document.fileExtension,
-            });
 
-            if (signedUrlResponse.isErr()) {
-                return AppResult.Err(AppError.InvalidData("Error signing url"));
+            let downloadUrl: string = "";
+
+            if (file.startsWith("https://storage.googleapis.com")) {
+                downloadUrl = file;
+            } else {
+                const signedUrlResponse = signUrl(file, {
+                    fileName: document.fileName,
+                    fileExtension: document.fileExtension,
+                });
+
+                if (signedUrlResponse.isErr()) {
+                    return AppResult.Err(
+                        AppError.InvalidData("Error signing url")
+                    );
+                }
+
+                const signedUrl = signedUrlResponse.unwrap();
+
+                downloadUrl = `/api/v1/document/download/${signedUrl}`;
             }
-
-            const signedUrl = signedUrlResponse.unwrap();
 
             const commandResponse = await this.authService.execute({
                 userId,
@@ -165,7 +177,7 @@ export class DocumentService {
 
             if (commandResponse.isOk()) {
                 return parseResponse(DocumentContentResponse, {
-                    downloadUrl: `/api/v1/document/download/${signedUrl}`,
+                    downloadUrl: downloadUrl,
                     isBase64: false,
                 });
             } else {
@@ -454,6 +466,8 @@ export class DocumentService {
             file,
         });
 
+        await unlink(file.tempFilePath);
+
         if (uploadFileResult.isErr()) {
             return uploadFileResult;
         }
@@ -466,7 +480,6 @@ export class DocumentService {
 
     async remove(documentId: string): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
-        console.log(documentResponse);
 
         if (documentResponse.isErr()) {
             return AppResult.Err(documentResponse.unwrapErr());

@@ -1,15 +1,33 @@
-import { IFileHandler } from "../../domain/ports/file-handler.port";
-import { stat, unlink } from "fs/promises";
-import { FgCyan, FgWhite } from "../../lib/colors";
-import { UploadFileCommand } from "../../domain/types/document.types";
-import { InternalServerError } from "../../lib/exceptions/exceptions";
 import { AppError, AppResult } from "@carbonteq/hexapp";
+import { IFileHandler } from "../../domain/ports/file-handler.port";
+import { UploadFileCommand } from "../../domain/types/document.types";
+import { Bucket, Storage } from "@google-cloud/storage";
+import { FgCyan, FgWhite } from "../../lib/colors";
+import { InternalServerError } from "../../lib/exceptions/exceptions";
 
-export class FileHandlerService implements IFileHandler {
+const BUCKET = process.env.GCLOUD_BUCKET;
+
+export class CloudFileHandler implements IFileHandler {
+    private bucket: Bucket;
+    constructor() {
+        this.bucket = new Storage({
+            projectId: "ct-dms",
+            keyFilename: process.env.GCLOUD_KEYFILE,
+        }).bucket(BUCKET!);
+    }
+
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
         const { id, file } = command;
         try {
-            await file.mv(`./app/uploads/${id}`);
+            await this.bucket.upload(file.tempFilePath, {
+                destination: id,
+                public: true,
+            });
+            await this.bucket.file(id).setMetadata({
+                contentType: file.mimetype,
+                contentDisposition: file.name,
+            });
+
             console.log(`Document [${FgCyan}${id}${FgWhite}] was uploaded`);
             return AppResult.Ok(true);
         } catch (err) {
@@ -21,7 +39,8 @@ export class FileHandlerService implements IFileHandler {
 
     async deleteFile(id: string): Promise<AppResult<boolean>> {
         try {
-            await unlink(`./app/uploads/${id}`);
+            await this.bucket.file(id).delete();
+
             console.log(`Document [${FgCyan}${id}${FgWhite}] was deleted`);
             return AppResult.Ok(true);
         } catch (err) {
@@ -33,14 +52,12 @@ export class FileHandlerService implements IFileHandler {
 
     async getFile(id: string): Promise<AppResult<string>> {
         try {
-            const statCheck = await stat(`./app/uploads/${id}`);
-            if (statCheck && statCheck.isFile()) {
-                return AppResult.Ok(`./app/uploads/${id}`);
-            } else {
-                return AppResult.Err(
-                    AppError.NotFound(`File [${id}] not found`)
-                );
-            }
+            const file = this.bucket.file(id);
+            const [url] = await file.getSignedUrl({
+                action: "read",
+                expires: Date.now() + 1000 * 60 * 60,
+            });
+            return AppResult.Ok(url);
         } catch (err) {
             return AppResult.Err(AppError.NotFound(`File [${id}] not found`));
         }

@@ -16,7 +16,7 @@ const port = process.env.PORT || 3000;
 
 app.use(new RequestLogger().logRequests);
 app.use(express.json());
-app.use(fileUpload());
+app.use(fileUpload({ useTempFiles: true, tempFileDir: "./temp" }));
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/jwt", jwtRouter);
