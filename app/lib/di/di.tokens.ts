@@ -7,9 +7,6 @@ export const USER_SERVICE = Symbol("USER_SERVICE");
 export const USER_CONTROLLER = Symbol("USER_CONTROLLER");
 export const USER_MAPPER = Symbol("USER_MAPPER");
 
-export const REGISTER_USER_SERVICE = Symbol("REGISTER_USER_SERVICE");
-export const LOGIN_USER_SERVICE = Symbol("LOGIN_USER_SERVICE");
-
 export const DOCUMENT_REPOSITORY = Symbol("DOCUMENT_REPOSITORY");
 export const DOCUMENT_SERVICE = Symbol("DOCUMENT_SERVICE");
 export const DOCUMENT_CONTROLLER = Symbol("DOCUMENT_CONTROLLER");
