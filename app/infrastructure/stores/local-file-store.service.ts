@@ -1,12 +1,13 @@
-import { IFileHandler } from "../../domain/ports/file-handler.port";
+import { IFileStore } from "../../domain/ports/file-store.port";
 import { stat, unlink } from "fs/promises";
 import { FgCyan, FgWhite } from "../../lib/colors";
 import { UploadFileCommand } from "../../domain/types/document.types";
 import { InternalServerError } from "../../lib/exceptions/exceptions";
 import { AppError, AppResult } from "@carbonteq/hexapp";
 
-export class FileHandlerService implements IFileHandler {
+export class LocalFileStore implements IFileStore {
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
+        console.log("Used local upload");
         const { id, file } = command;
         try {
             await file.mv(`./app/uploads/${id}`);

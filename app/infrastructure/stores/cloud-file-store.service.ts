@@ -1,28 +1,24 @@
 import { AppError, AppResult } from "@carbonteq/hexapp";
-import { IFileHandler } from "../../domain/ports/file-handler.port";
+import { IFileStore } from "../../domain/ports/file-store.port";
 import { UploadFileCommand } from "../../domain/types/document.types";
 import { Bucket, Storage } from "@google-cloud/storage";
 import { FgCyan, FgWhite } from "../../lib/colors";
 import { InternalServerError } from "../../lib/exceptions/exceptions";
 
-const BUCKET = process.env.GCLOUD_BUCKET;
-
-export class CloudFileHandler implements IFileHandler {
+export class CloudFileStore implements IFileStore {
     private bucket: Bucket;
     constructor() {
         this.bucket = new Storage({
             projectId: "ct-dms",
             keyFilename: process.env.GCLOUD_KEYFILE,
-        }).bucket(BUCKET!);
+        }).bucket(process.env.GCLOUD_BUCKET!);
     }
 
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
+        console.log("Used cloud upload");
         const { id, file } = command;
         try {
-            await this.bucket.upload(file.tempFilePath, {
-                destination: id,
-                public: true,
-            });
+            await this.bucket.file(id).save(file.data);
             await this.bucket.file(id).setMetadata({
                 contentType: file.mimetype,
                 contentDisposition: file.name,

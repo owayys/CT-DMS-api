@@ -9,14 +9,16 @@ import { DocumentService } from "../../application/services/document.service";
 // import { DocumentController } from "../../controllers/document.controller";
 import {
     AUTHORIZE_DOCUMENT_ACCESS_SERVICE,
+    CLOUD_FILE_STORE,
     DATABASE,
     DOCUMENT_MAPPER,
     // DOCUMENT_CONTROLLER,
     DOCUMENT_REPOSITORY,
     DOCUMENT_SERVICE,
-    FILE_HANDLER,
+    FILE_STORE_HANDLER,
     // JWT_CONTROLLER,
     JWT_SERVICE,
+    LOCAL_FILE_STORE,
     LOGGER,
     LOGIN_USER_SERVICE,
     REGISTER_USER_SERVICE,
@@ -35,12 +37,13 @@ import { DocumentMapper } from "../../infrastructure/mappers/document.mapper";
 import { TagMapper } from "../../infrastructure/mappers/tag.mapper";
 import { UserRepository } from "../../infrastructure/repositories/user.repository";
 import { DocumentRepository } from "../../infrastructure/repositories/document.repository";
-import { FileHandlerService } from "../../infrastructure/services/file-handler.service";
+import { LocalFileStore } from "../../infrastructure/stores/local-file-store.service";
 import { RegisterUserService } from "../../domain/services/register-user.service";
 import { LoginUserService } from "../../domain/services/login-user.service";
 import { AuthorizeDocumentAccessService } from "../../domain/services/authorize-document-access.service";
 import { SlackNotificationService } from "../../infrastructure/services/slack-notifications.service";
-import { CloudFileHandler } from "../../infrastructure/services/cloud-file-handler.service";
+import { CloudFileStore } from "../../infrastructure/stores/cloud-file-store.service";
+import { FileStoreHandler } from "../../infrastructure/services/store-handler.service";
 // import { JWTController } from "../../controllers/jwt.controller";
 Container.register(LOGGER, BunyanLogger);
 
@@ -67,8 +70,10 @@ Container.register(
     AuthorizeDocumentAccessService
 );
 
-// Container.register(FILE_HANDLER, FileHandlerService);
-Container.register(FILE_HANDLER, CloudFileHandler);
+Container.register(LOCAL_FILE_STORE, LocalFileStore);
+Container.register(CLOUD_FILE_STORE, CloudFileStore);
+Container.register(FILE_STORE_HANDLER, FileStoreHandler);
+
 Container.register(SLACK_NOTIFICATION_SERVICE, SlackNotificationService);
 
 Container.register(JWT_SERVICE, JWTService);

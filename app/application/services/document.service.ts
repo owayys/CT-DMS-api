@@ -11,7 +11,7 @@ import {
     AUTHORIZE_DOCUMENT_ACCESS_SERVICE,
     DOCUMENT_MAPPER,
     DOCUMENT_REPOSITORY,
-    FILE_HANDLER,
+    FILE_STORE_HANDLER,
     LOGGER,
     SLACK_NOTIFICATION_SERVICE,
 } from "../../lib/di/di.tokens";
@@ -28,13 +28,12 @@ import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
 import { DocumentResponseDto } from "../dtos/document/document.response.dto";
 import { IDomainService } from "../../lib/ddd/domain-service.interface";
-import { IFileHandler } from "../../domain/ports/file-handler.port";
+import { IFileStore } from "../../domain/ports/file-store.port";
 import { signUrl } from "../../lib/util/sign-url.util";
 import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
 import { AppError, AppResult, PaginationOptions } from "@carbonteq/hexapp";
 import { Services } from "./types";
-import { unlink } from "fs/promises";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -55,8 +54,8 @@ export class DocumentService {
             AuthorizeDocumentAccessCommand,
             DocumentEntity
         >,
-        @Inject(FILE_HANDLER)
-        private fileHandler: IFileHandler,
+        @Inject(FILE_STORE_HANDLER)
+        private fileHandler: IFileStore,
         @Inject(DOCUMENT_MAPPER)
         private documentMapper: Mapper<
             DocumentEntity,
@@ -465,8 +464,6 @@ export class DocumentService {
             id: insertedDocument.id!.toString(),
             file,
         });
-
-        await unlink(file.tempFilePath);
 
         if (uploadFileResult.isErr()) {
             return uploadFileResult;
