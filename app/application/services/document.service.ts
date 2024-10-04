@@ -78,19 +78,19 @@ export class DocumentService {
 
         const document = documentResponse.unwrap();
 
-        const commandResponse = await this.authService.execute({
+        const authResponse = await this.authService.execute({
             userId,
             document,
         });
 
-        if (commandResponse.isOk()) {
-            return parseResponse(
-                GetDocumentResponse,
-                this.documentMapper.toResponse(commandResponse.unwrap())
-            );
-        } else {
-            return commandResponse;
+        if (authResponse.isErr()) {
+            return authResponse;
         }
+
+        return parseResponse(
+            GetDocumentResponse,
+            this.documentMapper.toResponse(document)
+        );
     }
 
     async getAll(
@@ -137,6 +137,15 @@ export class DocumentService {
         const document = documentResponse.unwrap();
         const documentContent = document.content;
 
+        const authResponse = await this.authService.execute({
+            userId,
+            document,
+        });
+
+        if (authResponse.isErr()) {
+            return authResponse;
+        }
+
         if (documentContent === `[FILE_UPLOADED]`) {
             const fileResponse = await this.fileHandler.getFile(
                 document.id!.toString()
@@ -169,32 +178,14 @@ export class DocumentService {
                 downloadUrl = `/api/v1/document/download/${signedUrl}`;
             }
 
-            const commandResponse = await this.authService.execute({
-                userId,
-                document,
+            return parseResponse(DocumentContentResponse, {
+                downloadUrl: downloadUrl,
+                isBase64: false,
             });
-
-            if (commandResponse.isOk()) {
-                return parseResponse(DocumentContentResponse, {
-                    downloadUrl: downloadUrl,
-                    isBase64: false,
-                });
-            } else {
-                return commandResponse;
-            }
         } else {
-            const commandResponse = await this.authService.execute({
-                userId,
-                document,
+            return parseResponse(DocumentContentResponse, {
+                content: document.content,
             });
-
-            if (commandResponse.isOk()) {
-                return parseResponse(DocumentContentResponse, {
-                    content: document.content,
-                });
-            } else {
-                return commandResponse;
-            }
         }
     }
 
