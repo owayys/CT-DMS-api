@@ -59,6 +59,12 @@ export const errorHandler: IRequestHandler = (
                     message: err.message,
                 },
             });
+        } else {
+            res.status(400).json({
+                error: {
+                    message: err.message,
+                },
+            });
         }
     } else {
         res.status(200).json(result.unwrap());
