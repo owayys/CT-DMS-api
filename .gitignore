@@ -1,8 +1,8 @@
 node_modules
 .env
 ideas
-newrelic_agent.log
 keyFile.json
+newrelic_agent.log
 # *
 # !*.*
 # !*/
