@@ -1,12 +1,10 @@
 import { BaseEntity } from "@carbonteq/hexapp";
 
-interface EntityDescriptor extends BaseEntity, PropertyDescriptor {}
-
 export function AutoUpdate() {
     return function (
         target: any,
         propertKey: string,
-        descriptor: EntityDescriptor
+        descriptor: PropertyDescriptor
     ) {
         const method = descriptor.value;
 
