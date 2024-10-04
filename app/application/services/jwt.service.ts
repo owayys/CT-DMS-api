@@ -127,8 +127,8 @@ export class JWTService {
 
             let accessToken = jwt.sign(
                 {
+                    Id: user.userId,
                     userName: user!.userName,
-                    password: user!.password,
                     userRole: user?.role.toString(),
                 },
                 accessSecret as string,
