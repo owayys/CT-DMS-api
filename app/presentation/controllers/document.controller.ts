@@ -21,6 +21,9 @@ import { UpdateTagRequestDto } from "../../application/dtos/document/update-tag.
 import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.request.dto";
 import { UpdateMetaRequestDto } from "../../application/dtos/document/update-meta.request.dto";
 import { DeleteMetaRequestDto } from "../../application/dtos/document/delete-meta.request.dto";
+import { retry } from "../../lib/resilience/policies";
+
+const RETRY_ATTEMPTS = 3;
 
 @InjectionTarget()
 export class DocumentController {
@@ -38,7 +41,10 @@ export class DocumentController {
         const userId = req.user.Id;
         const command: GetDocumentRequestDto = req.body;
         const { id } = command;
-        const result = await this.documentService.get(userId, id);
+
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, async () =>
+            this.documentService.get(userId, id)
+        );
 
         req.result = result;
 
@@ -53,10 +59,8 @@ export class DocumentController {
         const command: GetAllDocumentsRequestDto = req.body;
         const { pageNumber, pageSize, filterBy } = command;
 
-        const result = await this.documentService.getAll(
-            pageNumber,
-            pageSize,
-            filterBy
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.getAll(pageNumber, pageSize, filterBy)
         );
 
         req.result = result;
@@ -72,7 +76,9 @@ export class DocumentController {
         const command: GetDocumentContentRequestDto = req.body;
         const { id } = command;
         const userId = req.user.Id;
-        const result = await this.documentService.getContent(userId, id);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.getContent(userId, id)
+        );
 
         req.result = result;
 
@@ -188,14 +194,16 @@ export class DocumentController {
         const { id } = req.params;
         const userId = req.user.Id;
 
-        const result = await this.documentService.update(
-            userId,
-            id,
-            fileName,
-            fileExtension,
-            contentType,
-            tags,
-            content
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.update(
+                userId,
+                id,
+                fileName,
+                fileExtension,
+                contentType,
+                tags,
+                content
+            )
         );
 
         req.result = result;
@@ -211,7 +219,9 @@ export class DocumentController {
         const command: DeleteDocumentRequestDto = req.body;
         const { id } = command;
 
-        const result = await this.documentService.remove(id);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.remove(id)
+        );
 
         req.result = result;
 
@@ -241,7 +251,9 @@ export class DocumentController {
         const command: UpdateTagRequestDto = req.body;
         const { id, tag } = command;
 
-        const result = await this.documentService.updateTag(id, tag);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.updateTag(id, tag)
+        );
 
         req.result = result;
 
@@ -256,7 +268,9 @@ export class DocumentController {
         const command: DeleteTagRequestDto = req.body;
         const { id, tag } = command;
 
-        const result = await this.documentService.removeTag(id, tag);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.removeTag(id, tag)
+        );
 
         req.result = result;
 
@@ -271,7 +285,9 @@ export class DocumentController {
         const command: UpdateMetaRequestDto = req.body;
         const { id, meta } = command;
 
-        const result = await this.documentService.updateMeta(id, meta);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.updateMeta(id, meta)
+        );
 
         req.result = result;
 
@@ -286,7 +302,9 @@ export class DocumentController {
         const command: DeleteMetaRequestDto = req.body;
         const { id } = command;
 
-        const result = await this.documentService.deleteMeta(id);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.documentService.deleteMeta(id)
+        );
 
         req.result = result;
 

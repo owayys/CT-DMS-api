@@ -7,6 +7,9 @@ import { Services } from "../../application/services/types";
 import { GetUserRequestDto } from "../../application/dtos/user/get-user.request.dto";
 import { GetAllUsersRequestDto } from "../../application/dtos/user/get-all-users.request.dto";
 import { CreateUserRequestDto } from "../../application/dtos/user/create-user.request.dto";
+import { retry } from "../../lib/resilience/policies";
+
+const RETRY_ATTEMPTS = 3;
 
 @InjectionTarget()
 export class UserController {
@@ -25,7 +28,9 @@ export class UserController {
 
         const userId = command.id;
 
-        const result = await this.userService.get(userId);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.userService.get(userId)
+        );
 
         req.result = result;
 
@@ -40,7 +45,9 @@ export class UserController {
         const command: GetAllUsersRequestDto = req.body;
         const { pageNumber, pageSize } = command;
 
-        const result = await this.userService.getAll(pageNumber, pageSize);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.userService.getAll(pageNumber, pageSize)
+        );
 
         req.result = result;
 
@@ -76,7 +83,9 @@ export class UserController {
 
         const { password } = req.body;
 
-        const result = await this.userService.update(userId, password);
+        const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
+            this.userService.update(userId, password)
+        );
 
         req.result = result;
 
