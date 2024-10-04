@@ -20,8 +20,6 @@ import {
     JWT_SERVICE,
     LOCAL_FILE_STORE,
     LOGGER,
-    LOGIN_USER_SERVICE,
-    REGISTER_USER_SERVICE,
     SLACK_NOTIFICATION_SERVICE,
     TAG_MAPPER,
     USER_MAPPER,
@@ -38,8 +36,6 @@ import { TagMapper } from "../../infrastructure/mappers/tag.mapper";
 import { UserRepository } from "../../infrastructure/repositories/user.repository";
 import { DocumentRepository } from "../../infrastructure/repositories/document.repository";
 import { LocalFileStore } from "../../infrastructure/stores/local-file-store.service";
-import { RegisterUserService } from "../../domain/services/register-user.service";
-import { LoginUserService } from "../../domain/services/login-user.service";
 import { AuthorizeDocumentAccessService } from "../../domain/services/authorize-document-access.service";
 import { SlackNotificationService } from "../../infrastructure/services/slack-notifications.service";
 import { CloudFileStore } from "../../infrastructure/stores/cloud-file-store.service";
@@ -54,9 +50,6 @@ Container.register(USER_REPOSITORY, UserRepository);
 Container.register(USER_SERVICE, UserService);
 // Container.register(USER_CONTROLLER, UserController);
 Container.register(USER_MAPPER, UserMapper);
-
-Container.register(REGISTER_USER_SERVICE, RegisterUserService);
-Container.register(LOGIN_USER_SERVICE, LoginUserService);
 
 // Container.register(DOCUMENT_REPOSITORY, DrizzleDocumentRepository);
 Container.register(DOCUMENT_REPOSITORY, DocumentRepository);
