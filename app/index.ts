@@ -10,7 +10,8 @@ import userRouter from "./presentation/routes/user.route";
 import jwtRouter from "./presentation/routes/jwt.route";
 import documentRouter from "./presentation/routes/document.route";
 import { RequestLogger } from "./presentation/middleware/log-requests.middleware";
-import rateLimit from "express-rate-limit";
+import { rateLimiter } from "./presentation/middleware/rate-limit.middleware";
+import Redis from "ioredis";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
@@ -25,18 +26,17 @@ app.use(
     })
 );
 
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 100, // each IP can make up to 100 requests per 15 minute window
-    standardHeaders: true, // add the `RateLimit-*` headers to the response
-    legacyHeaders: false, // remove the `X-RateLimit-*` headers from the response
-    handler: function (_req, res) {
-        res.status(429).json({
-            error: {
-                message: "Rate limit exceeded",
-            },
-        });
-    },
+const redisStore = new Redis(
+    parseInt(process.env.REDIS_PORT!),
+    process.env.REDIS_HOST!
+);
+
+await redisStore.flushdb();
+
+const limiter = rateLimiter({
+    windowMs: 5 * 60,
+    limit: 100,
+    store: redisStore,
 });
 
 app.use(limiter);
