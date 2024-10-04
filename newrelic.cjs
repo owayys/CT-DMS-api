@@ -17,4 +17,10 @@ exports.config = {
             "response.headers.x*",
         ],
     },
+    application_logging: {
+        forwarding: {
+            enabled: true,
+            max_samples_stored: 10000,
+        },
+    },
 };
