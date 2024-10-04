@@ -4,9 +4,9 @@ import { IFileStore } from "../../domain/ports/file-store.port";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 import { CLOUD_FILE_STORE, LOCAL_FILE_STORE } from "../../lib/di/di.tokens";
-import { timeout, TimeoutStrategy } from "@carbonteq/resilience";
+import { timeout } from "../../lib/resilience/policies";
 
-const timeoutPolicy = timeout(25000, TimeoutStrategy.Aggressive);
+const STORE_TIMEOUT = 25000;
 
 @InjectionTarget()
 export class FileStoreHandler implements IFileStore {
@@ -17,7 +17,7 @@ export class FileStoreHandler implements IFileStore {
 
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
         try {
-            return await timeoutPolicy.execute(() =>
+            return await timeout(STORE_TIMEOUT, () =>
                 this.fileStore.uploadFile(command)
             );
         } catch (err) {
@@ -27,7 +27,7 @@ export class FileStoreHandler implements IFileStore {
 
     async deleteFile(id: string): Promise<AppResult<boolean>> {
         try {
-            return await timeoutPolicy.execute(() =>
+            return await timeout(STORE_TIMEOUT, () =>
                 this.fileStore.deleteFile(id)
             );
         } catch (err) {
@@ -37,7 +37,7 @@ export class FileStoreHandler implements IFileStore {
 
     async getFile(id: string): Promise<AppResult<string>> {
         try {
-            return await timeoutPolicy.execute(() =>
+            return await timeout(STORE_TIMEOUT, () =>
                 this.fileStore.getFile(id)
             );
         } catch (err) {
