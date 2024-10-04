@@ -11,33 +11,29 @@ import {
     AUTHORIZE_DOCUMENT_ACCESS_SERVICE,
     DOCUMENT_MAPPER,
     DOCUMENT_REPOSITORY,
-    FILE_HANDLER,
+    FILE_STORE_HANDLER,
     LOGGER,
-    TAG_MAPPER,
+    SLACK_NOTIFICATION_SERVICE,
 } from "../../lib/di/di.tokens";
 import { Inject } from "../../lib/di/Inject";
 import { parseResponse } from "../../lib/util/parse-response.util";
-import { Result } from "../../lib/util/result";
 import { z } from "zod";
 import { ILogger } from "../../lib/logging/ILogger";
 import {
     AuthorizeDocumentAccessCommand,
     UserDefinedMetadata,
 } from "../../domain/types/document.types";
-import { DocumentEntity } from "../../domain/entities/document.entity";
-import { UUID } from "../../domain/value-objects/uuid.value-object";
-import { TagEntity } from "../../domain/entities/tag.entity";
+import { DocumentEntity } from "../../domain/entities/document/document.entity";
 import { Mapper } from "../../lib/ddd/mapper.interface";
 import { DocumentModel } from "../../infrastructure/mappers/document.mapper";
-import { DocumentResponseDto } from "../dtos/document.response.dto";
-import { PaginatedQueryParams } from "../../lib/ddd/repository.port";
-import { TagModel } from "../../infrastructure/mappers/tag.mapper";
-import { TagResponseDto } from "../dtos/tag.response.dto";
+import { DocumentResponseDto } from "../dtos/document/document.response.dto";
 import { IDomainService } from "../../lib/ddd/domain-service.interface";
-import { IFileHandler } from "../../domain/ports/file-handler.port";
+import { IFileStore } from "../../domain/ports/file-store.port";
 import { signUrl } from "../../lib/util/sign-url.util";
 import { UploadedFile } from "express-fileupload";
 import { verifyUrl } from "../../lib/util/verify-url.util";
+import { AppError, AppResult, PaginationOptions } from "@carbonteq/hexapp";
+import { Services } from "./types";
 
 type GetDocumentResponse = z.infer<typeof GetDocumentResponse>;
 type DocumentResponse = z.infer<typeof DocumentResponse>;
@@ -58,69 +54,84 @@ export class DocumentService {
             AuthorizeDocumentAccessCommand,
             DocumentEntity
         >,
-        @Inject(FILE_HANDLER)
-        private fileHandler: IFileHandler,
+        @Inject(FILE_STORE_HANDLER)
+        private fileHandler: IFileStore,
         @Inject(DOCUMENT_MAPPER)
         private documentMapper: Mapper<
             DocumentEntity,
             DocumentModel,
             DocumentResponseDto
         >,
-        @Inject(TAG_MAPPER)
-        private tagMapper: Mapper<TagEntity, TagModel, TagResponseDto>
+        @Inject(SLACK_NOTIFICATION_SERVICE)
+        private notifications: Services[typeof SLACK_NOTIFICATION_SERVICE]
     ) {}
 
     async get(
         userId: string,
         documentId: string
-    ): Promise<Result<GetDocumentResponse, Error>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
 
-        return (await this.authService.execute({ userId, document })).bind(
-            (response) =>
-                parseResponse(
-                    GetDocumentResponse,
-                    this.documentMapper.toResponse(response)
-                )
-        );
+        const commandResponse = await this.authService.execute({
+            userId,
+            document,
+        });
+
+        if (commandResponse.isOk()) {
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(commandResponse.unwrap())
+            );
+        } else {
+            return commandResponse;
+        }
     }
 
     async getAll(
         pageNumber: number,
         pageSize: number,
-        tag: string | null
-    ): Promise<Result<DocumentResponse, Error>> {
-        const params: PaginatedQueryParams = {
+        filterBy?: any
+    ): Promise<AppResult<any>> {
+        const params = PaginationOptions.create({
+            pageNum: pageNumber,
             pageSize,
-            pageNumber,
-            orderBy: {
-                field: "id",
-                param: "asc",
-            },
-        };
-        return (await this.repository.findAllPaginated(params)).bind(
-            (response) =>
-                parseResponse(DocumentResponse, {
-                    ...response,
-                    items: response.items.map(this.documentMapper.toResponse),
-                })
+        });
+
+        if (params.isErr()) {
+            return AppResult.Err(params.unwrapErr());
+        }
+
+        const result = await this.repository.findAllPaginated(
+            params.unwrap(),
+            filterBy
         );
+
+        if (result.isOk()) {
+            const response = result.unwrap();
+            let mappedResponse = {
+                ...response,
+                data: response.data.map(this.documentMapper.toResponse),
+            };
+            return parseResponse(DocumentResponse, mappedResponse);
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 
     async getContent(
         userId: string,
         documentId: string
-    ): Promise<Result<DocumentContentResponse, Error>> {
+    ): Promise<AppResult<DocumentContentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -136,26 +147,54 @@ export class DocumentService {
             }
 
             const file = fileResponse.unwrap();
-            const signedUrl = signUrl(file, {
-                fileName: document.name,
-                fileExtension: document.extension,
+
+            let downloadUrl: string = "";
+
+            if (file.startsWith("https://storage.googleapis.com")) {
+                downloadUrl = file;
+            } else {
+                const signedUrlResponse = signUrl(file, {
+                    fileName: document.fileName,
+                    fileExtension: document.fileExtension,
+                });
+
+                if (signedUrlResponse.isErr()) {
+                    return AppResult.Err(
+                        AppError.InvalidData("Error signing url")
+                    );
+                }
+
+                const signedUrl = signedUrlResponse.unwrap();
+
+                downloadUrl = `/api/v1/document/download/${signedUrl}`;
+            }
+
+            const commandResponse = await this.authService.execute({
+                userId,
+                document,
             });
 
-            return (await this.authService.execute({ userId, document }))
-                .bind(() => signedUrl)
-                .bind((url) =>
-                    parseResponse(DocumentContentResponse, {
-                        downloadUrl: `/api/v1/document/download/${url}`,
-                        isBase64: false,
-                    })
-                );
+            if (commandResponse.isOk()) {
+                return parseResponse(DocumentContentResponse, {
+                    downloadUrl: downloadUrl,
+                    isBase64: false,
+                });
+            } else {
+                return commandResponse;
+            }
         } else {
-            return (await this.authService.execute({ userId, document })).bind(
-                (document) =>
-                    parseResponse(DocumentContentResponse, {
-                        content: document.content,
-                    })
-            );
+            const commandResponse = await this.authService.execute({
+                userId,
+                document,
+            });
+
+            if (commandResponse.isOk()) {
+                return parseResponse(DocumentContentResponse, {
+                    content: document.content,
+                });
+            } else {
+                return commandResponse;
+            }
         }
     }
 
@@ -167,9 +206,9 @@ export class DocumentService {
         tags: { key: string; name: string }[],
         content: string,
         meta: UserDefinedMetadata
-    ): Promise<Result<SaveDocumentResponse, Error>> {
+    ): Promise<AppResult<SaveDocumentResponse>> {
         const document = DocumentEntity.create({
-            userId: UUID.fromString(userId),
+            userId,
             fileName,
             fileExtension,
             contentType,
@@ -177,12 +216,20 @@ export class DocumentService {
             content,
             meta,
         });
-        return (await this.repository.insert(document)).bind((response) =>
-            parseResponse(
+
+        const result = await this.repository.insert(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] SAVED DOCUMENT: ${document.id}`
+            );
+            return parseResponse(
                 SaveDocumentResponse,
-                this.documentMapper.toResponse(response)
-            )
-        );
+                this.documentMapper.toResponse(result.unwrap())
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 
     async update(
@@ -193,11 +240,11 @@ export class DocumentService {
         contentType: string,
         tags: { key: string; name: string }[],
         content: string
-    ): Promise<Result<UpdateResponse, Error>> {
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -219,28 +266,42 @@ export class DocumentService {
             tags,
         });
 
-        return (await this.repository.update(document)).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
-        );
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] UPDATED DOCUMENT: ${document.id}`
+            );
+            return parseResponse(UpdateResponse, { success: true });
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 
     async addTag(
         documentId: string,
         tag: { key: string; name: string }
-    ): Promise<Result<UpdateResponse, Error>> {
+    ): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
 
         document.addTag(tag);
 
-        return (await this.repository.update(document)).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
-        );
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] ADDED TAG FOR DOCUMENT: ${document.id}`
+            );
+            return parseResponse(UpdateResponse, { success: true });
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 
     async updateTag(
@@ -249,47 +310,116 @@ export class DocumentService {
             key: string;
             name: string;
         }
-    ): Promise<Result<UpdateResponse, Error>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
-        const tagToUpdate = TagEntity.create(tag);
-        document.updateTag(tagToUpdate);
-        return (
-            await this.repository.updateTag(
-                document.id!.toString(),
-                tagToUpdate
-            )
-        ).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
-        );
+
+        document.updateTag(tag);
+
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] UPDATED TAGS FOR DOCUMENT: ${document.id}`
+            );
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(document)
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 
-    async removeTag(documentId: string, tag: { key: string; name: string }) {
+    async removeTag(
+        documentId: string,
+        tag: { key: string; name: string }
+    ): Promise<AppResult<GetDocumentResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
-        const tagToDelete = TagEntity.create(tag);
-        document.updateTag(tagToDelete);
-        return (
-            await this.repository.removeTag(
-                document.id!.toString(),
-                tagToDelete
-            )
-        ).bind((response) =>
-            parseResponse(UpdateResponse, { success: response })
-        );
+        document.deleteTag(tag.key);
+
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] DELETED TAG: { ${tag.key}: ${tag.name} }, FOR DOCUMENT: ${document.id}`
+            );
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(document)
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 
-    async download(link: string): Promise<Result<any, Error>> {
+    async updateMeta(
+        documentId: string,
+        meta: UserDefinedMetadata
+    ): Promise<AppResult<GetDocumentResponse>> {
+        const documentResponse = await this.repository.findOneById(documentId);
+
+        if (documentResponse.isErr()) {
+            return AppResult.Err(documentResponse.unwrapErr());
+        }
+
+        const document = documentResponse.unwrap();
+        document.updateMeta(meta);
+
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] UPDATED META FOR DOCUMENT: ${document.id}`
+            );
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(result.unwrap())
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
+    }
+
+    async deleteMeta(
+        documentId: string
+    ): Promise<AppResult<GetDocumentResponse>> {
+        const documentResponse = await this.repository.findOneById(documentId);
+
+        if (documentResponse.isErr()) {
+            return AppResult.Err(documentResponse.unwrapErr());
+        }
+
+        const document = documentResponse.unwrap();
+        document.deleteMeta();
+
+        const result = await this.repository.update(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] DELETED META FOR DOCUMENT: ${document.id}`
+            );
+            return parseResponse(
+                GetDocumentResponse,
+                this.documentMapper.toResponse(result.unwrap())
+            );
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
+    }
+
+    async download(link: string): Promise<AppResult<any>> {
         const decodedResponse = verifyUrl(link);
 
         if (decodedResponse.isErr()) {
@@ -298,13 +428,10 @@ export class DocumentService {
 
         const { path, params } = decodedResponse.unwrap();
 
-        return new Result<any, Error>(
-            {
-                filePath: path,
-                fileName: `${params.fileName}${params.fileExtension}`,
-            },
-            null
-        );
+        return AppResult.Ok({
+            filePath: path,
+            fileName: `${params.fileName}${params.fileExtension}`,
+        });
     }
 
     async upload(
@@ -315,9 +442,9 @@ export class DocumentService {
         contentType: string,
         tags: { key: string; name: string }[],
         meta?: UserDefinedMetadata
-    ): Promise<Result<GetDocumentResponse, Error>> {
+    ): Promise<AppResult<GetDocumentResponse>> {
         const document = DocumentEntity.create({
-            userId: UUID.fromString(userId),
+            userId,
             fileName,
             fileExtension,
             contentType,
@@ -328,7 +455,7 @@ export class DocumentService {
         const insertDocumentResponse = await this.repository.insert(document);
 
         if (insertDocumentResponse.isErr()) {
-            return insertDocumentResponse;
+            return AppResult.Err(insertDocumentResponse.unwrapErr());
         }
 
         const insertedDocument = insertDocumentResponse.unwrap();
@@ -342,22 +469,17 @@ export class DocumentService {
             return uploadFileResult;
         }
 
-        return insertDocumentResponse.bind((response) =>
-            parseResponse(
-                GetDocumentResponse,
-                this.documentMapper.toResponse(response)
-            )
+        return parseResponse(
+            GetDocumentResponse,
+            this.documentMapper.toResponse(insertedDocument)
         );
     }
 
-    async remove(
-        userId: string,
-        documentId: string
-    ): Promise<Result<DocumentEntity, Error>> {
+    async remove(documentId: string): Promise<AppResult<UpdateResponse>> {
         const documentResponse = await this.repository.findOneById(documentId);
 
         if (documentResponse.isErr()) {
-            return documentResponse;
+            return AppResult.Err(documentResponse.unwrapErr());
         }
 
         const document = documentResponse.unwrap();
@@ -372,8 +494,15 @@ export class DocumentService {
             }
         }
 
-        return (await this.repository.delete(document)).bind((response) =>
-            parseResponse(DeleteResponse, { success: response })
-        );
+        const result = await this.repository.delete(document);
+
+        if (result.isOk()) {
+            this.notifications.sendMessage(
+                `[!] DELETED DOCUMENT: ${document.id}`
+            );
+            return parseResponse(DeleteResponse, { success: result.unwrap() });
+        } else {
+            return AppResult.Err(result.unwrapErr());
+        }
     }
 }

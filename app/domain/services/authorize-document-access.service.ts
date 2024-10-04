@@ -1,19 +1,17 @@
-import { ArgumentInvalidException } from "../../lib/exceptions/exceptions";
-import { Result } from "../../lib/util/result";
-import { DocumentEntity } from "../entities/document.entity";
+import { AppError, AppResult } from "@carbonteq/hexapp";
+import { DocumentEntity } from "../entities/document/document.entity";
 import { AuthorizeDocumentAccessCommand } from "../types/document.types";
 
 export class AuthorizeDocumentAccessService {
     async execute(
         command: AuthorizeDocumentAccessCommand
-    ): Promise<Result<DocumentEntity, Error>> {
-        const authorized = command.document.owner.equals(command.userId);
+    ): Promise<AppResult<DocumentEntity>> {
+        const authorized = command.document.ownerId === command.userId;
 
         return authorized
-            ? new Result<DocumentEntity, Error>(command.document, null)
-            : new Result<DocumentEntity, Error>(
-                  null,
-                  new ArgumentInvalidException(
+            ? AppResult.Ok(command.document)
+            : AppResult.Err(
+                  AppError.Unauthorized(
                       `User [${
                           command.userId
                       }] not authorized to access document [${command.document.id!.toString()}]`

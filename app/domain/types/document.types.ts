@@ -1,12 +1,10 @@
 import { UploadedFile } from "express-fileupload";
-import { TagEntity } from "../entities/tag.entity";
-import { UUID } from "../value-objects/uuid.value-object";
-import { DocumentEntity } from "../entities/document.entity";
+import { DocumentEntity } from "../entities/document/document.entity";
 import { DocumentMetadata } from "../value-objects/document-metadata.value-object";
-import { TagCollection } from "../entities/tag-collection.entity";
+import { TagCollection } from "../entities/document/tag-collection.entity";
 
 export type DocumentProps = {
-    userId: UUID;
+    userId: string;
     fileName: string;
     fileExtension: string;
     content: string;
@@ -16,7 +14,7 @@ export type DocumentProps = {
 };
 
 export type CreateDocumentProps = {
-    userId: UUID;
+    userId: string;
     fileName: string;
     fileExtension: string;
     content: string;

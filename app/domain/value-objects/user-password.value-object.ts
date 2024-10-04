@@ -1,10 +1,17 @@
+import { BaseValueObject } from "@carbonteq/hexapp";
 import bcrypt from "bcrypt";
+import { CreateUserProps } from "../types/user.types";
 
-export class UserPassword {
-    private constructor(private value: string) {
+export class UserPassword extends BaseValueObject<
+    Pick<CreateUserProps, "password">
+> {
+    private _value: string;
+    private constructor(value: string) {
         if (!UserPassword.validate(value)) {
             throw Error("Invalid Hash");
         }
+        super();
+        this._value = value;
     }
 
     public static validate(hash: string): boolean {
@@ -25,10 +32,15 @@ export class UserPassword {
     }
 
     public async compare(plain: string): Promise<boolean> {
-        return bcrypt.compare(plain, this.value);
+        return bcrypt.compare(plain, this._value);
     }
 
     public toString(): string {
-        return this.value;
+        return this._value;
+    }
+
+    serialize(): Pick<CreateUserProps, "password"> {
+        const { _value } = this;
+        return { password: _value };
     }
 }

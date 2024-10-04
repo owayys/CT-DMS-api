@@ -7,34 +7,41 @@ import {
     InternalServerError,
     NotFoundException,
 } from "../../lib/exceptions/exceptions";
+import { AppError, AppErrStatus, AppResult } from "@carbonteq/hexapp";
 
 export const errorHandler: IRequestHandler = (
     req: IRequest,
     res: IResponse,
     next: NextFunction
 ) => {
-    const result = req.result!;
+    const result = req.result! as AppResult<any>;
     if (result.isErr()) {
-        const err: Error = result.getErr();
+        const err: AppError = result.unwrapErr();
         if (err instanceof ArgumentNotProvidedException) {
             res.status(400).json({
                 error: {
                     message: err.message,
                 },
             });
-        } else if (err instanceof NotFoundException) {
+        } else if (err.status === AppErrStatus.Unauthorized) {
             res.status(404).json({
                 error: {
                     message: err.message,
                 },
             });
-        } else if (err instanceof ConflictException) {
+        } else if (err.status === AppErrStatus.NotFound) {
+            res.status(404).json({
+                error: {
+                    message: err.message,
+                },
+            });
+        } else if (err.status === AppErrStatus.AlreadyExists) {
             res.status(409).json({
                 error: {
                     message: err.message,
                 },
             });
-        } else if (err instanceof ArgumentInvalidException) {
+        } else if (err.status === AppErrStatus.InvalidData) {
             res.status(422).json({
                 error: {
                     message: err.message,

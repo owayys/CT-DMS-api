@@ -4,6 +4,9 @@ import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
 import { ILogger } from "../../lib/logging/ILogger";
 import { Services } from "../../application/services/types";
+import { GetUserRequestDto } from "../../application/dtos/user/get-user.request.dto";
+import { GetAllUsersRequestDto } from "../../application/dtos/user/get-all-users.request.dto";
+import { CreateUserRequestDto } from "../../application/dtos/user/create-user.request.dto";
 
 @InjectionTarget()
 export class UserController {
@@ -15,10 +18,12 @@ export class UserController {
 
     get: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ) => {
-        const userId = req.params.id;
+        const command: GetUserRequestDto = req.body;
+
+        const userId = command.id;
 
         const result = await this.userService.get(userId);
 
@@ -27,13 +32,15 @@ export class UserController {
         next();
     };
 
-    getAll = async (req: IRequest, res: IResponse, next: NextFunction) => {
-        const { pageNumber, pageSize } = req.query;
+    getAll: IRequestHandler = async (
+        req: IRequest,
+        _res: IResponse,
+        next: NextFunction
+    ) => {
+        const command: GetAllUsersRequestDto = req.body;
+        const { pageNumber, pageSize } = command;
 
-        const result = await this.userService.getAll(
-            (pageNumber as unknown as number) - 1,
-            pageSize as unknown as number
-        );
+        const result = await this.userService.getAll(pageNumber, pageSize);
 
         req.result = result;
 
@@ -42,13 +49,13 @@ export class UserController {
 
     register: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ) => {
-        const { userName, password } = req.body;
+        const command: CreateUserRequestDto = req.body;
+        const { userName, password } = command;
         const result = await this.userService.register(userName, password);
         req.result = result;
-
         next();
     };
 

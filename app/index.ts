@@ -10,13 +10,36 @@ import userRouter from "./presentation/routes/user.route";
 import jwtRouter from "./presentation/routes/jwt.route";
 import documentRouter from "./presentation/routes/document.route";
 import { RequestLogger } from "./presentation/middleware/log-requests.middleware";
+import rateLimit from "express-rate-limit";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
 app.use(new RequestLogger().logRequests);
 app.use(express.json());
-app.use(fileUpload());
+app.use(
+    fileUpload({
+        limits: {
+            fileSize: 5 * 1024 * 1024,
+        },
+    })
+);
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100, // each IP can make up to 100 requests per 15 minute window
+    standardHeaders: true, // add the `RateLimit-*` headers to the response
+    legacyHeaders: false, // remove the `X-RateLimit-*` headers from the response
+    handler: function (_req, res) {
+        res.status(429).json({
+            error: {
+                message: "Rate limit exceeded",
+            },
+        });
+    },
+});
+
+app.use(limiter);
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/jwt", jwtRouter);

@@ -5,17 +5,43 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/v1/document?pageNumber=5&pageSize=10
-  body: none
+  url: {{baseUrl}}/api/v1/document?pageNumber=1&pageSize=20
+  body: json
   auth: inherit
 }
 
 params:query {
-  pageNumber: 5
-  pageSize: 10
-  ~tag: tag1
+  pageNumber: 1
+  pageSize: 20
 }
 
 headers {
   ~authorization: {{access_token}}
+}
+
+body:json {
+  {
+    "filterBy": {
+      "tags": [
+        {
+          "name": "minor"
+        },
+        {
+          "name": "vain"
+        }
+      ],
+      "meta": {
+        "item1": "p",
+        "item2": 5758879273222825,
+        "item4": {
+          "item5": [
+            4044564675540581
+          ]
+        },
+        "item6": [
+          "s"
+        ]
+      }
+    }
+  }
 }

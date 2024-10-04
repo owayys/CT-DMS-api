@@ -12,20 +12,21 @@ export const Tag = z.object({
     updatedAt: z.string(),
 });
 
-const PrimitiveSchema = z.union([z.string(), z.number(), z.boolean()]);
+export const PrimitiveSchema = z.union([z.string(), z.number(), z.boolean()]);
 
-const UserDefinedMetadataSchema: z.ZodSchema<UserDefinedMetadata> = z.lazy(() =>
-    z.record(
-        z.union([
-            PrimitiveSchema,
-            PrimitiveSchema.array(),
-            UserDefinedMetadataSchema,
-            RecursiveNestedArray,
-        ])
-    )
-);
+export const UserDefinedMetadataSchema: z.ZodSchema<UserDefinedMetadata> =
+    z.lazy(() =>
+        z.record(
+            z.union([
+                PrimitiveSchema,
+                PrimitiveSchema.array(),
+                UserDefinedMetadataSchema,
+                RecursiveNestedArray,
+            ])
+        )
+    );
 
-const RecursiveNestedArray: any = z.lazy(() =>
+export const RecursiveNestedArray: any = z.lazy(() =>
     z.array(
         z.union([
             UserDefinedMetadataSchema,
@@ -129,9 +130,8 @@ export const UpdateTag = AddTag;
 export const DeleteTag = AddTag;
 
 export const DocumentResponse = z.object({
-    page: z.number(),
-    size: z.number(),
+    pageNum: z.number(),
+    pageSize: z.number(),
     totalPages: z.number(),
-    totalItems: z.number(),
-    items: Document.array(),
+    data: Document.array(),
 });

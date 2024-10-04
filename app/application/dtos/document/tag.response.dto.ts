@@ -1,4 +1,4 @@
-import { ResponseBase } from "../../lib/api/response.base";
+import { ResponseBase } from "../../../lib/api/response.base";
 
 export class TagResponseDto extends ResponseBase {
     key: string;

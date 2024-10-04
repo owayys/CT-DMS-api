@@ -5,12 +5,22 @@ import { Inject } from "../../lib/di/Inject";
 import { DOCUMENT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
-import { Result } from "../../lib/util/result";
 import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
 import { ZodError } from "zod";
-import { redisClient } from "../../infrastructure/database";
-import { readFileSync } from "fs";
 import { Services } from "../../application/services/types";
+import { AppResult } from "@carbonteq/hexapp";
+import { GetDocumentRequestDto } from "../../application/dtos/document/get-document.request.dto";
+import { GetAllDocumentsRequestDto } from "../../application/dtos/document/get-all-documents.request.dto";
+import { CreateDocumentRequestDto } from "../../application/dtos/document/create-document.request.dto";
+import { UserDefinedMetadata } from "../../domain/types/document.types";
+import { UpdateDocumentRequestDto } from "../../application/dtos/document/update-document.request.dto";
+import { GetDocumentContentRequestDto } from "../../application/dtos/document/get-document-content.request.dto";
+import { DeleteDocumentRequestDto } from "../../application/dtos/document/delete-document.request.dto";
+import { AddTagRequestDto } from "../../application/dtos/document/add-tag.request.dto";
+import { UpdateTagRequestDto } from "../../application/dtos/document/update-tag.request.dto";
+import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.request.dto";
+import { UpdateMetaRequestDto } from "../../application/dtos/document/update-meta.request.dto";
+import { DeleteMetaRequestDto } from "../../application/dtos/document/delete-meta.request.dto";
 
 @InjectionTarget()
 export class DocumentController {
@@ -22,11 +32,12 @@ export class DocumentController {
 
     get: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const { id } = req.params;
         const userId = req.user.Id;
+        const command: GetDocumentRequestDto = req.body;
+        const { id } = command;
         const result = await this.documentService.get(userId, id);
 
         req.result = result;
@@ -36,17 +47,16 @@ export class DocumentController {
 
     getAll: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const userId = req.user.Id;
-        const { pageNumber, pageSize, tag } = req.query;
+        const command: GetAllDocumentsRequestDto = req.body;
+        const { pageNumber, pageSize, filterBy } = command;
 
         const result = await this.documentService.getAll(
-            // userId,
-            pageNumber as unknown as number,
-            pageSize as unknown as number,
-            tag as unknown as string | null
+            pageNumber,
+            pageSize,
+            filterBy
         );
 
         req.result = result;
@@ -56,10 +66,11 @@ export class DocumentController {
 
     getContent: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const { id } = req.params;
+        const command: GetDocumentContentRequestDto = req.body;
+        const { id } = command;
         const userId = req.user.Id;
         const result = await this.documentService.getContent(userId, id);
 
@@ -70,11 +81,12 @@ export class DocumentController {
 
     save: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
+        const command: CreateDocumentRequestDto = req.body;
         const { fileName, fileExtension, contentType, tags, content, meta } =
-            req.body;
+            command;
         const userId = req.user.Id;
 
         const result = await this.documentService.save(
@@ -84,7 +96,7 @@ export class DocumentController {
             contentType,
             tags,
             content,
-            meta || null
+            meta as UserDefinedMetadata
         );
 
         req.result = result;
@@ -94,12 +106,11 @@ export class DocumentController {
 
     upload: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
         if (!req.files || Object.keys(req.files).length === 0) {
-            req.result = new Result(
-                null,
+            req.result = AppResult.Err(
                 new ArgumentNotProvidedException("No file uploaded")
             );
             next();
@@ -143,7 +154,7 @@ export class DocumentController {
         req.result = result;
 
         if (result.isErr()) {
-            const err: Error = result.getErr();
+            const err: Error = result.unwrapErr();
 
             if (err instanceof ZodError) {
                 res.status(422).json({
@@ -160,35 +171,20 @@ export class DocumentController {
             }
         } else {
             const requestedFile = result.unwrap();
-            let file = await redisClient.getBuffer(url);
-            if (file === null) {
-                file = readFileSync(`${requestedFile.filePath}`);
-                await redisClient.set(
-                    url,
-                    readFileSync(`${requestedFile.filePath}`),
-                    "EX",
-                    60
-                );
-                res.status(200).download(
-                    requestedFile.filePath,
-                    requestedFile.fileName
-                );
-            }
-            res.status(200);
-            res.set({
-                "Content-Disposition": `attachment; filename=${requestedFile.fileName}`,
-            });
-            res.end(file);
+            res.status(200).download(
+                requestedFile.filePath,
+                requestedFile.fileName
+            );
         }
     };
 
     update: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const { fileName, fileExtension, contentType, tags, content } =
-            req.body;
+        const command: UpdateDocumentRequestDto = req.body;
+        const { fileName, fileExtension, contentType, tags, content } = command;
         const { id } = req.params;
         const userId = req.user.Id;
 
@@ -209,13 +205,13 @@ export class DocumentController {
 
     remove: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const { id } = req.params;
-        const user = req.user;
+        const command: DeleteDocumentRequestDto = req.body;
+        const { id } = command;
 
-        const result = await this.documentService.remove(user.Id, id);
+        const result = await this.documentService.remove(id);
 
         req.result = result;
 
@@ -224,13 +220,13 @@ export class DocumentController {
 
     addTag: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const { id } = req.params;
-        const { key, name } = req.body;
+        const command: AddTagRequestDto = req.body;
+        const { id, tag } = command;
 
-        const result = await this.documentService.addTag(id, { key, name });
+        const result = await this.documentService.addTag(id, tag);
 
         req.result = result;
 
@@ -239,16 +235,13 @@ export class DocumentController {
 
     updateTag: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next
     ): Promise<void> => {
-        const { id } = req.params;
-        const { key, name } = req.body;
+        const command: UpdateTagRequestDto = req.body;
+        const { id, tag } = command;
 
-        const result = await this.documentService.updateTag(id, {
-            key,
-            name,
-        });
+        const result = await this.documentService.updateTag(id, tag);
 
         req.result = result;
 
@@ -257,15 +250,43 @@ export class DocumentController {
 
     removeTag: IRequestHandler = async (
         req: IRequest,
-        res: IResponse,
+        _res: IResponse,
         next: NextFunction
     ): Promise<void> => {
-        const { id } = req.params;
-        const { key, name } = req.body;
-        const result = await this.documentService.removeTag(id, {
-            key,
-            name,
-        });
+        const command: DeleteTagRequestDto = req.body;
+        const { id, tag } = command;
+
+        const result = await this.documentService.removeTag(id, tag);
+
+        req.result = result;
+
+        next();
+    };
+
+    updateMeta: IRequestHandler = async (
+        req: IRequest,
+        _res: IResponse,
+        next: NextFunction
+    ): Promise<void> => {
+        const command: UpdateMetaRequestDto = req.body;
+        const { id, meta } = command;
+
+        const result = await this.documentService.updateMeta(id, meta);
+
+        req.result = result;
+
+        next();
+    };
+
+    deleteMeta: IRequestHandler = async (
+        req: IRequest,
+        _res: IResponse,
+        next: NextFunction
+    ): Promise<void> => {
+        const command: DeleteMetaRequestDto = req.body;
+        const { id } = command;
+
+        const result = await this.documentService.deleteMeta(id);
 
         req.result = result;
 
