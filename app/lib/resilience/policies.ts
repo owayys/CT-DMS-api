@@ -1,18 +1,19 @@
-import { AppError, AppResult } from "@carbonteq/hexapp";
+import { AppResult } from "@carbonteq/hexapp";
 
 export async function retry<T>(
     retryOpts: { attempts: number },
     fn: (...args: unknown[]) => Promise<AppResult<T>>
 ) {
+    let value = await fn();
     for (let retries = 0; retries < retryOpts.attempts; retries++) {
-        let value = await fn();
+        value = await fn();
 
         if (value.isOk()) {
             return value;
         }
     }
 
-    return AppResult.Err(AppError.Generic(`Operation failed`));
+    return value;
 }
 
 export async function timeout<T>(
