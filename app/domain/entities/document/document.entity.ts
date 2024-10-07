@@ -170,11 +170,7 @@ export class DocumentEntity extends AggregateRoot implements IDocument {
         this._fileName = update.fileName;
         this._fileExtension = update.fileExtension;
         this._contentType = update.contentType;
-        update.tags.forEach((tag) => {
-            {
-                this._tags.updateTag(tag);
-            }
-        });
+        this._tags = TagCollection.create({ tags: update.tags });
         this._content = update.content;
     }
 
