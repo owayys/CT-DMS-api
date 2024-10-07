@@ -211,9 +211,14 @@ export class DocumentService {
         const result = await this.repository.insert(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] SAVED DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(
                 SaveDocumentResponse,
                 this.documentMapper.toResponse(result.unwrap())
@@ -260,9 +265,14 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] UPDATED DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(UpdateResponse, { success: true });
         } else {
             return AppResult.Err(result.unwrapErr());
@@ -286,9 +296,14 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] ADDED TAG FOR DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(UpdateResponse, { success: true });
         } else {
             return AppResult.Err(result.unwrapErr());
@@ -315,9 +330,14 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] UPDATED TAGS FOR DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(document)
@@ -343,9 +363,14 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] DELETED TAG: { ${tag.key}: ${tag.name} }, FOR DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(document)
@@ -371,9 +396,14 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] UPDATED META FOR DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(result.unwrap())
@@ -398,9 +428,14 @@ export class DocumentService {
         const result = await this.repository.update(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] DELETED META FOR DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(
                 GetDocumentResponse,
                 this.documentMapper.toResponse(result.unwrap())
@@ -488,9 +523,14 @@ export class DocumentService {
         const result = await this.repository.delete(document);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(
+            const notificationResponse = await this.notifications.sendMessage(
                 `[!] DELETED DOCUMENT: ${document.id}`
             );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(DeleteResponse, { success: result.unwrap() });
         } else {
             return AppResult.Err(result.unwrapErr());
