@@ -47,7 +47,14 @@ export class UserService {
         const result = await this.repository.insert(user);
 
         if (result.isOk()) {
-            this.notifications.sendMessage(`[!] REGISTERED USER: ${user.id}`);
+            const notificationResponse = await this.notifications.sendMessage(
+                `[!] REGISTERED USER: ${user.id}`
+            );
+
+            if (notificationResponse.isErr()) {
+                this.logger.error(notificationResponse);
+            }
+
             return parseResponse(
                 UserResponse,
                 this.mapper.toResponse(result.unwrap())
@@ -106,9 +113,15 @@ export class UserService {
             const updateResult = await this.repository.update(user);
 
             if (updateResult.isOk()) {
-                this.notifications.sendMessage(
-                    `[!] UPDATE PASSWORD FOR USER: ${user.id}`
-                );
+                const notificationResponse =
+                    await this.notifications.sendMessage(
+                        `[!] UPDATE PASSWORD FOR USER: ${user.id}`
+                    );
+
+                if (notificationResponse.isErr()) {
+                    this.logger.error(notificationResponse);
+                }
+
                 return parseResponse(UpdateResponse, {
                     success: true,
                 });
