@@ -6,11 +6,10 @@ export async function retry<T>(
 ) {
     let value = await fn();
     for (let retries = 0; retries < retryOpts.attempts; retries++) {
-        value = await fn();
-
         if (value.isOk()) {
             return value;
         }
+        value = await fn();
     }
 
     return value;
