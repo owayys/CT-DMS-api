@@ -53,5 +53,8 @@
         "tsx": "^4.19.0",
         "typescript": "^5.5.4"
     },
-    "type": "module"
+    "type": "module",
+    "prettier": {
+        "tabWidth": 4
+    }
 }
