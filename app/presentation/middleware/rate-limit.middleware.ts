@@ -8,6 +8,11 @@ export const rateLimiter = (opts: {
 }) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         const { windowMs, limit, store } = opts;
+
+        if (req.socket.localAddress === req.socket.remoteAddress) {
+            return next();
+        }
+
         if (await store.setnx(req.ip!, limit)) {
             store.expire(req.ip!, windowMs);
         }
