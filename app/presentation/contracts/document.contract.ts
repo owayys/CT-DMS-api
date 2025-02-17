@@ -16,27 +16,36 @@ export const documentContract = oc.prefix("/document").router({
             method: "POST",
             path: "/upload",
             summary: "Upload a new document",
+            inputStructure: "detailed",
         })
         .input(
-            CreateDocumentRequestSchema.pick({ tags: true }).merge(
-                z.object({ file: z.instanceof(File) })
-            )
+            z.object({
+                body: CreateDocumentRequestSchema.pick({ tags: true }).merge(
+                    z.object({ file: z.instanceof(File) })
+                ),
+            })
         )
         .output(BaseResponse.merge(GetDocumentResponse).or(ErrorResponse)),
     get: oc
         .route({
             method: "GET",
-            path: "/:id",
+            path: "/{id}",
             summary: "Get a document by ID",
+            inputStructure: "detailed",
         })
-        .input(GetDocumentRequestSchema)
+        .input(z.object({ params: GetDocumentRequestSchema }))
         .output(BaseResponse.merge(DocumentResponseSchema).or(ErrorResponse)),
     getAll: oc
         .route({
             method: "GET",
             path: "/",
             summary: "Get all documents (Paginated)",
+            inputStructure: "detailed",
         })
-        .input(GetAllDocumentsRequestSchema)
+        .input(
+            z.object({
+                query: GetAllDocumentsRequestSchema,
+            })
+        )
         .output(DocumentResponse),
 });
