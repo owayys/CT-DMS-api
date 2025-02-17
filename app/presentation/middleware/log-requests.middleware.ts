@@ -17,10 +17,13 @@ export class RequestLogger {
     }
     public logRequests = (req: Request, res: Response, next: NextFunction) => {
         const startTime = performance.now();
-        next();
-        const endTime = performance.now();
-        this.logger.info(
-            reqSerializer({ req: req, res: res, time: endTime - startTime })
-        );
+        try {
+            return next();
+        } finally {
+            const endTime = performance.now();
+            this.logger.info(
+                reqSerializer({ req: req, res: res, time: endTime - startTime })
+            );
+        }
     };
 }
