@@ -98,7 +98,7 @@ app.get("/spec.json", async (req, res) => {
             title: "Headless Document Management System",
             version: "1.0.0",
         },
-        servers: [{ url: "/api" }],
+        servers: [{ url: "/api/v1" }],
         security: [{ bearerAuth: [] }],
         components: {
             securitySchemes: {
