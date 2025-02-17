@@ -1,15 +1,14 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
-import {
-    BaseResponse,
-    ErrorResponse,
-    UploadedFileSchema,
-} from "../../lib/validators/common";
+import { BaseResponse, ErrorResponse } from "../../lib/validators/common";
 import { GetDocumentRequestSchema } from "../../application/dtos/document/schemas/get-document.request.schema";
 import { DocumentResponseSchema } from "../../application/dtos/document/schemas/document.response.schema";
 import { CreateDocumentRequestSchema } from "../../application/dtos/document/schemas/create-document.request.schema";
 import { GetAllDocumentsRequestSchema } from "../../application/dtos/document/schemas/get-all-documents.request.schema";
-import { GetDocumentResponse } from "../../lib/validators/document.validators";
+import {
+    DocumentResponse,
+    GetDocumentResponse,
+} from "../../lib/validators/document.validators";
 
 export const documentContract = oc.prefix("/document").router({
     upload: oc
@@ -38,7 +37,6 @@ export const documentContract = oc.prefix("/document").router({
             path: "/",
             summary: "Get all documents (Paginated)",
         })
-        .route({})
         .input(GetAllDocumentsRequestSchema)
-        .output(z.any()),
+        .output(DocumentResponse),
 });

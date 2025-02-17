@@ -1,5 +1,4 @@
-import { ErrorMap, oc } from "@orpc/contract";
-import { z } from "zod";
+import { oc } from "@orpc/contract";
 import {
     BaseResponse,
     ErrorResponse,
@@ -9,7 +8,7 @@ import { UpdateUserRequestSchema } from "../../application/dtos/user/schemas/upd
 import { GetUserRequestSchema } from "../../application/dtos/user/schemas/get-user.request.schema";
 import { CreateUserRequestSchema } from "../../application/dtos/user/schemas/create-user.request.schema";
 import { UserResponseSchema } from "../../application/dtos/user/schemas/user.response.schema";
-import { GetAllUsers } from "../../lib/validators/user.validators";
+import { AllUsersResponse } from "../../lib/validators/user.validators";
 import { GetAllUsersRequestSchema } from "../../application/dtos/user/schemas/get-all-users.request.schema";
 
 export const userContract = oc.prefix("/user").router({
@@ -36,7 +35,7 @@ export const userContract = oc.prefix("/user").router({
             summary: "Get all users (Paginated)",
         })
         .input(GetAllUsersRequestSchema)
-        .output(z.any()),
+        .output(AllUsersResponse),
     update: oc
         .route({
             method: "PUT",
