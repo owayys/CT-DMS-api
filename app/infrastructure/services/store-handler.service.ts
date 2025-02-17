@@ -11,8 +11,8 @@ const STORE_TIMEOUT = 25000;
 @InjectionTarget()
 export class FileStoreHandler implements IFileStore {
     constructor(
-        @Inject(CLOUD_FILE_STORE) private fileStore: IFileStore,
-        @Inject(LOCAL_FILE_STORE) private fileStoreFallback: IFileStore
+        @Inject(LOCAL_FILE_STORE) private fileStore: IFileStore,
+        @Inject(CLOUD_FILE_STORE) private fileStoreFallback: IFileStore
     ) {}
 
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
@@ -21,7 +21,7 @@ export class FileStoreHandler implements IFileStore {
                 this.fileStore.uploadFile(command)
             );
         } catch (err) {
-            return this.fileStoreFallback.uploadFile(command);
+            return await this.fileStoreFallback.uploadFile(command);
         }
     }
 
@@ -31,7 +31,7 @@ export class FileStoreHandler implements IFileStore {
                 this.fileStore.deleteFile(id)
             );
         } catch (err) {
-            return this.fileStoreFallback.deleteFile(id);
+            return await this.fileStoreFallback.deleteFile(id);
         }
     }
 
@@ -41,7 +41,7 @@ export class FileStoreHandler implements IFileStore {
                 this.fileStore.getFile(id)
             );
         } catch (err) {
-            return this.fileStoreFallback.getFile(id);
+            return await this.fileStoreFallback.getFile(id);
         }
     }
 }

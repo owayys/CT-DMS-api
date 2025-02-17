@@ -7,7 +7,6 @@ import { AppError, AppResult } from "@carbonteq/hexapp";
 
 export class LocalFileStore implements IFileStore {
     async uploadFile(command: UploadFileCommand): Promise<AppResult<boolean>> {
-        console.log("Used local upload");
         const { id, file } = command;
         try {
             await file.mv(`./app/uploads/${id}`);
