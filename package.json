@@ -4,6 +4,11 @@
         "@carbonteq/hexapp": "^0.18.3",
         "@carbonteq/resilience": "^0.0.1",
         "@google-cloud/storage": "^7.13.0",
+        "@orpc/contract": "next",
+        "@orpc/openapi": "next",
+        "@orpc/server": "next",
+        "@orpc/client": "next",
+        "@orpc/zod": "next",
         "@slack/web-api": "^7.5.0",
         "@types/jsonwebtoken": "^9.0.6",
         "bcrypt": "^5.1.1",
@@ -18,7 +23,7 @@
         "newrelic": "^12.5.1",
         "postgres": "^3.4.4",
         "reflect-metadata": "^0.2.2",
-        "zod": "^3.23.8"
+        "zod": "^3.24.1"
     },
     "name": "ct-dms-api",
     "version": "1.0.0",
