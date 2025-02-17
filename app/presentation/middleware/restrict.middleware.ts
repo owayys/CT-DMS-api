@@ -1,22 +1,24 @@
-import { IRequest, IResponse, NextFunction } from "express";
+import { AppError, AppResult } from "@carbonteq/hexapp";
+import { AppContext, MiddlewareFunc } from "./types.middleware";
 
-export enum UserRoles {
+export enum UserRole {
     ADMIN = "ADMIN",
     USER = "USER",
 }
 
-export const restrict = (...roles: UserRoles[]) => {
-    return (req: IRequest, res: IResponse, next: NextFunction) => {
-        const userRole = req.user.userRole as UserRoles;
+export const restrict = (...roles: UserRole[]): MiddlewareFunc => {
+    return (context: AppContext) => {
+        const userRole = context.user.userRole as UserRole;
 
         if (!roles.includes(userRole)) {
-            res.status(403).json({
-                error: {
-                    message: "Permission denied",
-                },
-            });
+            return {
+                ...context,
+                result: AppResult.Err(
+                    AppError.Unauthorized("Permission denied")
+                ),
+            };
         } else {
-            next();
+            return context;
         }
     };
 };

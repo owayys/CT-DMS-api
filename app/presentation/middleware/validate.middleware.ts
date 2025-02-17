@@ -1,27 +1,33 @@
-import { NextFunction, Request, Response } from "express";
 import { RequestDTOBase } from "../../lib/api/request.base";
-import { DtoValidationError } from "@carbonteq/hexapp";
+import { AppError, AppResult, DtoValidationError } from "@carbonteq/hexapp";
+import { AppContext, MiddlewareFunc } from "./types.middleware";
+import { InternalServerError } from "../../lib/exceptions/exceptions";
 
-export const validate = (requestDTO: RequestDTOBase) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        const dto = requestDTO.fromBody(req.body, req.query, req.params);
+export const validate = (requestDTO: RequestDTOBase): MiddlewareFunc => {
+    return (context: AppContext) => {
+        const dto = requestDTO.fromBody(
+            context.body,
+            context.query,
+            context.params
+        );
         const validation = dto.validate();
 
         if (validation.isOk()) {
-            req.body = dto;
-            next();
+            context.body = dto;
+            return { ...context, result: AppResult.Ok("OK") };
         } else {
             const err: DtoValidationError = validation.unwrapErr();
             if (err instanceof DtoValidationError) {
                 const errorMessage = err.message;
-                res.status(422).json({
-                    error: "Invalid data",
-                    details: errorMessage,
-                });
+                return {
+                    ...context,
+                    result: AppResult.Err(AppError.InvalidData(errorMessage)),
+                };
             } else {
-                res.status(500).json({
-                    error: "Internal Server Error",
-                });
+                return {
+                    ...context,
+                    result: AppResult.Err(new InternalServerError()),
+                };
             }
         }
     };

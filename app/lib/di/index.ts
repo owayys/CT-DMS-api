@@ -17,7 +17,7 @@ import {
     DOCUMENT_SERVICE,
     FILE_STORE_HANDLER,
     // JWT_CONTROLLER,
-    JWT_SERVICE,
+    AUTH_SERVICE,
     LOCAL_FILE_STORE,
     LOGGER,
     SLACK_NOTIFICATION_SERVICE,
@@ -28,7 +28,7 @@ import {
     USER_SERVICE,
 } from "./di.tokens";
 import { DrizzleClientWrapper } from "../../infrastructure/database";
-import { JWTService } from "../../application/services/jwt.service";
+import { AuthService } from "../../application/services/auth.service";
 import { BunyanLogger } from "../logging/BunyanLogger";
 import { UserMapper } from "../../infrastructure/mappers/user.mapper";
 import { DocumentMapper } from "../../infrastructure/mappers/document.mapper";
@@ -69,5 +69,5 @@ Container.register(FILE_STORE_HANDLER, FileStoreHandler);
 
 Container.register(SLACK_NOTIFICATION_SERVICE, SlackNotificationService);
 
-Container.register(JWT_SERVICE, JWTService);
+Container.register(AUTH_SERVICE, AuthService);
 // Container.register(JWT_CONTROLLER, JWTController)

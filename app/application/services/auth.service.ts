@@ -20,7 +20,7 @@ const accessSecret: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 const refreshSecret: Secret | undefined = process.env.REFRESH_TOKEN_SECRET;
 
 @InjectionTarget()
-export class JWTService {
+export class AuthService {
     constructor(
         @Inject(USER_REPOSITORY) private repository: IUserRepository,
         @Inject(LOGGER)
@@ -105,41 +105,47 @@ export class JWTService {
             );
         }
 
-        let decoded = jwt.verify(refreshToken, refreshSecret);
+        try {
+            let decoded = jwt.verify(refreshToken, refreshSecret);
 
-        let result;
+            let result;
 
-        if (typeof decoded === "string" || typeof decoded === "undefined") {
-        } else {
-            let response = await this.repository.findOneById(decoded.Id);
+            if (typeof decoded === "string" || typeof decoded === "undefined") {
+            } else {
+                let response = await this.repository.findOneById(decoded.Id);
 
-            if (response.isErr()) {
-                return AppResult.fromResult(response);
-            }
+                if (response.isErr()) {
+                    return AppResult.fromResult(response);
+                }
 
-            const user = response.unwrap();
+                const user = response.unwrap();
 
-            if (!user) {
-                return AppResult.Err(
-                    new ArgumentInvalidException("User not registered")
+                if (!user) {
+                    return AppResult.Err(
+                        new ArgumentInvalidException("User not registered")
+                    );
+                }
+
+                let accessToken = jwt.sign(
+                    {
+                        Id: user.userId,
+                        userName: user!.userName,
+                        userRole: user?.role.toString(),
+                    },
+                    accessSecret as string,
+                    { expiresIn: "1h" }
                 );
+
+                result = {
+                    accessToken: accessToken,
+                };
             }
 
-            let accessToken = jwt.sign(
-                {
-                    Id: user.userId,
-                    userName: user!.userName,
-                    userRole: user?.role.toString(),
-                },
-                accessSecret as string,
-                { expiresIn: "1h" }
+            return parseResponse(JwtRefreshResponse, result);
+        } catch (err) {
+            return AppResult.Err(
+                new ArgumentInvalidException("Refresh token expired or invalid")
             );
-
-            result = {
-                accessToken: accessToken,
-            };
         }
-
-        return parseResponse(JwtRefreshResponse, result);
     }
 }

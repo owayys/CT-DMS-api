@@ -1,4 +1,3 @@
-import { NextFunction, IResponse, IRequest, IRequestHandler } from "express";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { Inject } from "../../lib/di/Inject";
 import { LOGGER, USER_SERVICE } from "../../lib/di/di.tokens";
@@ -8,6 +7,9 @@ import { GetUserRequestDto } from "../../application/dtos/user/get-user.request.
 import { GetAllUsersRequestDto } from "../../application/dtos/user/get-all-users.request.dto";
 import { CreateUserRequestDto } from "../../application/dtos/user/create-user.request.dto";
 import { retry } from "../../lib/resilience/policies";
+import { AppContext, MiddlewareFunc } from "../middleware/types.middleware";
+import { AppError, AppResult } from "@carbonteq/hexapp";
+import { UserResponseDto } from "../../application/dtos/user/user.response.dto";
 
 const RETRY_ATTEMPTS = 3;
 
@@ -19,76 +21,56 @@ export class UserController {
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
-    get: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ) => {
-        const command: GetUserRequestDto = req.body;
+    get: MiddlewareFunc = async (context: AppContext) => {
+        const command: GetUserRequestDto = context.body;
 
         const userId = command.id;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.userService.get(userId)
         );
-
-        req.result = result;
-
-        next();
+        context.result = result;
+        return context;
     };
 
-    getAll: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ) => {
-        const command: GetAllUsersRequestDto = req.body;
+    getAll: MiddlewareFunc = async (context: AppContext) => {
+        const command: GetAllUsersRequestDto = context.body;
         const { pageNumber, pageSize } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.userService.getAll(pageNumber, pageSize)
         );
-
-        req.result = result;
-
-        next();
+        context.result = result;
+        return context;
     };
 
-    register: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ) => {
-        const command: CreateUserRequestDto = req.body;
+    register: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext<UserResponseDto>> => {
+        const command: CreateUserRequestDto = context.body;
         const { userName, password } = command;
         const result = await this.userService.register(userName, password);
-        req.result = result;
-        next();
+        context.result = result;
+        return context;
     };
 
-    update: IRequestHandler = async (
-        req: IRequest,
-        res: IResponse,
-        next: NextFunction
-    ) => {
-        const userId = req.params.id;
+    update: MiddlewareFunc = async (context: AppContext) => {
+        const userId = context.params?.id;
 
-        if (req.user.Id !== userId && req.user.userRole !== "ADMIN") {
-            return res.status(403).json({
-                err: {
-                    message: "Invalid User Id for current user",
-                },
-            });
+        if (context.user.Id !== userId && context.user.userRole !== "ADMIN") {
+            return {
+                ...context,
+                result: AppResult.Err(
+                    AppError.Unauthorized("Invalid User Id for current user")
+                ),
+            };
         }
 
-        const { password } = req.body;
-
+        const { password } = context.body;
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.userService.update(userId, password)
         );
-
-        req.result = result;
-
-        next();
+        context.result = result;
+        return context;
     };
 }

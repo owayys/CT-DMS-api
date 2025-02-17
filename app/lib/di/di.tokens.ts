@@ -23,7 +23,7 @@ export const FILE_STORE_HANDLER = Symbol("FILE_STORE_HANDLER");
 
 export const SLACK_NOTIFICATION_SERVICE = Symbol("SLACK_NOTIFICATION_SERVICE");
 
-export const JWT_SERVICE = Symbol("JWT_SERVICE");
-export const JWT_CONTROLLER = Symbol("JWT_CONTROLLER");
+export const AUTH_SERVICE = Symbol("AUTH_SERVICE");
+export const AUTH_CONTROLLER = Symbol("AUTH_CONTROLLER");
 
 export const LOGGER = Symbol("LOGGER");

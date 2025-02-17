@@ -1,4 +1,3 @@
-import { NextFunction, IResponse, IRequest, IRequestHandler } from "express";
 import { UploadedFile } from "express-fileupload";
 import path from "path";
 import { Inject } from "../../lib/di/Inject";
@@ -6,7 +5,6 @@ import { DOCUMENT_SERVICE, LOGGER } from "../../lib/di/di.tokens";
 import { InjectionTarget } from "../../lib/di/InjectionTarget";
 import { ILogger } from "../../lib/logging/ILogger";
 import { ArgumentNotProvidedException } from "../../lib/exceptions/exceptions";
-import { ZodError } from "zod";
 import { Services } from "../../application/services/types";
 import { AppResult } from "@carbonteq/hexapp";
 import { GetDocumentRequestDto } from "../../application/dtos/document/get-document.request.dto";
@@ -22,6 +20,8 @@ import { DeleteTagRequestDto } from "../../application/dtos/document/delete-tag.
 import { UpdateMetaRequestDto } from "../../application/dtos/document/update-meta.request.dto";
 import { DeleteMetaRequestDto } from "../../application/dtos/document/delete-meta.request.dto";
 import { retry } from "../../lib/resilience/policies";
+import { AppContext, MiddlewareFunc } from "../middleware/types.middleware";
+import { DocumentResponseDto } from "../../application/dtos/document/document.response.dto";
 
 const RETRY_ATTEMPTS = 3;
 
@@ -33,67 +33,57 @@ export class DocumentController {
         @Inject(LOGGER) private logger: ILogger
     ) {}
 
-    get: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const userId = req.user.Id;
-        const command: GetDocumentRequestDto = req.body;
+    get: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext<DocumentResponseDto>> => {
+        const userId = context.user.Id;
+        const command: GetDocumentRequestDto = context.body;
         const { id } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, async () =>
             this.documentService.get(userId, id)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    getAll: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: GetAllDocumentsRequestDto = req.body;
+    getAll: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext<DocumentResponseDto>> => {
+        const command: GetAllDocumentsRequestDto = context.body;
         const { pageNumber, pageSize, filterBy } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.getAll(pageNumber, pageSize, filterBy)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    getContent: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: GetDocumentContentRequestDto = req.body;
+    getContent: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: GetDocumentContentRequestDto = context.body;
         const { id } = command;
-        const userId = req.user.Id;
+        const userId = context.user.Id;
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.getContent(userId, id)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    save: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: CreateDocumentRequestDto = req.body;
+    save: MiddlewareFunc = async (context: AppContext): Promise<AppContext> => {
+        const command: CreateDocumentRequestDto = context.body;
         const { fileName, fileExtension, contentType, tags, content, meta } =
             command;
-        const userId = req.user.Id;
+        const userId = context.user.Id;
 
         const result = await this.documentService.save(
             userId,
@@ -105,33 +95,32 @@ export class DocumentController {
             meta as UserDefinedMetadata
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    upload: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        if (!req.files || Object.keys(req.files).length === 0) {
-            req.result = AppResult.Err(
+    upload: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        if (!context.body || Object.keys(context.body).length === 0) {
+            context.result = AppResult.Err(
                 new ArgumentNotProvidedException("No file uploaded")
             );
-            next();
+            return context;
         } else {
-            const file = req.files.file as UploadedFile;
+            const {
+                tags,
+                file,
+            }: { tags: { key: string; name: string }[]; file: UploadedFile } =
+                context.body;
 
             const fileName = path.parse(file.name).name;
             const fileExtension = path.parse(file.name).ext;
 
             const contentType = file.mimetype;
 
-            let { tags } = req.body;
-            tags = JSON.parse(tags);
-
-            const userId = req.user.Id;
+            const userId = context.user.Id;
 
             const result = await this.documentService.upload(
                 userId,
@@ -142,57 +131,31 @@ export class DocumentController {
                 tags
             );
 
-            req.result = result;
+            context.result = result;
 
-            next();
+            return context;
         }
     };
 
-    download: IRequestHandler = async (
-        req: IRequest,
-        res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const { url } = req.params;
+    download: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const { url } = context.params!;
 
         const result = await this.documentService.download(url as string);
 
-        req.result = result;
+        context.result = result;
 
-        if (result.isErr()) {
-            const err: Error = result.unwrapErr();
-
-            if (err instanceof ZodError) {
-                res.status(422).json({
-                    error: {
-                        message: JSON.parse(err.message),
-                    },
-                });
-            } else {
-                res.status(404).json({
-                    error: {
-                        message: err.message,
-                    },
-                });
-            }
-        } else {
-            const requestedFile = result.unwrap();
-            res.status(200).download(
-                requestedFile.filePath,
-                requestedFile.fileName
-            );
-        }
+        return context;
     };
 
-    update: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: UpdateDocumentRequestDto = req.body;
+    update: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: UpdateDocumentRequestDto = context.body;
         const { fileName, fileExtension, contentType, tags, content } = command;
-        const { id } = req.params;
-        const userId = req.user.Id;
+        const { id } = context.params!;
+        const userId = context.user.Id;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.update(
@@ -206,108 +169,96 @@ export class DocumentController {
             )
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    remove: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: DeleteDocumentRequestDto = req.body;
+    remove: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: DeleteDocumentRequestDto = context.body;
         const { id } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.remove(id)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    addTag: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: AddTagRequestDto = req.body;
+    addTag: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: AddTagRequestDto = context.body;
         const { id, tag } = command;
 
         const result = await this.documentService.addTag(id, tag);
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    updateTag: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next
-    ): Promise<void> => {
-        const command: UpdateTagRequestDto = req.body;
+    updateTag: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: UpdateTagRequestDto = context.body;
         const { id, tag } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.updateTag(id, tag)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    removeTag: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: DeleteTagRequestDto = req.body;
+    removeTag: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: DeleteTagRequestDto = context.body;
         const { id, tag } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.removeTag(id, tag)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    updateMeta: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: UpdateMetaRequestDto = req.body;
+    updateMeta: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: UpdateMetaRequestDto = context.body;
         const { id, meta } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.updateMeta(id, meta)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 
-    deleteMeta: IRequestHandler = async (
-        req: IRequest,
-        _res: IResponse,
-        next: NextFunction
-    ): Promise<void> => {
-        const command: DeleteMetaRequestDto = req.body;
+    deleteMeta: MiddlewareFunc = async (
+        context: AppContext
+    ): Promise<AppContext> => {
+        const command: DeleteMetaRequestDto = context.body;
         const { id } = command;
 
         const result = await retry({ attempts: RETRY_ATTEMPTS }, () =>
             this.documentService.deleteMeta(id)
         );
 
-        req.result = result;
+        context.result = result;
 
-        next();
+        return context;
     };
 }

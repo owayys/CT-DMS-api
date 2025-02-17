@@ -1,44 +1,51 @@
-import { IRequest, IResponse, NextFunction } from "express";
 import jwt, { Secret, UserJWTPayload } from "jsonwebtoken";
+import { AppContext, MiddlewareFunc } from "./types.middleware";
+import { AppError, AppResult } from "@carbonteq/hexapp";
+import { InternalServerError } from "../../lib/exceptions/exceptions";
 
 const secretKey: Secret | undefined = process.env.ACCESS_TOKEN_SECRET;
 
-export const authenticateJWT = (
-    req: IRequest,
-    res: IResponse,
-    next: NextFunction
-) => {
+export const authenticateJWT: MiddlewareFunc = (context: AppContext) => {
     try {
-        let accessToken = req.headers["authorization"]!.split(" ")[1];
+        let accessToken = context.headers?.["authorization"].split(" ")[1];
 
         if (!accessToken) {
-            return res.status(401).json({
-                error: {
-                    message: "No Access Token provided",
-                },
-            });
+            return {
+                ...context,
+                result: AppResult.Err(
+                    AppError.Unauthorized("No access token provided")
+                ),
+            } as AppContext;
         }
 
         if (secretKey === undefined) {
-            return res.status(401).json({
-                error: {
-                    message: `SECRET_KEY missing`,
-                },
-            });
+            return {
+                ...context,
+                result: AppResult.Err(
+                    new InternalServerError("SECRET_KEY missing")
+                ),
+            } as AppContext;
         }
 
         let decoded = jwt.verify(accessToken, secretKey);
 
         if (typeof decoded != "string") {
-            req.user = decoded as UserJWTPayload;
+            context.user = decoded as UserJWTPayload;
+            return { ...context, result: AppResult.Ok("OK") } as AppContext;
         }
 
-        next();
+        return {
+            ...context,
+            result: AppResult.Err(
+                new InternalServerError("Error validating access token")
+            ),
+        } as AppContext;
     } catch (err) {
-        res.status(401).json({
-            error: {
-                message: `Access token expired or invalid`,
-            },
-        });
+        return {
+            ...context,
+            result: AppResult.Err(
+                AppError.Unauthorized("Access token expired or invalid")
+            ),
+        } as AppContext;
     }
 };

@@ -1,72 +1,38 @@
-import { IRequest, IRequestHandler, IResponse, NextFunction } from "express";
 import { ZodError } from "zod";
 import {
-    ArgumentInvalidException,
     ArgumentNotProvidedException,
-    ConflictException,
     InternalServerError,
-    NotFoundException,
 } from "../../lib/exceptions/exceptions";
 import { AppError, AppErrStatus, AppResult } from "@carbonteq/hexapp";
+import { AppContext, MiddlewareFunc } from "./types.middleware";
 
-export const errorHandler: IRequestHandler = (
-    req: IRequest,
-    res: IResponse,
-    next: NextFunction
-) => {
-    const result = req.result! as AppResult<any>;
+export const errorHandler: MiddlewareFunc = (context: AppContext) => {
+    const result = context.result! as AppResult<any>;
     if (result.isErr()) {
         const err: AppError = result.unwrapErr();
+        let status = null;
         if (err instanceof ArgumentNotProvidedException) {
-            res.status(400).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 400;
         } else if (err.status === AppErrStatus.Unauthorized) {
-            res.status(404).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 401;
         } else if (err.status === AppErrStatus.NotFound) {
-            res.status(404).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 404;
         } else if (err.status === AppErrStatus.AlreadyExists) {
-            res.status(409).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 409;
         } else if (err.status === AppErrStatus.InvalidData) {
-            res.status(422).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 422;
         } else if (err instanceof ZodError) {
-            res.status(422).json({
-                error: {
-                    message: JSON.parse(err.message),
-                },
-            });
+            status = 422;
+            context.result = AppResult.Err(
+                new ZodError(JSON.parse(err.message))
+            );
         } else if (err instanceof InternalServerError) {
-            res.status(500).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 500;
         } else {
-            res.status(400).json({
-                error: {
-                    message: err.message,
-                },
-            });
+            status = 400;
         }
+        return { ...context, status };
     } else {
-        res.status(200).json(result.unwrap());
+        return { ...context, status: 200 };
     }
 };
